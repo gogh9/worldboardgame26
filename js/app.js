@@ -1,0 +1,1776 @@
+// 세계여행 말판놀이 - Main Application Logic (Perfect Multiplayer Synchronization)
+import { BOARD_CELLS, CLIMATE_CARDS, TERRAIN_CARDS, PLAYER_PROFILES } from './boardData.js';
+import { HybridNetworkManager } from './network.js';
+import { sound } from './sound.js';
+
+class WorldGameApp {
+  constructor() {
+    this.network = null;
+    this.mode = 'LOCAL'; // 'LOCAL' | 'ONLINE'
+    this.myPlayerId = 0;
+    this.selectedCharId = 0;
+    this.joinRetryTimer = null;
+
+    // Game Core State
+    this.state = {
+      status: 'LOBBY', // 'LOBBY' | 'PLAYING' | 'GAMEOVER'
+      round: 1,
+      turnIndex: 0,
+      players: [],
+      cells: JSON.parse(JSON.stringify(BOARD_CELLS)).map(cell => ({
+        ...cell,
+        ownerId: null
+      })),
+      lastDice: 1,
+      isRolling: false,
+      worldTravelPending: false,
+      activeQuiz: null,
+      activeCard: null
+    };
+
+    this.initDOM();
+    this.initNickname();
+    this.initEvents();
+    this.initGuideModal();
+    this.initLobbyNetwork();
+    
+    // 기본 시작 화면을 방 선택 로비로 바로 진입
+    this.switchScreen('lobby');
+    this.setupLobbyView(false);
+    this.checkUrlParams();
+  }
+
+  // 닉네임 로컬스토리지 영구 저장 및 자동 로드
+  initNickname() {
+    const savedNick = localStorage.getItem('worldgame_nickname');
+    if (savedNick) {
+      this.inputNickname.value = savedNick;
+    } else {
+      const randNum = Math.floor(Math.random() * 89 + 10);
+      this.inputNickname.value = `탐험가${randNum}`;
+      localStorage.setItem('worldgame_nickname', this.inputNickname.value);
+    }
+
+    this.inputNickname.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      if (val) {
+        localStorage.setItem('worldgame_nickname', val);
+      }
+    });
+  }
+
+  // DOM 캐싱
+  initDOM() {
+    this.screens = {
+      intro: document.getElementById('screen-intro'),
+      lobby: document.getElementById('screen-lobby'),
+      localSetup: document.getElementById('screen-local-setup'),
+      game: document.getElementById('screen-game')
+    };
+
+    // Lobby Elements
+    this.lobbyJoinSec = document.getElementById('lobby-join-section');
+    this.lobbyRoomSec = document.getElementById('lobby-room-section');
+    this.inputNickname = document.getElementById('input-nickname');
+    this.inputRoomCode = document.getElementById('input-room-code');
+    this.dispRoomCode = document.getElementById('disp-room-code');
+    this.lobbySlots = document.getElementById('lobby-player-slots');
+    this.charChipsContainer = document.getElementById('character-chips-container');
+    this.btnToggleReady = document.getElementById('btn-toggle-ready');
+    this.btnStartGame = document.getElementById('btn-start-game');
+    this.netBadge = document.getElementById('network-status-badge');
+    this.netStatusText = document.getElementById('network-status-text');
+    this.roomsListContainer = document.getElementById('rooms-list-container');
+    this.noRoomsPlaceholder = document.getElementById('no-rooms-placeholder');
+
+    // Game Elements
+    this.boardCellsGrid = document.getElementById('board-cells-grid');
+    this.pawnsLayer = document.getElementById('pawns-layer');
+    this.playersPanel = document.getElementById('players-status-panel');
+    this.turnBanner = document.getElementById('turn-announcer-banner');
+    this.turnPlayerName = document.getElementById('turn-player-name');
+    this.turnDot = document.getElementById('turn-dot');
+    this.gameRoundTag = document.getElementById('game-round-tag');
+    this.gameModeTag = document.getElementById('game-mode-tag');
+    this.conquestRatio = document.getElementById('conquest-ratio');
+    this.conquestProgressBar = document.getElementById('conquest-progress-bar');
+    
+    // Dice Elements
+    this.diceCube = document.getElementById('dice-cube');
+    this.diceResultText = document.getElementById('dice-result-text');
+    this.btnRollDice = document.getElementById('btn-roll-dice');
+    this.diceHintText = document.getElementById('dice-hint-text');
+    this.gameLogList = document.getElementById('game-log-list');
+
+    // Modals
+    this.modalQuiz = document.getElementById('modal-quiz');
+    this.modalCard = document.getElementById('modal-card');
+    this.modalSpecial = document.getElementById('modal-special');
+    this.modalVictory = document.getElementById('modal-victory');
+    this.modalGuide = document.getElementById('modal-guide');
+  }
+
+  // 이벤트 바인딩
+  initEvents() {
+    // 1. Navigation & Modals
+    const btnGotoLocal = document.getElementById('btn-goto-local');
+    if (btnGotoLocal) {
+      btnGotoLocal.addEventListener('click', () => {
+        this.switchScreen('localSetup');
+        this.setupLocalView(3);
+      });
+    }
+
+    const btnGotoLocalQuick = document.getElementById('btn-goto-local-quick');
+    if (btnGotoLocalQuick) {
+      btnGotoLocalQuick.addEventListener('click', () => {
+        this.switchScreen('localSetup');
+        this.setupLocalView(3);
+      });
+    }
+
+    const btnOpenGuideLobby = document.getElementById('btn-open-guide-lobby');
+    if (btnOpenGuideLobby) {
+      btnOpenGuideLobby.addEventListener('click', () => {
+        this.openModal(this.modalGuide);
+      });
+    }
+
+    const btnOpenGuide = document.getElementById('btn-open-guide');
+    if (btnOpenGuide) {
+      btnOpenGuide.addEventListener('click', () => {
+        this.openModal(this.modalGuide);
+      });
+    }
+
+    document.getElementById('btn-game-guide').addEventListener('click', () => {
+      this.openModal(this.modalGuide);
+    });
+
+    document.getElementById('btn-close-guide').addEventListener('click', () => {
+      this.closeModal(this.modalGuide);
+    });
+
+    // 2. Sound Toggle
+    const btnSound = document.getElementById('btn-sound-toggle');
+    btnSound.addEventListener('click', () => {
+      const isEnabled = sound.toggleSound();
+      btnSound.textContent = isEnabled ? '🔊' : '🔇';
+      this.showToast(isEnabled ? '사운드가 켜졌습니다.' : '사운드가 음소거되었습니다.');
+    });
+
+    // 3. Lobby & Local Back Navigation
+    const btnLobbyBack = document.getElementById('btn-lobby-back');
+    if (btnLobbyBack) {
+      btnLobbyBack.addEventListener('click', () => {
+        if (this.network) this.network.disconnect();
+        this.setupLobbyView(false);
+      });
+    }
+
+    const btnLocalBack = document.getElementById('btn-local-back');
+    if (btnLocalBack) {
+      btnLocalBack.addEventListener('click', () => {
+        this.switchScreen('lobby');
+        this.setupLobbyView(false);
+      });
+    }
+
+    const btnRefreshRooms = document.getElementById('btn-refresh-rooms');
+    if (btnRefreshRooms) {
+      btnRefreshRooms.addEventListener('click', () => {
+        if (this.network) {
+          this.renderRoomsList(this.network.getRoomsList());
+          this.showToast('방 목록을 새로고침했습니다. 🔄');
+        }
+      });
+    }
+
+    // 4. Online Create & Join
+    const btnCreateRoom = document.getElementById('btn-create-room');
+    if (btnCreateRoom) btnCreateRoom.addEventListener('click', () => this.handleCreateRoom());
+
+    const btnJoinRoom = document.getElementById('btn-join-room');
+    if (btnJoinRoom) btnJoinRoom.addEventListener('click', () => this.handleJoinRoom());
+
+    const btnCopyCode = document.getElementById('btn-copy-code');
+    if (btnCopyCode) btnCopyCode.addEventListener('click', () => this.copyRoomCode());
+
+    const btnCopyLink = document.getElementById('btn-copy-link');
+    if (btnCopyLink) btnCopyLink.addEventListener('click', () => this.copyRoomLink());
+
+    const btnLeaveRoom = document.getElementById('btn-leave-room');
+    if (btnLeaveRoom) btnLeaveRoom.addEventListener('click', () => this.leaveRoom());
+
+    if (this.btnToggleReady) this.btnToggleReady.addEventListener('click', () => this.toggleReady());
+    if (this.btnStartGame) this.btnStartGame.addEventListener('click', () => this.startOnlineGame());
+
+    // 5. Local Setup Count Selection (선택적)
+    document.querySelectorAll('.btn-count').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.btn-count').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const count = parseInt(btn.dataset.count, 10);
+        this.setupLocalView(count);
+      });
+    });
+
+    const btnStartLocalGame = document.getElementById('btn-start-local-game');
+    if (btnStartLocalGame) btnStartLocalGame.addEventListener('click', () => this.startLocalGame());
+
+    // 6. Game Actions
+    if (this.btnRollDice) this.btnRollDice.addEventListener('click', () => this.handleRollDice());
+    const btnGameExit = document.getElementById('btn-game-exit');
+    if (btnGameExit) {
+      btnGameExit.addEventListener('click', () => {
+        if (confirm('게임을 종료하고 방 선택 화면으로 나가시겠습니까?')) {
+          this.leaveRoom();
+        }
+      });
+    }
+
+    // 7. Victory Modal
+    document.getElementById('btn-victory-restart').addEventListener('click', () => {
+      this.closeModal(this.modalVictory);
+      if (this.mode === 'LOCAL') {
+        this.startLocalGame();
+      } else if (this.isHost()) {
+        this.network.send('RESTART_GAME', {});
+        this.resetGameState();
+      }
+    });
+
+    document.getElementById('btn-victory-lobby').addEventListener('click', () => {
+      this.closeModal(this.modalVictory);
+      this.leaveRoom();
+    });
+  }
+
+  // URL Query Parameter ?room=XXXXXX 처리
+  checkUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    const roomCode = params.get('room');
+    if (roomCode) {
+      this.switchScreen('lobby');
+      this.setupLobbyView(false);
+      this.joinRoomByCode(roomCode.toUpperCase());
+    }
+  }
+
+  switchScreen(screenName) {
+    Object.values(this.screens).forEach(scr => scr.classList.remove('active'));
+    if (this.screens[screenName]) {
+      this.screens[screenName].classList.add('active');
+    }
+  }
+
+  openModal(modalElem) {
+    modalElem.classList.add('active');
+  }
+
+  closeModal(modalElem) {
+    modalElem.classList.remove('active');
+  }
+
+  showToast(msg) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast-msg';
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
+    }, 2500);
+  }
+
+  addLog(text, type = 'normal') {
+    const item = document.createElement('div');
+    item.className = `log-item ${type}`;
+    item.textContent = text;
+    this.gameLogList.appendChild(item);
+    this.gameLogList.scrollTop = this.gameLogList.scrollHeight;
+  }
+
+  /* ========================================================================
+     LOBBY & NETWORK MANAGEMENT
+     ======================================================================== */
+  initLobbyNetwork() {
+    if (!this.network) {
+      this.network = new HybridNetworkManager(
+        (data, sender) => this.handleNetworkMessage(data, sender),
+        (status) => this.handleNetworkStatus(status),
+        (rooms) => this.renderRoomsList(rooms)
+      );
+    }
+  }
+
+  renderRoomsList(rooms) {
+    if (!this.roomsListContainer) return;
+
+    if (!rooms || rooms.length === 0) {
+      this.roomsListContainer.innerHTML = '';
+      if (this.noRoomsPlaceholder) {
+        this.roomsListContainer.appendChild(this.noRoomsPlaceholder);
+        this.noRoomsPlaceholder.classList.remove('hidden');
+      }
+      return;
+    }
+
+    if (this.noRoomsPlaceholder) {
+      this.noRoomsPlaceholder.classList.add('hidden');
+    }
+
+    this.roomsListContainer.innerHTML = '';
+    rooms.forEach(room => {
+      const card = document.createElement('div');
+      card.className = 'room-card';
+
+      const isFull = room.playerCount >= room.maxPlayers;
+      const isPlaying = room.status === 'PLAYING';
+      
+      // 진행 중인 방도 같은 이름으로 언제든 재접속할 수 있도록 항상 클릭 허용
+      const canJoin = true;
+
+      let statusBadgeHtml = '';
+      let btnText = '입장하기 ➔';
+
+      if (isPlaying) {
+        statusBadgeHtml = '<span style="color: #38bdf8; font-weight: 700;">⚔️ 게임 진행 중 (재접속 가능)</span>';
+        btnText = '재접속 / 입장 ➔';
+      } else if (isFull) {
+        statusBadgeHtml = '<span style="color: #f87171; font-weight: 700;">🚫 정원 마감 (4/4명)</span>';
+        btnText = '입장하기 ➔';
+      } else {
+        statusBadgeHtml = `<span style="color: #34d399; font-weight: 700;">🟢 대기 중 (${room.playerCount}/${room.maxPlayers}명)</span>`;
+        btnText = '입장하기 ➔';
+      }
+
+      card.innerHTML = `
+        <div class="room-card-info">
+          <div class="room-card-title">
+            <span>🧭 ${room.title || '세계여행 탐험 방'}</span>
+            <span class="room-code-tag">${room.roomCode}</span>
+          </div>
+          <div class="room-card-meta">
+            <span>방장: <strong>${room.hostName}</strong></span>
+            <span class="room-player-count">👥 ${room.playerCount} / ${room.maxPlayers}명</span>
+            <span>${statusBadgeHtml}</span>
+          </div>
+        </div>
+        <div class="room-card-actions">
+          <button class="btn btn-primary btn-join-action ${canJoin ? 'btn-pulse' : ''}">
+            ${btnText}
+          </button>
+        </div>
+      `;
+
+      card.querySelector('.btn-join-action').addEventListener('click', () => {
+        this.joinRoomByCode(room.roomCode);
+      });
+
+      this.roomsListContainer.appendChild(card);
+    });
+  }
+
+  setupLobbyView(isInRoom = false) {
+    if (isInRoom) {
+      this.lobbyJoinSec.classList.add('hidden');
+      this.lobbyRoomSec.classList.remove('hidden');
+      this.renderCharacterChips();
+      this.renderLobbySlots();
+    } else {
+      this.lobbyJoinSec.classList.remove('hidden');
+      this.lobbyRoomSec.classList.add('hidden');
+      if (this.network) {
+        this.renderRoomsList(this.network.getRoomsList());
+      }
+    }
+  }
+
+  renderCharacterChips() {
+    this.charChipsContainer.innerHTML = '';
+    PLAYER_PROFILES.forEach(profile => {
+      const isTaken = this.state.players.some(p => p.charId === profile.id && p.id !== this.myPlayerId);
+      const isSelected = this.selectedCharId === profile.id;
+
+      const chip = document.createElement('div');
+      chip.className = `char-chip ${isSelected ? 'selected' : ''} ${isTaken ? 'taken' : ''}`;
+      chip.innerHTML = `
+        <span style="font-size: 1.6rem;">${profile.avatar}</span>
+        <strong style="font-size: 0.85rem; color: ${profile.colorHex}">${profile.name}</strong>
+        <span style="font-size: 0.7rem; color: #94a3b8">${profile.role}</span>
+      `;
+
+      if (!isTaken) {
+        chip.addEventListener('click', () => {
+          this.selectedCharId = profile.id;
+          this.renderCharacterChips();
+          if (this.mode === 'ONLINE') {
+            this.sendPlayerUpdate();
+          }
+        });
+      }
+
+      this.charChipsContainer.appendChild(chip);
+    });
+  }
+
+  renderLobbySlots() {
+    this.lobbySlots.innerHTML = '';
+    for (let i = 0; i < 4; i++) {
+      const player = this.state.players[i];
+      const slot = document.createElement('div');
+
+      if (player) {
+        const profile = PLAYER_PROFILES[player.charId] || PLAYER_PROFILES[0];
+        slot.className = 'player-slot occupied';
+        slot.style.setProperty('--slot-color', profile.colorHex);
+        slot.innerHTML = `
+          <div class="slot-avatar">${profile.avatar}</div>
+          <div class="slot-info">
+            <div class="slot-name">${player.name} ${player.id === this.myPlayerId ? '(나)' : ''}</div>
+            <div class="slot-role" style="color: ${profile.colorHex}">${profile.role} · ${profile.colorName}</div>
+          </div>
+          <div>
+            ${player.isHost ? '<span class="slot-badge badge-host">👑 방장</span>' : 
+              (player.isReady ? '<span class="slot-badge badge-ready">✔ 준비</span>' : '<span class="slot-badge">대기중</span>')}
+          </div>
+        `;
+      } else {
+        slot.className = 'player-slot empty';
+        slot.innerHTML = `<span>+ 탐험가 대기중 (${i + 1}P)</span>`;
+      }
+
+      this.lobbySlots.appendChild(slot);
+    }
+
+    // 방장 여부에 따른 버튼 제어
+    const me = this.state.players.find(p => p.id === this.myPlayerId);
+    if (me && me.isHost) {
+      this.btnToggleReady.classList.add('hidden');
+      this.btnStartGame.classList.remove('hidden');
+      const allClientsReady = this.state.players.length >= 2 && this.state.players.filter(p => !p.isHost).every(p => p.isReady);
+      this.btnStartGame.disabled = !allClientsReady;
+      this.btnStartGame.style.opacity = allClientsReady ? '1' : '0.5';
+
+      if (this.network) {
+        this.network.updateHostingInfo({
+          playerCount: this.state.players.length
+        });
+      }
+    } else {
+      this.btnToggleReady.classList.remove('hidden');
+      this.btnStartGame.classList.add('hidden');
+      if (me) {
+        this.btnToggleReady.textContent = me.isReady ? '준비 해제 (CANCEL)' : '준비 완료 (READY)';
+        this.btnToggleReady.className = me.isReady ? 'btn btn-secondary' : 'btn btn-primary';
+      }
+    }
+  }
+
+  // 방 만들기
+  async handleCreateRoom() {
+    const nick = this.inputNickname.value.trim() || '탐험대장';
+    this.mode = 'ONLINE';
+    this.myPlayerId = 0;
+    this.selectedCharId = 0;
+
+    this.updateNetworkBadge('connecting', '방 생성 중...');
+
+    try {
+      const res = await this.network.createRoom(nick);
+      this.dispRoomCode.textContent = res.roomCode;
+      this.state.players = [{
+        id: 0,
+        peerId: this.network.myId,
+        name: nick,
+        charId: 0,
+        isHost: true,
+        isReady: true,
+        position: 0,
+        conqueredCount: 0,
+        hintKeys: 1,
+        isIslandSkip: false
+      }];
+
+      this.setupLobbyView(true);
+      this.showToast(`방이 생성되었습니다! 방 목록에 공개되었습니다.`);
+      sound.playItemGet();
+    } catch (err) {
+      alert('방 생성에 실패했습니다. 다시 시도해주세요.');
+      this.updateNetworkBadge('offline', '오류 발생');
+    }
+  }
+
+  // 방 클릭 또는 코드로 입장
+  async joinRoomByCode(code) {
+    const nick = this.inputNickname.value.trim() || '원정대원';
+    this.mode = 'ONLINE';
+    this.updateNetworkBadge('connecting', '방 접속 중...');
+
+    try {
+      const res = await this.network.joinRoom(code, nick);
+      this.dispRoomCode.textContent = res.roomCode;
+      this.setupLobbyView(true);
+
+      const sendJoin = () => {
+        this.network.send('JOIN_REQUEST', {
+          name: nick,
+          charId: this.findAvailableCharId()
+        });
+      };
+
+      sendJoin();
+      if (this.joinRetryTimer) clearInterval(this.joinRetryTimer);
+      let retries = 0;
+      this.joinRetryTimer = setInterval(() => {
+        if (this.state.players.some(p => p.peerId === this.network.myId) || retries++ > 4) {
+          clearInterval(this.joinRetryTimer);
+          this.joinRetryTimer = null;
+        } else {
+          sendJoin();
+        }
+      }, 1000);
+
+    } catch (err) {
+      alert('방 접속에 실패했습니다.');
+      this.updateNetworkBadge('offline', '접속 실패');
+    }
+  }
+
+  handleJoinRoom() {
+    const code = this.inputRoomCode.value.trim().toUpperCase();
+    if (!code) {
+      alert('방 코드를 입력해주세요.');
+      return;
+    }
+    this.joinRoomByCode(code);
+  }
+
+  findAvailableCharId() {
+    const taken = this.state.players.map(p => p.charId);
+    for (let i = 0; i < 4; i++) {
+      if (!taken.includes(i)) return i;
+    }
+    return 0;
+  }
+
+  toggleReady() {
+    const me = this.state.players.find(p => p.id === this.myPlayerId);
+    if (!me) return;
+    me.isReady = !me.isReady;
+    this.renderLobbySlots();
+    this.sendPlayerUpdate();
+  }
+
+  sendPlayerUpdate() {
+    const me = this.state.players.find(p => p.id === this.myPlayerId);
+    if (!me) return;
+    me.charId = this.selectedCharId;
+
+    if (this.isHost()) {
+      this.broadcastState();
+    } else {
+      this.network.send('UPDATE_PLAYER', {
+        id: this.myPlayerId,
+        charId: this.selectedCharId,
+        isReady: me.isReady
+      });
+    }
+    this.renderLobbySlots();
+  }
+
+  copyRoomCode() {
+    navigator.clipboard.writeText(this.network.roomCode).then(() => {
+      this.showToast('방 코드가 클립보드에 복사되었습니다! 📋');
+    });
+  }
+
+  copyRoomLink() {
+    const url = `${window.location.origin}${window.location.pathname}?room=${this.network.roomCode}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.showToast('초대 링크가 복사되었습니다! 🔗');
+    });
+  }
+
+  leaveRoom() {
+    if (this.network) {
+      this.network.send('PLAYER_LEAVE', { id: this.myPlayerId });
+      this.network.disconnect();
+    }
+    this.state.players = [];
+    this.setupLobbyView(false);
+  }
+
+  isHost() {
+    return this.mode === 'ONLINE' && this.network && this.network.isHost;
+  }
+
+  updateNetworkBadge(status, text) {
+    if (this.netBadge) this.netBadge.className = `network-badge ${status}`;
+    if (this.netStatusText) this.netStatusText.textContent = text;
+  }
+
+  handleNetworkStatus(status) {
+    if (status.type === 'LOBBY_READY') {
+      this.updateNetworkBadge('online', '로비 연결됨');
+    } else if (status.type === 'HOST_READY') {
+      this.updateNetworkBadge('online', '방장 (대기중)');
+    } else if (status.type === 'JOINED_SUCCESS') {
+      this.updateNetworkBadge('online', '방 접속 완료');
+      this.showToast('방에 접속했습니다. 준비를 완료해주세요!');
+    }
+  }
+
+  /* ========================================================================
+     NETWORK MESSAGE DISPATCHER (실시간 액션 & 상태 동기화)
+     ======================================================================== */
+  handleNetworkMessage(data, senderId) {
+    const { action, payload } = data;
+
+    switch (action) {
+      // 1. 신규 참가자 입장 및 기존 참가자 재접속(Reconnect)
+      case 'JOIN_REQUEST':
+        if (this.isHost()) {
+          const reqName = (payload.name || '').trim();
+
+          // 1-1. 이미 동일한 peerId로 존재하는 경우
+          const existingByPeer = this.state.players.find(p => p.peerId === senderId);
+          if (existingByPeer) {
+            existingByPeer.name = reqName || existingByPeer.name;
+            this.broadcastState();
+            return;
+          }
+
+          // 1-2. 동일한 닉네임으로 참가했던 기존 플레이어인지 확인 (중간 이탈자 완벽 재접속!)
+          const existingByName = this.state.players.find(p => p.name.trim().toLowerCase() === reqName.toLowerCase());
+          if (existingByName) {
+            existingByName.peerId = senderId;
+            this.addLog(`🔄 [${existingByName.name}] 님이 게임에 재접속했습니다!`, 'system');
+            this.showToast(`🎉 ${existingByName.name}님이 게임에 다시 연결되었습니다!`);
+            sound.playItemGet();
+            this.broadcastState();
+            return;
+          }
+
+          // 1-3. 게임이 이미 진행 중인데 기존 참가자가 아닌 새로운 사용자일 경우
+          if (this.state.status === 'PLAYING') {
+            const playerNames = this.state.players.map(p => `[${p.name}]`).join(', ');
+            this.network.send('JOIN_DENIED', { 
+              message: `현재 게임이 진행 중인 방입니다.\n처음 참가하셨던 닉네임(${playerNames})으로 입력하시면 게임을 이어서 진행할 수 있습니다.` 
+            });
+            return;
+          }
+
+          // 1-4. 대기실 상태에서 4명 정원 초과인 경우
+          if (this.state.players.length >= 4) {
+            this.network.send('JOIN_DENIED', { message: '방 인원이 가득 찼습니다. (최대 4인)' });
+            return;
+          }
+
+          // 1-5. 대기실 상태에서 신규 참가자 추가
+          const newId = this.state.players.length;
+          const assignedChar = this.findAvailableCharId();
+          this.state.players.push({
+            id: newId,
+            peerId: senderId,
+            name: reqName || `탐험가${newId + 1}`,
+            charId: assignedChar,
+            isHost: false,
+            isReady: false,
+            position: 0,
+            conqueredCount: 0,
+            hintKeys: 1,
+            isIslandSkip: false
+          });
+
+          this.showToast(`🎉 ${reqName}님이 방에 참가했습니다!`);
+          sound.playItemGet();
+
+          this.renderLobbySlots();
+          this.broadcastState();
+        }
+        break;
+
+      // 2. 플레이어 설정 변경
+      case 'UPDATE_PLAYER':
+        if (this.isHost()) {
+          const target = this.state.players.find(p => p.peerId === senderId);
+          if (target) {
+            target.charId = payload.charId;
+            target.isReady = payload.isReady;
+            this.renderLobbySlots();
+            this.broadcastState();
+          }
+        }
+        break;
+
+      // 3. 전체 게임 상태 동기화 (재접속 포함)
+      case 'SYNC_STATE':
+        const wasInGame = this.screens.game.classList.contains('active');
+        this.state = payload.state;
+        
+        const me = this.state.players.find(p => p.peerId === this.network.myId);
+        if (me) {
+          this.myPlayerId = me.id;
+          this.selectedCharId = me.charId;
+        }
+
+        if (this.state.status === 'PLAYING') {
+          if (!wasInGame) {
+            this.switchScreen('game');
+            this.renderBoard();
+            this.showToast(`🎮 게임에 성공적으로 재접속했습니다! (닉네임: ${me ? me.name : '탐험가'})`);
+            sound.playCorrect();
+          }
+          this.renderPawns();
+          this.updateGameUI();
+        } else if (this.screens.lobby.classList.contains('active')) {
+          this.setupLobbyView(true);
+        }
+        break;
+
+      // 4. 게임 시작
+      case 'START_GAME':
+        this.state = payload.state;
+        const meStart = this.state.players.find(p => p.peerId === this.network.myId);
+        if (meStart) {
+          this.myPlayerId = meStart.id;
+        }
+        this.switchScreen('game');
+        this.renderBoard();
+        this.updateGameUI();
+        this.addLog('온라인 탐험이 시작되었습니다! 행운을 빕니다.', 'system');
+        sound.playCorrect();
+        break;
+
+      // 5. 플레이어 퇴장 또는 일시 접속 끊김
+      case 'PLAYER_LEAVE':
+        if (this.isHost()) {
+          if (this.state.status === 'PLAYING') {
+            // 게임 진행 중일 때는 플레이어 슬롯과 진행 상태(말 위치, 점령 현황 등)를 영구 보존하여 재접속 가능하게 유지
+            const target = this.state.players.find(p => p.peerId === senderId);
+            if (target) {
+              this.addLog(`⚠️ [${target.name}] 님의 연결이 일시 중단되었습니다. (동일 닉네임으로 언제든 재접속 가능)`, 'system');
+              this.showToast(`${target.name}님의 연결이 일시 중단되었습니다.`);
+            }
+            this.broadcastState();
+          } else {
+            this.state.players = this.state.players.filter(p => p.peerId !== senderId);
+            this.renderLobbySlots();
+            this.broadcastState();
+            this.showToast('참가자 한 명이 방을 나갔습니다.');
+          }
+        }
+        break;
+
+      // 입장 거부 알림
+      case 'JOIN_DENIED':
+        alert(payload.message || '방에 입장할 수 없습니다.');
+        this.leaveRoom();
+        break;
+
+      // 6. 주사위 굴림 동기화 (모든 참여자 화면 동시 회전 및 이동)
+      case 'DICE_ROLLED':
+        this.state.turnIndex = payload.playerIndex;
+        this.animateDiceRoll(payload.diceNum, payload.playerIndex, () => {
+          this.movePawn(payload.playerIndex, payload.steps);
+        });
+        break;
+
+      // 7. 세계여행 워프 이동 동기화
+      case 'WORLD_TRAVEL_MOVE':
+        this.teleportPawn(payload.playerIndex, payload.targetCellIndex);
+        break;
+
+      // 8. 퀴즈/카드 답안 결과 동기화
+      case 'SUBMIT_ANSWER':
+        this.handleRemoteSubmitAnswer(payload);
+        break;
+
+      // 9. 다음 턴 전환 동기화
+      case 'ADVANCE_TURN':
+        this.closeModal(this.modalQuiz);
+        this.closeModal(this.modalCard);
+        this.closeModal(this.modalSpecial);
+        this.state.worldTravelPending = false;
+        this.state.isRolling = false;
+        this.state.turnIndex = payload.turnIndex;
+        this.state.round = payload.round;
+        if (payload.players) {
+          this.state.players = payload.players;
+        }
+        if (payload.cells) {
+          this.state.cells = payload.cells;
+        }
+        
+        this.renderPawns();
+        this.updateGameUI();
+
+        const nextPlayer = this.state.players[this.state.turnIndex];
+        const nextProf = nextPlayer ? (PLAYER_PROFILES[nextPlayer.charId] || PLAYER_PROFILES[0]) : null;
+        
+        if (this.isMyTurn()) {
+          sound.playItemGet();
+          if (nextPlayer && nextPlayer.isIslandSkip) {
+            this.showToast(`🏝️ 무인도에 조난 중입니다! [무인도 1턴 쉬기] 버튼을 눌러 차례를 넘기세요.`);
+          } else {
+            this.showToast(`🔔 나의 차례입니다! [주사위 굴리기] 버튼을 눌러 이동하세요! 🎲`);
+          }
+        } else {
+          this.addLog(`👉 다음 차례: ${nextPlayer ? nextPlayer.name : '플레이어'}님`, 'normal');
+        }
+
+        if (this.isHost()) {
+          this.broadcastState();
+        }
+        break;
+
+      // 10. 재시작
+      case 'RESTART_GAME':
+        this.resetGameState();
+        break;
+    }
+  }
+
+  broadcastState() {
+    if (!this.isHost()) return;
+    this.network.send('SYNC_STATE', { state: this.state });
+  }
+
+  startOnlineGame() {
+    if (!this.isHost()) return;
+    this.state.status = 'PLAYING';
+    this.state.turnIndex = 0;
+    this.state.round = 1;
+    this.state.cells.forEach(c => c.ownerId = null);
+    this.state.players.forEach(p => {
+      p.position = 0;
+      p.conqueredCount = 0;
+      p.hintKeys = 1;
+      p.isIslandSkip = false;
+    });
+
+    if (this.network) {
+      this.network.updateHostingInfo({
+        status: 'PLAYING',
+        playerCount: this.state.players.length
+      });
+    }
+
+    this.network.send('START_GAME', { state: this.state });
+    this.switchScreen('game');
+    this.renderBoard();
+    this.updateGameUI();
+    this.addLog('온라인 탐험이 시작되었습니다!', 'system');
+    sound.playCorrect();
+  }
+
+  /* ========================================================================
+     LOCAL PASS & PLAY MODE SETUP
+     ======================================================================== */
+  setupLocalView(count) {
+    const container = document.getElementById('local-players-inputs');
+    container.innerHTML = '';
+    
+    for (let i = 0; i < count; i++) {
+      const prof = PLAYER_PROFILES[i];
+      const row = document.createElement('div');
+      row.className = 'local-player-row';
+      row.innerHTML = `
+        <span style="font-size: 1.5rem;">${prof.avatar}</span>
+        <strong style="color: ${prof.colorHex}; min-width: 60px;">${prof.colorName} (${i + 1}P)</strong>
+        <input type="text" id="local-nick-${i}" value="${prof.name}" maxlength="8" placeholder="이름 입력">
+      `;
+      container.appendChild(row);
+    }
+  }
+
+  startLocalGame() {
+    this.mode = 'LOCAL';
+    const activeCountBtn = document.querySelector('.btn-count.active');
+    const count = parseInt(activeCountBtn ? activeCountBtn.dataset.count : 3, 10);
+
+    this.state.status = 'PLAYING';
+    this.state.turnIndex = 0;
+    this.state.round = 1;
+    this.state.players = [];
+    this.state.cells = JSON.parse(JSON.stringify(BOARD_CELLS)).map(c => ({ ...c, ownerId: null }));
+
+    for (let i = 0; i < count; i++) {
+      const input = document.getElementById(`local-nick-${i}`);
+      const name = input && input.value.trim() ? input.value.trim() : PLAYER_PROFILES[i].name;
+      this.state.players.push({
+        id: i,
+        name: name,
+        charId: i,
+        position: 0,
+        conqueredCount: 0,
+        hintKeys: 1,
+        isIslandSkip: false
+      });
+    }
+
+    this.switchScreen('game');
+    this.renderBoard();
+    this.updateGameUI();
+    this.addLog('로컬 탐험이 시작되었습니다! 주사위를 굴려보세요.', 'system');
+    sound.playCorrect();
+  }
+
+  /* ========================================================================
+     BOARD RENDERING & PAWN MOVEMENT
+     ======================================================================== */
+  renderBoard() {
+    this.boardCellsGrid.innerHTML = '';
+
+    this.state.cells.forEach(cell => {
+      const cellElem = document.createElement('div');
+      let extraClass = '';
+      if (cell.type === 'start') extraClass = 'cell-start';
+      else if (cell.type === 'world_travel' || cell.type === 'desert_island' || cell.type === 'hint_key') extraClass = 'cell-special';
+      else if (cell.type.includes('card')) extraClass = 'cell-card';
+
+      cellElem.className = `board-cell cell-pos-${cell.index} ${extraClass}`;
+      cellElem.id = `board-cell-${cell.index}`;
+
+      const trackArrow = this.getTrackDirectionIcon(cell.index);
+
+      cellElem.innerHTML = `
+        <div class="cell-bg-art" style="background-image: url('assets/board/cells/cell_${cell.index}.jpg');"></div>
+        <div class="cell-overlay"></div>
+        <div class="cell-track-lane"></div>
+        <div class="cell-content">
+          <div class="cell-top-bar">
+            <span class="cell-badge">${cell.badge}</span>
+            <span class="track-direction-arrow">${trackArrow}</span>
+            <span class="cell-icon">${cell.type === 'start' ? '🏁' : (cell.type.includes('card') ? '🎴' : (cell.type === 'world_travel' ? '✈️' : (cell.type === 'desert_island' ? '🏝️' : (cell.type === 'hint_key' ? '🔑' : '❓'))))}</span>
+          </div>
+          <div class="cell-title-box">
+            <div class="cell-title">${cell.title}</div>
+          </div>
+          <div class="cell-owner-tag" id="cell-owner-${cell.index}">🚩 점령</div>
+        </div>
+      `;
+
+      if (cell.ownerId !== null) {
+        const owner = this.state.players.find(p => p.id === cell.ownerId);
+        if (owner) {
+          const prof = PLAYER_PROFILES[owner.charId] || PLAYER_PROFILES[0];
+          cellElem.classList.add('conquered');
+          cellElem.style.borderColor = prof.colorHex;
+          cellElem.style.boxShadow = `inset 0 0 14px ${prof.glowHex}, 0 0 14px ${prof.glowHex}`;
+          const tagElem = cellElem.querySelector('.cell-owner-tag');
+          if (tagElem) {
+            tagElem.textContent = `🚩 ${owner.name}`;
+            tagElem.style.backgroundColor = prof.colorHex;
+          }
+        }
+      }
+
+      cellElem.addEventListener('click', () => {
+        if (this.state.worldTravelPending && this.isMyTurn()) {
+          this.handleWorldTravelSelect(cell.index);
+        }
+      });
+
+      this.boardCellsGrid.appendChild(cellElem);
+    });
+
+    this.renderPawns();
+  }
+
+  getTrackDirectionIcon(index) {
+    if (index === 0) return '🏁';
+    if (index >= 1 && index <= 4) return '➔';
+    if (index === 5) return '⤵';
+    if (index >= 6 && index <= 9) return '⬇';
+    if (index === 10) return '↙';
+    if (index >= 11 && index <= 14) return '⬅';
+    if (index === 15) return '↖';
+    if (index >= 16 && index <= 19) return '⬆';
+    return '➔';
+  }
+
+  renderPawns() {
+    this.pawnsLayer.innerHTML = '';
+    this.state.players.forEach((player) => {
+      const prof = PLAYER_PROFILES[player.charId] || PLAYER_PROFILES[0];
+      const pawn = document.createElement('div');
+      pawn.className = 'pawn-piece';
+      pawn.id = `pawn-player-${player.id}`;
+      pawn.style.backgroundColor = prof.colorHex;
+      pawn.style.boxShadow = `0 0 12px ${prof.glowHex}`;
+      pawn.innerHTML = `<span>${prof.avatar}</span>`;
+      this.pawnsLayer.appendChild(pawn);
+      this.updatePawnPosition(player.id, player.position);
+    });
+  }
+
+  updatePawnPosition(playerId, cellIndex) {
+    const pawn = document.getElementById(`pawn-player-${playerId}`);
+    const cell = document.getElementById(`board-cell-${cellIndex}`);
+    if (!pawn || !cell || !this.pawnsLayer) return;
+
+    const cellRect = cell.getBoundingClientRect();
+    const layerRect = this.pawnsLayer.getBoundingClientRect();
+
+    const playersInCell = this.state.players.filter(p => p.position === cellIndex);
+    const orderIndex = playersInCell.findIndex(p => p.id === playerId);
+    const totalInCell = playersInCell.length;
+
+    let offsetX = 0;
+    let offsetY = 0;
+    if (totalInCell > 1) {
+      const angles = [0, Math.PI, Math.PI / 2, (3 * Math.PI) / 2];
+      const radius = 12;
+      offsetX = Math.cos(angles[orderIndex % 4]) * radius;
+      offsetY = Math.sin(angles[orderIndex % 4]) * radius;
+    }
+
+    const centerX = cellRect.left - layerRect.left + cellRect.width / 2 + offsetX;
+    const centerY = cellRect.top - layerRect.top + cellRect.height / 2 + offsetY;
+
+    pawn.style.left = `${centerX}px`;
+    pawn.style.top = `${centerY}px`;
+  }
+
+  // 캐릭터가 이동하거나 서 있는 카드 확대 및 강조 하이라이트
+  highlightActiveCell(cellIndex, isArrival = false) {
+    document.querySelectorAll('.board-cell').forEach(c => {
+      c.classList.remove('cell-active-step', 'cell-arrival-sparkle');
+    });
+    const targetCell = document.getElementById(`board-cell-${cellIndex}`);
+    if (targetCell) {
+      targetCell.classList.add(isArrival ? 'cell-arrival-sparkle' : 'cell-active-step');
+    }
+  }
+
+  isMyTurn() {
+    if (this.mode === 'LOCAL') return true;
+    const currPlayer = this.state.players[this.state.turnIndex];
+    return currPlayer && currPlayer.id === this.myPlayerId;
+  }
+
+  handleRollDice() {
+    if (this.state.isRolling) return;
+    if (!this.isMyTurn()) {
+      this.showToast('상대방의 턴입니다!');
+      return;
+    }
+
+    const currPlayer = this.state.players[this.state.turnIndex];
+
+    if (currPlayer.isIslandSkip) {
+      currPlayer.isIslandSkip = false;
+      this.addLog(`🏝️ ${currPlayer.name}님이 무인도에서 1턴을 쉬며 탈출 준비를 마쳤습니다. (다음 차례부터 주사위 이동)`, 'wrong');
+      sound.playWrong();
+      this.showToast(`${currPlayer.name}님이 무인도에서 1턴을 쉬어갔습니다. 다음 차례부터 정상 이동합니다!`);
+      this.advanceTurn();
+      return;
+    }
+
+    const diceNum = Math.floor(Math.random() * 6) + 1;
+    this.state.lastDice = diceNum;
+
+    if (this.mode === 'ONLINE') {
+      this.network.send('DICE_ROLLED', { diceNum, playerIndex: this.state.turnIndex, steps: diceNum });
+    }
+
+    this.animateDiceRoll(diceNum, this.state.turnIndex, () => {
+      this.movePawn(this.state.turnIndex, diceNum);
+    });
+  }
+
+  animateDiceRoll(targetNum, playerIdx, callback) {
+    this.state.isRolling = true;
+    this.btnRollDice.disabled = true;
+    this.diceCube.classList.add('rolling');
+    sound.playDiceRoll();
+
+    setTimeout(() => {
+      this.diceCube.classList.remove('rolling');
+      this.diceCube.dataset.face = targetNum;
+      this.diceResultText.textContent = `주사위: ${targetNum}칸 전진!`;
+      this.state.isRolling = false;
+      if (callback) callback();
+    }, 900);
+  }
+
+  movePawn(playerIdx, steps) {
+    const player = this.state.players[playerIdx];
+    if (!player) return;
+    let remainingSteps = steps;
+    const pawn = document.getElementById(`pawn-player-${player.id}`);
+    if (pawn) pawn.classList.add('jumping');
+
+    const stepInterval = setInterval(() => {
+      if (remainingSteps <= 0) {
+        clearInterval(stepInterval);
+        if (pawn) pawn.classList.remove('jumping');
+        this.highlightActiveCell(player.position, true);
+        setTimeout(() => {
+          this.handleCellArrival(playerIdx, player.position);
+        }, 320);
+        return;
+      }
+
+      player.position = (player.position + 1) % this.state.cells.length;
+      sound.playStep();
+      this.updatePawnPosition(player.id, player.position);
+      this.highlightActiveCell(player.position, false);
+      remainingSteps--;
+    }, 320);
+  }
+
+  teleportPawn(playerIdx, targetCellIndex) {
+    const player = this.state.players[playerIdx];
+    if (!player) return;
+    player.position = targetCellIndex;
+    sound.playVictory();
+    this.updatePawnPosition(player.id, player.position);
+    this.addLog(`✈️ ${player.name}님이 세계여행 찬스로 [${this.state.cells[targetCellIndex].title}] 칸으로 즉시 이동했습니다!`, 'correct');
+    this.state.worldTravelPending = false;
+    this.handleCellArrival(playerIdx, targetCellIndex);
+  }
+
+  /* ========================================================================
+     CELL ARRIVAL & EVENT HANDLING (Quiz / Cards / Special)
+     ======================================================================== */
+  handleCellArrival(playerIdx, cellIndex) {
+    const cell = this.state.cells[cellIndex];
+    const player = this.state.players[playerIdx];
+    if (!player || !cell) return;
+
+    this.addLog(`📍 ${player.name}님이 [${cell.title}] 칸에 도착했습니다.`);
+
+    const isCurrentPlayer = (this.mode === 'LOCAL') || (player.id === this.myPlayerId);
+
+    // 1. 출발선
+    if (cell.type === 'start') {
+      player.hintKeys = (player.hintKeys || 0) + 1;
+      sound.playItemGet();
+      this.showToast('출발선을 통과하여 황금 열쇠 1개를 보너스로 획득했습니다! 🔑');
+      if (isCurrentPlayer) this.advanceTurn();
+      return;
+    }
+
+    // 2. 무인도
+    if (cell.type === 'desert_island') {
+      player.isIslandSkip = true;
+      sound.playWrong();
+      if (isCurrentPlayer) {
+        this.openSpecialModal('🏝️ 무인도 조난!', `${player.name}님이 무인도에 표류되었습니다. 다음 차례 1회 휴식합니다!`, () => {
+          this.advanceTurn();
+        });
+      }
+      return;
+    }
+
+    // 3. 힌트 열쇠
+    if (cell.type === 'hint_key') {
+      player.hintKeys = (player.hintKeys || 0) + 1;
+      sound.playItemGet();
+      if (isCurrentPlayer) {
+        this.openSpecialModal('🔑 힌트 열쇠 획득!', `황금 열쇠를 얻었습니다! 퀴즈 풀이 시 50:50 찬스(오답 2개 제거)를 사용할 수 있습니다.`, () => {
+          this.advanceTurn();
+        });
+      }
+      return;
+    }
+
+    // 4. 세계여행
+    if (cell.type === 'world_travel') {
+      sound.playItemGet();
+      if (isCurrentPlayer) {
+        this.openSpecialModal('✈️ 세계여행 찬스!', `축하합니다! 지금 보드판에서 원하는 칸을 직접 클릭하여 즉시 날아갈 수 있습니다!`, () => {
+          this.state.worldTravelPending = true;
+          this.showToast('보드판에서 가고 싶은 칸을 클릭하세요! ✈️');
+        });
+      }
+      return;
+    }
+
+    // 5. 이미 점령된 칸
+    if (cell.ownerId !== null) {
+      const owner = this.state.players.find(p => p.id === cell.ownerId);
+      const ownerName = owner ? owner.name : '다른 플레이어';
+      this.addLog(`이미 ${ownerName}님이 점령한 칸입니다. 다음 턴으로 넘어갑니다.`);
+      if (isCurrentPlayer) this.advanceTurn();
+      return;
+    }
+
+    // 6. 지형/기후 카드 미션
+    if (cell.type === 'terrain_card' || cell.type === 'climate_card') {
+      if (isCurrentPlayer) {
+        this.openCardModal(cell.type, playerIdx, cellIndex);
+      } else {
+        this.showToast(`${player.name}님이 ${cell.title} 미션을 풀고 있습니다... 🎴`);
+      }
+      return;
+    }
+
+    // 7. 일반 퀴즈
+    if (cell.type === 'quiz') {
+      if (isCurrentPlayer) {
+        this.openQuizModal(cell, playerIdx, cellIndex);
+      } else {
+        this.showToast(`${player.name}님이 ${cell.title} 퀴즈를 풀고 있습니다... ❓`);
+      }
+    }
+  }
+
+  handleWorldTravelSelect(targetIndex) {
+    if (this.mode === 'ONLINE') {
+      this.network.send('WORLD_TRAVEL_MOVE', { playerIndex: this.state.turnIndex, targetCellIndex: targetIndex });
+    }
+    this.teleportPawn(this.state.turnIndex, targetIndex);
+  }
+
+  openSpecialModal(title, desc, onConfirm) {
+    document.getElementById('special-title').textContent = title;
+    document.getElementById('special-desc').textContent = desc;
+    this.openModal(this.modalSpecial);
+
+    const btn = document.getElementById('btn-special-confirm');
+    const handler = () => {
+      btn.removeEventListener('click', handler);
+      this.closeModal(this.modalSpecial);
+      if (onConfirm) onConfirm();
+    };
+    btn.addEventListener('click', handler);
+  }
+
+  /* ========================================================================
+     QUIZ MODAL HANDLING
+     ======================================================================== */
+  openQuizModal(cell, playerIdx, cellIndex) {
+    const player = this.state.players[playerIdx];
+    this.state.activeQuiz = { cell, playerIdx, cellIndex };
+
+    document.getElementById('quiz-cell-badge').textContent = cell.category;
+    document.getElementById('quiz-cell-region').textContent = cell.region;
+    document.getElementById('quiz-cell-title').textContent = cell.title;
+    document.getElementById('quiz-question-text').textContent = cell.question;
+
+    const userHintCount = document.getElementById('user-hint-keys-count');
+    userHintCount.textContent = player.hintKeys || 0;
+
+    const btnUseHint = document.getElementById('btn-use-hint-key');
+    btnUseHint.disabled = !player.hintKeys || player.hintKeys <= 0;
+    btnUseHint.onclick = () => this.useHintKeyInQuiz(cell);
+
+    const optionsContainer = document.getElementById('quiz-options-container');
+    optionsContainer.innerHTML = '';
+
+    const feedbackBox = document.getElementById('quiz-feedback-box');
+    feedbackBox.classList.add('hidden');
+
+    cell.options.forEach((optText, optIdx) => {
+      const optBtn = document.createElement('button');
+      optBtn.className = 'quiz-opt-btn';
+      optBtn.id = `quiz-opt-${optIdx}`;
+      optBtn.innerHTML = `<strong>${optIdx + 1}.</strong> <span>${optText}</span>`;
+
+      optBtn.addEventListener('click', () => {
+        this.submitQuizAnswer(optIdx, cell, playerIdx, cellIndex);
+      });
+
+      optionsContainer.appendChild(optBtn);
+    });
+
+    this.openModal(this.modalQuiz);
+  }
+
+  useHintKeyInQuiz(cell) {
+    const player = this.state.players[this.state.turnIndex];
+    if (!player.hintKeys || player.hintKeys <= 0) return;
+
+    player.hintKeys--;
+    document.getElementById('user-hint-keys-count').textContent = player.hintKeys;
+    document.getElementById('btn-use-hint-key').disabled = true;
+
+    sound.playItemGet();
+    this.showToast('50:50 힌트 열쇠 찬스! 오답 2개가 사라집니다.');
+
+    const wrongIndices = cell.options.map((_, idx) => idx).filter(idx => idx !== cell.answerIndex);
+    wrongIndices.sort(() => Math.random() - 0.5);
+    const toDisable = wrongIndices.slice(0, 2);
+
+    toDisable.forEach(idx => {
+      const btn = document.getElementById(`quiz-opt-${idx}`);
+      if (btn) btn.classList.add('disabled');
+    });
+  }
+
+  submitQuizAnswer(chosenIdx, cell, playerIdx, cellIndex) {
+    const isCorrect = chosenIdx === cell.answerIndex;
+    const player = this.state.players[playerIdx];
+
+    const optBtn = document.getElementById(`quiz-opt-${chosenIdx}`);
+    if (isCorrect) {
+      if (optBtn) optBtn.classList.add('correct');
+      sound.playCorrect();
+      this.claimCell(playerIdx, cellIndex);
+      this.addLog(`🎉 ${player.name}님이 [${cell.title}] 퀴즈를 맞혀 칸을 점령했습니다!`, 'correct');
+    } else {
+      if (optBtn) optBtn.classList.add('wrong');
+      const correctBtn = document.getElementById(`quiz-opt-${cell.answerIndex}`);
+      if (correctBtn) correctBtn.classList.add('correct');
+      sound.playWrong();
+      this.addLog(`❌ ${player.name}님이 아쉽게 오답을 선택했습니다. (정답: ${cell.options[cell.answerIndex]})`, 'wrong');
+    }
+
+    document.querySelectorAll('.quiz-opt-btn').forEach(btn => btn.style.pointerEvents = 'none');
+
+    const feedbackBox = document.getElementById('quiz-feedback-box');
+    const feedbackIcon = document.getElementById('feedback-icon');
+    const feedbackTitle = document.getElementById('feedback-title');
+    const feedbackDesc = document.getElementById('feedback-desc');
+
+    feedbackIcon.textContent = isCorrect ? '🎉' : '💡';
+    feedbackTitle.textContent = isCorrect ? '정답입니다! 칸을 점령했습니다.' : `아쉽네요! 정답은 '${cell.options[cell.answerIndex]}'입니다.`;
+    feedbackDesc.textContent = cell.explanation;
+    feedbackBox.classList.remove('hidden');
+
+    // 온라인 멀티 동기화 전송
+    if (this.mode === 'ONLINE') {
+      this.network.send('SUBMIT_ANSWER', {
+        type: 'QUIZ',
+        isCorrect,
+        chosenIdx,
+        playerIdx,
+        cellIndex,
+        explanation: cell.explanation
+      });
+    }
+
+    const btnConfirm = document.getElementById('btn-quiz-confirm');
+    let autoTimer = null;
+    let countdown = 3;
+    btnConfirm.textContent = `다음으로 진행 ➔ (${countdown}초)`;
+
+    autoTimer = setInterval(() => {
+      countdown--;
+      if (countdown <= 0) {
+        clearInterval(autoTimer);
+        this.closeModal(this.modalQuiz);
+        this.advanceTurn();
+      } else {
+        btnConfirm.textContent = `다음으로 진행 ➔ (${countdown}초)`;
+      }
+    }, 1000);
+
+    btnConfirm.onclick = () => {
+      if (autoTimer) clearInterval(autoTimer);
+      this.closeModal(this.modalQuiz);
+      this.advanceTurn();
+    };
+  }
+
+  /* ========================================================================
+     CARD MISSION MODAL HANDLING
+     ======================================================================== */
+  openCardModal(cardType, playerIdx, cellIndex) {
+    const isClimate = cardType === 'climate_card';
+    const cardList = isClimate ? CLIMATE_CARDS : TERRAIN_CARDS;
+    const cardData = cardList[Math.floor(Math.random() * cardList.length)];
+    this.state.activeCard = { cardData, cardType, playerIdx, cellIndex };
+
+    const typeBadge = document.getElementById('card-type-badge');
+    typeBadge.textContent = isClimate ? '☀️ 기후 카드 미션' : '🏔️ 지형 카드 미션';
+    typeBadge.style.background = isClimate ? 'rgba(245, 158, 11, 0.3)' : 'rgba(16, 185, 129, 0.3)';
+
+    const photoImg = document.getElementById('card-photo-img');
+    photoImg.src = cardData.image;
+
+    const flipper = document.getElementById('card-inner');
+    flipper.classList.remove('flipped');
+
+    setTimeout(() => {
+      flipper.classList.add('flipped');
+      sound.playCardFlip();
+    }, 400);
+
+    const feedbackBox = document.getElementById('card-feedback-box');
+    feedbackBox.classList.add('hidden');
+
+    const optionsContainer = document.getElementById('card-options-container');
+    optionsContainer.innerHTML = '';
+
+    cardData.options.forEach((optText, optIdx) => {
+      const optBtn = document.createElement('button');
+      optBtn.className = 'quiz-opt-btn';
+      optBtn.id = `card-opt-${optIdx}`;
+      optBtn.innerHTML = `<strong>${optIdx + 1}.</strong> <span>${optText}</span>`;
+
+      optBtn.addEventListener('click', () => {
+        this.submitCardAnswer(optIdx, cardData, playerIdx, cellIndex);
+      });
+
+      optionsContainer.appendChild(optBtn);
+    });
+
+    this.openModal(this.modalCard);
+  }
+
+  submitCardAnswer(chosenIdx, cardData, playerIdx, cellIndex) {
+    const isCorrect = chosenIdx === cardData.answerIndex;
+    const player = this.state.players[playerIdx];
+
+    const optBtn = document.getElementById(`card-opt-${chosenIdx}`);
+    if (isCorrect) {
+      if (optBtn) optBtn.classList.add('correct');
+      sound.playCorrect();
+      this.claimCell(playerIdx, cellIndex);
+      this.addLog(`🌟 ${player.name}님이 [${cardData.name}] 카드 미션을 맞혀 점령했습니다!`, 'correct');
+    } else {
+      if (optBtn) optBtn.classList.add('wrong');
+      const correctBtn = document.getElementById(`card-opt-${cardData.answerIndex}`);
+      if (correctBtn) correctBtn.classList.add('correct');
+      sound.playWrong();
+      this.addLog(`❌ ${player.name}님이 카드 미션 오답을 선택했습니다. (정답: ${cardData.name})`, 'wrong');
+    }
+
+    document.querySelectorAll('#card-options-container .quiz-opt-btn').forEach(btn => btn.style.pointerEvents = 'none');
+
+    const feedbackBox = document.getElementById('card-feedback-box');
+    const feedbackTitle = document.getElementById('card-feedback-title');
+    const feedbackDesc = document.getElementById('card-feedback-desc');
+
+    feedbackTitle.textContent = isCorrect ? '정답입니다! 카드 칸을 점령했습니다.' : `정답은 '${cardData.name}'입니다.`;
+    feedbackDesc.textContent = cardData.description;
+    feedbackBox.classList.remove('hidden');
+
+    if (this.mode === 'ONLINE') {
+      this.network.send('SUBMIT_ANSWER', {
+        type: 'CARD',
+        isCorrect,
+        chosenIdx,
+        playerIdx,
+        cellIndex,
+        description: cardData.description
+      });
+    }
+
+    const btnConfirm = document.getElementById('btn-card-confirm');
+    let autoCardTimer = null;
+    let cardCountdown = 3;
+    btnConfirm.textContent = `다음으로 진행 ➔ (${cardCountdown}초)`;
+
+    autoCardTimer = setInterval(() => {
+      cardCountdown--;
+      if (cardCountdown <= 0) {
+        clearInterval(autoCardTimer);
+        this.closeModal(this.modalCard);
+        this.advanceTurn();
+      } else {
+        btnConfirm.textContent = `다음으로 진행 ➔ (${cardCountdown}초)`;
+      }
+    }, 1000);
+
+    btnConfirm.onclick = () => {
+      if (autoCardTimer) clearInterval(autoCardTimer);
+      this.closeModal(this.modalCard);
+      this.advanceTurn();
+    };
+  }
+
+  // 타 플레이어의 답안 제출 결과 반영
+  handleRemoteSubmitAnswer(payload) {
+    const player = this.state.players[payload.playerIdx];
+    const cell = this.state.cells[payload.cellIndex];
+
+    if (payload.isCorrect) {
+      sound.playCorrect();
+      this.claimCell(payload.playerIdx, payload.cellIndex);
+      this.addLog(`🎉 ${player ? player.name : '플레이어'}님이 [${cell.title}] 문제를 맞혀 점령했습니다!`, 'correct');
+    } else {
+      sound.playWrong();
+      this.addLog(`❌ ${player ? player.name : '플레이어'}님이 아쉽게 문제를 틀렸습니다.`, 'wrong');
+    }
+  }
+
+  // 칸 점령 공통 처리
+  claimCell(playerIdx, cellIndex) {
+    const player = this.state.players[playerIdx];
+    const cell = this.state.cells[cellIndex];
+    if (!player || !cell) return;
+    const prof = PLAYER_PROFILES[player.charId] || PLAYER_PROFILES[0];
+
+    cell.ownerId = player.id;
+    player.conqueredCount = (player.conqueredCount || 0) + 1;
+
+    const cellElem = document.getElementById(`board-cell-${cellIndex}`);
+    const tagElem = document.getElementById(`cell-owner-${cellIndex}`);
+    if (cellElem && tagElem) {
+      cellElem.classList.add('conquered');
+      cellElem.style.borderColor = prof.colorHex;
+      cellElem.style.boxShadow = `inset 0 0 14px ${prof.glowHex}`;
+      tagElem.textContent = `🚩 ${player.name}`;
+      tagElem.style.backgroundColor = prof.colorHex;
+    }
+
+    this.updateGameUI();
+    this.checkGameVictory();
+  }
+
+  // 턴 전환 (온라인/로컬 완벽 동기화)
+  advanceTurn() {
+    const nextTurn = (this.state.turnIndex + 1) % this.state.players.length;
+    let nextRound = this.state.round;
+    if (nextTurn === 0) {
+      nextRound++;
+    }
+
+    this.state.turnIndex = nextTurn;
+    this.state.round = nextRound;
+
+    this.updateGameUI();
+
+    if (this.mode === 'ONLINE') {
+      this.network.send('ADVANCE_TURN', { 
+        turnIndex: nextTurn, 
+        round: nextRound,
+        players: this.state.players,
+        cells: this.state.cells
+      });
+      if (this.isHost()) {
+        this.broadcastState();
+      }
+    }
+  }
+
+  updateGameUI() {
+    const currPlayer = this.state.players[this.state.turnIndex];
+    if (!currPlayer) return;
+
+    const prof = PLAYER_PROFILES[currPlayer.charId] || PLAYER_PROFILES[0];
+
+    // 현재 턴인 플레이어가 서 있는 카드를 육상 트랙 포커스로 확대 강조
+    document.querySelectorAll('.board-cell').forEach(c => {
+      c.classList.remove('cell-turn-focus');
+    });
+    const currentCell = document.getElementById(`board-cell-${currPlayer.position}`);
+    if (currentCell && !this.state.isRolling) {
+      currentCell.classList.add('cell-turn-focus');
+    }
+
+    // 상단 턴 배너
+    this.turnPlayerName.textContent = currPlayer.name;
+    this.turnPlayerName.style.color = prof.colorHex;
+    this.turnDot.style.backgroundColor = prof.colorHex;
+    this.turnDot.style.boxShadow = `0 0 10px ${prof.colorHex}`;
+    this.gameRoundTag.textContent = `${this.state.round} 라운드`;
+    this.gameModeTag.textContent = this.mode === 'ONLINE' ? '온라인 멀티' : '로컬 1기기';
+
+    // 주사위 버튼 활성화 제어
+    const canRoll = this.isMyTurn() && !this.state.isRolling;
+    this.btnRollDice.disabled = !canRoll;
+    this.btnRollDice.style.opacity = canRoll ? '1' : '0.5';
+
+    if (currPlayer.isIslandSkip) {
+      this.btnRollDice.textContent = '무인도 1턴 쉬기 🏝️';
+      this.btnRollDice.classList.add('btn-warning-action');
+      this.diceHintText.textContent = canRoll 
+        ? '무인도에 조난되었습니다! 버튼을 눌러 1턴 쉬고 탈출을 준비하세요. 🏝️' 
+        : `${currPlayer.name}님이 무인도에서 휴식 중... 🏝️`;
+    } else {
+      this.btnRollDice.textContent = '주사위 굴리기 🎲';
+      this.btnRollDice.classList.remove('btn-warning-action');
+      this.diceHintText.textContent = canRoll 
+        ? '지금 주사위를 굴릴 수 있습니다! 🎲' 
+        : `${currPlayer.name}님의 차례 진행 중...`;
+    }
+
+    const diceWidget = document.querySelector('.dice-widget');
+    if (diceWidget) {
+      diceWidget.classList.toggle('my-turn-active', canRoll);
+    }
+
+    // 좌측 플레이어 카드 패널
+    this.playersPanel.innerHTML = '';
+    this.state.players.forEach((p, idx) => {
+      const pProf = PLAYER_PROFILES[p.charId] || PLAYER_PROFILES[0];
+      const isTurn = idx === this.state.turnIndex;
+
+      const card = document.createElement('div');
+      card.className = `player-card ${isTurn ? 'active-turn' : ''}`;
+      card.style.setProperty('--card-color', pProf.colorHex);
+      card.style.setProperty('--card-glow', pProf.glowHex);
+
+      card.innerHTML = `
+        <div class="player-card-header">
+          <div class="card-avatar">${pProf.avatar}</div>
+          <div class="card-names">
+            <div class="card-player-name">${p.name} ${this.mode === 'ONLINE' && p.id === this.myPlayerId ? '(나)' : ''}</div>
+            <div class="card-player-role" style="color: ${pProf.colorHex}">${pProf.role}</div>
+          </div>
+        </div>
+        <div class="card-stats-row">
+          <div class="stat-item">점령: <strong>${p.conqueredCount || 0}칸</strong></div>
+          <div class="stat-item">열쇠: <strong>${p.hintKeys || 0}개</strong></div>
+        </div>
+        ${p.isIslandSkip ? '<span class="island-status-badge">🏝️ 무인도 1회 휴식</span>' : ''}
+      `;
+
+      this.playersPanel.appendChild(card);
+    });
+
+    // 점령 프로그레스 바
+    const conquerableCells = this.state.cells.filter(c => c.type === 'quiz' || c.type.includes('card'));
+    const totalConquered = conquerableCells.filter(c => c.ownerId !== null).length;
+    this.conquestRatio.textContent = `${totalConquered} / ${conquerableCells.length}`;
+
+    this.conquestProgressBar.innerHTML = '';
+    this.state.players.forEach(p => {
+      const pProf = PLAYER_PROFILES[p.charId] || PLAYER_PROFILES[0];
+      const count = p.conqueredCount || 0;
+      if (count > 0) {
+        const seg = document.createElement('div');
+        seg.style.height = '100%';
+        seg.style.width = `${(count / conquerableCells.length) * 100}%`;
+        seg.style.backgroundColor = pProf.colorHex;
+        this.conquestProgressBar.appendChild(seg);
+      }
+    });
+  }
+
+  checkGameVictory() {
+    const conquerableCells = this.state.cells.filter(c => c.type === 'quiz' || c.type.includes('card'));
+    const allConquered = conquerableCells.every(c => c.ownerId !== null);
+
+    if (allConquered || this.state.round > 15) {
+      this.triggerGameOver();
+    }
+  }
+
+  triggerGameOver() {
+    this.state.status = 'GAMEOVER';
+    sound.playVictory();
+
+    if (window.confetti) {
+      window.confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+    }
+
+    const sorted = [...this.state.players].sort((a, b) => (b.conqueredCount || 0) - (a.conqueredCount || 0));
+
+    const podium = document.getElementById('victory-podium');
+    podium.innerHTML = '';
+
+    const podiumOrder = sorted.length >= 3 ? [sorted[1], sorted[0], sorted[2]] : sorted;
+    const rankLabels = sorted.length >= 3 ? [2, 1, 3] : [1, 2];
+
+    podiumOrder.forEach((player, i) => {
+      if (!player) return;
+      const rank = rankLabels[i];
+      const prof = PLAYER_PROFILES[player.charId] || PLAYER_PROFILES[0];
+      const slot = document.createElement('div');
+      slot.className = `podium-slot rank-${rank}`;
+      slot.innerHTML = `
+        <div style="font-size: 2rem;">${prof.avatar}</div>
+        <div class="podium-player" style="color: ${prof.colorHex}">${player.name}</div>
+        <div class="podium-bar">${rank}위</div>
+      `;
+      podium.appendChild(slot);
+    });
+
+    const statsTable = document.getElementById('victory-stats-table');
+    statsTable.innerHTML = '';
+    sorted.forEach((p, idx) => {
+      const prof = PLAYER_PROFILES[p.charId] || PLAYER_PROFILES[0];
+      const row = document.createElement('div');
+      row.className = 'stats-row';
+      row.innerHTML = `
+        <span><strong>${idx + 1}위</strong> ${prof.avatar} ${p.name}</span>
+        <strong style="color: ${prof.colorHex}">${p.conqueredCount || 0}칸 점령</strong>
+      `;
+      statsTable.appendChild(row);
+    });
+
+    this.openModal(this.modalVictory);
+  }
+
+  resetGameState() {
+    this.state.status = 'PLAYING';
+    this.state.round = 1;
+    this.state.turnIndex = 0;
+    this.state.cells.forEach(c => c.ownerId = null);
+    this.state.players.forEach(p => {
+      p.position = 0;
+      p.conqueredCount = 0;
+      p.hintKeys = 1;
+      p.isIslandSkip = false;
+    });
+    this.renderBoard();
+    this.updateGameUI();
+  }
+
+  initGuideModal() {
+    const tabRule = document.getElementById('guide-tab-rule');
+    const tabBoard = document.getElementById('guide-tab-board');
+    const tabTerrain = document.getElementById('guide-tab-terrain');
+    const tabClimate = document.getElementById('guide-tab-climate');
+
+    const paneRule = document.getElementById('guide-content-rule');
+    const paneBoard = document.getElementById('guide-content-board');
+    const paneTerrain = document.getElementById('guide-content-terrain');
+    const paneClimate = document.getElementById('guide-content-climate');
+
+    const setGuideTab = (activeTab, activePane) => {
+      [tabRule, tabBoard, tabTerrain, tabClimate].filter(Boolean).forEach(t => t.classList.remove('active'));
+      [paneRule, paneBoard, paneTerrain, paneClimate].filter(Boolean).forEach(p => p.classList.remove('active'));
+      if (activeTab) activeTab.classList.add('active');
+      if (activePane) activePane.classList.add('active');
+    };
+
+    if (tabRule && paneRule) tabRule.addEventListener('click', () => setGuideTab(tabRule, paneRule));
+    if (tabBoard && paneBoard) tabBoard.addEventListener('click', () => setGuideTab(tabBoard, paneBoard));
+    if (tabTerrain && paneTerrain) tabTerrain.addEventListener('click', () => setGuideTab(tabTerrain, paneTerrain));
+    if (tabClimate && paneClimate) tabClimate.addEventListener('click', () => setGuideTab(tabClimate, paneClimate));
+
+    const btnQuickTextbook = document.getElementById('btn-quick-textbook');
+    if (btnQuickTextbook) {
+      btnQuickTextbook.addEventListener('click', () => {
+        this.openModal(this.modalGuide);
+        setGuideTab(tabBoard, paneBoard);
+      });
+    }
+
+    const terrainGrid = document.getElementById('guide-terrain-grid');
+    terrainGrid.innerHTML = '';
+    TERRAIN_CARDS.forEach(card => {
+      const item = document.createElement('div');
+      item.className = 'card-guide-item';
+      item.innerHTML = `
+        <img src="${card.image}" alt="${card.name}" class="card-guide-img">
+        <div class="card-guide-info">
+          <h5>${card.name}</h5>
+          <p>${card.description}</p>
+        </div>
+      `;
+      terrainGrid.appendChild(item);
+    });
+
+    const climateGrid = document.getElementById('guide-climate-grid');
+    climateGrid.innerHTML = '';
+    CLIMATE_CARDS.forEach(card => {
+      const item = document.createElement('div');
+      item.className = 'card-guide-item';
+      item.innerHTML = `
+        <img src="${card.image}" alt="${card.name}" class="card-guide-img">
+        <div class="card-guide-info">
+          <h5>${card.name}</h5>
+          <p>${card.description}</p>
+        </div>
+      `;
+      climateGrid.appendChild(item);
+    });
+  }
+}
+
+// Start Application
+window.addEventListener('DOMContentLoaded', () => {
+  window.worldGame = new WorldGameApp();
+});

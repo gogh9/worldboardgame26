@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>세계여행 말판놀이 | 세계의 자연환경</title>
+  <meta name="description" content="2~4명이 함께 즐기는 실시간 온라인 세계여행 지리 말판놀이 보드게임입니다.">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <!-- MQTT for Real-time Room Lobby Broadcasting (No API Key needed) -->
+  <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
+  <!-- PeerJS for WebRTC P2P Multiplayer -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <!-- Canvas Confetti for Victory Celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app" class="app-container">
+
+    <!-- 온라인 대기실 및 방 선택 화면 (기본 메인 화면) -->
+    <section id="screen-lobby" class="screen active">
+      <div class="lobby-container glass-panel">
+        <div class="lobby-header">
+          <div class="lobby-title-area">
+            <span class="lobby-logo-icon">🌍</span>
+            <h2>세계여행 말판놀이 - 탐험 방 선택</h2>
+          </div>
+        </div>
+
+        <!-- 1) 로비 메인: 방 목록 & 방 만들기 상단 바 -->
+        <div id="lobby-join-section" class="lobby-subview">
+          <div class="lobby-top-controls">
+            <div class="nickname-box">
+              <label for="input-nickname">내 닉네임 (재접속 시 같은 닉네임 입력)</label>
+              <input type="text" id="input-nickname" maxlength="8" value="탐험가" placeholder="닉네임 입력 (최대 8자)">
+            </div>
+            <button class="btn btn-primary btn-create-action" id="btn-create-room">
+              <span>➕ 새로운 방 만들기</span>
+            </button>
+          </div>
+
+          <!-- 실시간 열려있는 방 목록 섹션 -->
+          <div class="rooms-list-header">
+            <div class="list-title-wrap">
+              <h3>🔍 현재 열려있는 탐험 방 목록</h3>
+              <span class="rooms-live-indicator"><span class="pulse-dot"></span> 실시간 동기화</span>
+            </div>
+            <button class="btn btn-sm btn-outline" id="btn-refresh-rooms" title="방 목록 새로고침">🔄 새로고침</button>
+          </div>
+
+          <div class="rooms-list-container" id="rooms-list-container">
+            <!-- 방이 없을 때 기본 뷰 -->
+            <div class="no-rooms-placeholder" id="no-rooms-placeholder">
+              <div class="placeholder-icon">🏝️</div>
+              <p>현재 열려있는 방이 없습니다.</p>
+              <span>위의 <strong>[➕ 새로운 방 만들기]</strong> 버튼을 눌러 첫 번째 탐험 방을 열어보세요!</span>
+            </div>
+            <!-- JS 동적으로 방 카드 렌더링 -->
+          </div>
+
+          <!-- 접을 수 있는 방 코드 직접 입력 서브 옵션 -->
+          <div class="manual-join-accordion">
+            <details>
+              <summary>🔒 방 코드로 직접 입장하기</summary>
+              <div class="manual-join-body">
+                <input type="text" id="input-room-code" placeholder="예: 7K9X2" maxlength="10" style="text-transform: uppercase;">
+                <button class="btn btn-secondary" id="btn-join-room">코드 입장</button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <!-- 방 생성/입장 후: 플레이어 목록 & 준비 방 -->
+        <div id="lobby-room-section" class="lobby-subview hidden">
+          <div class="room-info-card">
+            <div class="room-code-display">
+              <span class="code-label">방 코드:</span>
+              <strong class="code-value" id="disp-room-code">-----</strong>
+              <button class="btn btn-sm btn-copy" id="btn-copy-code" title="방 코드 복사">코드 복사</button>
+              <button class="btn btn-sm btn-copy-link" id="btn-copy-link" title="초대 링크 복사">🔗 초대 링크 복사</button>
+            </div>
+            <div class="room-help-tip">친구에게 위 링크나 코드를 공유하면 바로 접속할 수 있습니다. (2~4명)</div>
+          </div>
+
+          <!-- 플레이어 슬롯 4개 -->
+          <div class="players-slot-grid" id="lobby-player-slots">
+            <!-- JS 동적 렌더링 -->
+          </div>
+
+          <!-- 캐릭터/색상 선택 -->
+          <div class="character-select-box">
+            <div class="box-title">내 캐릭터 & 색상 변경</div>
+            <div class="character-chips" id="character-chips-container">
+              <!-- JS 동적 렌더링 -->
+            </div>
+          </div>
+
+          <!-- 하단 액션 버튼 -->
+          <div class="lobby-actions">
+            <button class="btn btn-danger" id="btn-leave-room">방 나가기</button>
+            <div class="ready-start-group">
+              <button class="btn btn-secondary" id="btn-toggle-ready">준비 완료 (READY)</button>
+              <button class="btn btn-primary btn-pulse hidden" id="btn-start-game">게임 시작! (START)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 메인 보드게임 플레이 화면 -->
+    <section id="screen-game" class="screen">
+      <!-- 상단 네비게이션 헤더 -->
+      <header class="game-header">
+        <div class="header-left">
+          <span class="game-logo">🌍 세계여행 말판놀이</span>
+          <span class="mode-tag" id="game-mode-tag">온라인 멀티</span>
+          <span class="round-tag" id="game-round-tag">1 라운드</span>
+        </div>
+        <div class="turn-announcer" id="turn-announcer-banner">
+          <span class="turn-dot" id="turn-dot"></span>
+          <strong id="turn-player-name">레오</strong>님의 차례입니다! 주사위를 굴리세요.
+        </div>
+        <div class="header-right">
+          <button class="btn-icon" id="btn-sound-toggle" title="사운드 켜기/끄기">🔊</button>
+          <button class="btn-icon" id="btn-game-guide" title="도감 & 규칙">📖</button>
+          <button class="btn-icon btn-exit" id="btn-game-exit" title="게임 나가기">🚪</button>
+        </div>
+      </header>
+
+      <!-- 게임 메인 컨텐츠 영역 (좌측/상단 플레이어바 + 중앙 보드 + 우측/하단 컨트롤) -->
+      <main class="game-layout">
+        
+        <!-- 플레이어 상태 카드 목록 -->
+        <aside class="players-panel" id="players-status-panel">
+          <!-- JS 동적 렌더링: 4명의 점령 현황, 힌트 열쇠, 무인도 상태 -->
+        </aside>
+
+        <!-- 중앙 보드판 영역 -->
+        <div class="board-wrapper">
+          <div class="board-container" id="board-container">
+            <!-- 중앙 보드 일러스트 & 세계지도 아트 -->
+            <div class="board-center-area">
+              <div class="world-map-backdrop" style="background-image: url('assets/board/center_world_map.jpg');"></div>
+              <div class="center-overlay"></div>
+              <div class="center-content">
+                <div class="center-header-badge">
+                  <span class="world-compass">🧭</span>
+                  <span class="center-title-text">세계의 자연환경 탐험</span>
+                </div>
+                <p class="center-subtext">문제를 맞히고 칸을 점령하여 세계 최고 탐험가가 되어보세요!</p>
+                
+                <!-- 점령 현황 미니 프로그레스 바 -->
+                <div class="conquest-progress-box">
+                  <div class="progress-title">전체 문제 점령 현황: <span id="conquest-ratio">0 / 16</span></div>
+                  <div class="progress-bar-multi" id="conquest-progress-bar"></div>
+                </div>
+
+                <button class="btn btn-outline btn-textbook-view" id="btn-quick-textbook" title="교과서 원본 말판 크게 보기">📖 교과서 원본 말판</button>
+              </div>
+            </div>
+
+            <!-- 20개의 칸 그리드 요소들 (JS 동적 렌더링) -->
+            <div class="cells-grid" id="board-cells-grid"></div>
+
+            <!-- 플레이어 말(Pawn) 레이어 -->
+            <div class="pawns-layer" id="pawns-layer"></div>
+          </div>
+        </div>
+
+        <!-- 우측/하단 액션 컨트롤 & 실시간 로그 패널 -->
+        <aside class="controls-panel">
+          <!-- 주사위 롤러 위젯 -->
+          <div class="dice-widget glass-card">
+            <div class="widget-header">🎲 주사위 굴리기</div>
+            
+            <div class="dice-3d-scene" id="dice-scene">
+              <div class="dice-cube" id="dice-cube">
+                <div class="dice-face face-1"><span></span></div>
+                <div class="dice-face face-2"><span></span><span></span></div>
+                <div class="dice-face face-3"><span></span><span></span><span></span></div>
+                <div class="dice-face face-4"><span></span><span></span><span></span><span></span></div>
+                <div class="dice-face face-5"><span></span><span></span><span></span><span></span><span></span></div>
+                <div class="dice-face face-6"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+              </div>
+            </div>
+
+            <div class="dice-result-text" id="dice-result-text">주사위를 굴려주세요!</div>
+            <button class="btn btn-primary btn-roll" id="btn-roll-dice">주사위 굴리기 🎲</button>
+            <div class="dice-hint-text" id="dice-hint-text">내 차례가 되면 버튼이 활성화됩니다.</div>
+          </div>
+
+          <!-- 실시간 탐험 로그 패널 -->
+          <div class="log-widget glass-card">
+            <div class="widget-header">📜 탐험 실시간 일지</div>
+            <div class="log-list" id="game-log-list">
+              <div class="log-item system">세계여행 탐험이 시작되었습니다!</div>
+            </div>
+          </div>
+        </aside>
+
+      </main>
+    </section>
+
+    <!-- 5. 팝업 모달들 -->
+
+    <!-- A. 퀴즈 팝업 모달 (1~12번 일반 문제 칸) -->
+    <div id="modal-quiz" class="modal-backdrop">
+      <div class="modal-dialog glass-dialog">
+        <div class="modal-header">
+          <div class="quiz-badge-wrap">
+            <span class="modal-badge" id="quiz-cell-badge">문제 1</span>
+            <span class="modal-region" id="quiz-cell-region">북유럽 노르웨이</span>
+          </div>
+          <h3 id="quiz-cell-title">피오르 해안</h3>
+        </div>
+        
+        <div class="modal-body">
+          <div class="quiz-question-box">
+            <p id="quiz-question-text">빙하의 침식으로 만들어진 골짜기에...</p>
+          </div>
+
+          <!-- 힌트 열쇠 사용 찬스 바 -->
+          <div class="hint-key-bar" id="hint-key-bar">
+            <span class="hint-count-text">🔑 보유 열쇠: <strong id="user-hint-keys-count">0</strong>개</span>
+            <button class="btn btn-sm btn-gold" id="btn-use-hint-key">50:50 찬스 쓰기 (오답 2개 제거)</button>
+          </div>
+
+          <!-- 보기 4개 버튼 -->
+          <div class="quiz-options-grid" id="quiz-options-container">
+            <!-- JS 동적 생성 -->
+          </div>
+
+          <!-- 정답/오답 결과 해설창 (답안 클릭 후 표시) -->
+          <div class="quiz-feedback-box hidden" id="quiz-feedback-box">
+            <div class="feedback-icon" id="feedback-icon">🎉</div>
+            <div class="feedback-title" id="feedback-title">정답입니다!</div>
+            <p class="feedback-desc" id="feedback-desc">상세 해설 내용...</p>
+            <button class="btn btn-primary mt-3" id="btn-quiz-confirm">다음으로 진행 ➔</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B. 카드 뽑기 팝업 모달 (지형 카드 / 기후 카드) -->
+    <div id="modal-card" class="modal-backdrop">
+      <div class="modal-dialog glass-dialog card-dialog">
+        <div class="modal-header">
+          <span class="modal-badge card-type-badge" id="card-type-badge">🏔️ 지형 카드</span>
+          <h3 id="card-modal-title">지형 카드를 뒤집었습니다!</h3>
+        </div>
+
+        <div class="modal-body">
+          <!-- 3D Flip 카드 영역 -->
+          <div class="card-3d-flipper" id="card-flipper">
+            <div class="card-inner" id="card-inner">
+              <div class="card-back-face">
+                <div class="card-pattern">🌍</div>
+                <div class="card-back-text">카드를 뒤집는 중...</div>
+              </div>
+              <div class="card-front-face">
+                <img id="card-photo-img" src="" alt="카드 사진" class="card-photo">
+              </div>
+            </div>
+          </div>
+
+          <div class="card-question-box">
+            <p id="card-question-text">위 사진이 나타내는 지형(또는 기후)은 무엇일까요?</p>
+          </div>
+
+          <div class="quiz-options-grid" id="card-options-container">
+            <!-- JS 동적 생성 -->
+          </div>
+
+          <!-- 카드 해설 및 확인 -->
+          <div class="quiz-feedback-box hidden" id="card-feedback-box">
+            <div class="feedback-icon" id="card-feedback-icon">🌟</div>
+            <div class="feedback-title" id="card-feedback-title">정답입니다!</div>
+            <p class="feedback-desc" id="card-feedback-desc">카드 상세 설명</p>
+            <button class="btn btn-primary mt-3" id="btn-card-confirm">다음으로 진행 ➔</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C. 특수 칸 알림 모달 (세계여행, 무인도, 힌트 열쇠) -->
+    <div id="modal-special" class="modal-backdrop">
+      <div class="modal-dialog glass-dialog text-center">
+        <div class="special-icon" id="special-icon">✈️</div>
+        <h2 id="special-title">세계여행 찬스!</h2>
+        <p id="special-desc">다음 차례에 원하는 칸 어디든 자유롭게 날아갈 수 있습니다.</p>
+        <button class="btn btn-primary mt-4" id="btn-special-confirm">확인</button>
+      </div>
+    </div>
+
+    <!-- D. 최종 승리 결과 발표 모달 -->
+    <div id="modal-victory" class="modal-backdrop">
+      <div class="modal-dialog glass-dialog victory-dialog">
+        <div class="victory-header">
+          <div class="trophy-icon">🏆</div>
+          <h2>세계 탐험 원정 완료!</h2>
+          <p>모든 칸의 탐험이 끝났습니다. 영광의 승자를 발표합니다!</p>
+        </div>
+
+        <div class="podium-section" id="victory-podium">
+          <!-- 1위, 2위, 3위 시상대 JS 렌더링 -->
+        </div>
+
+        <div class="victory-stats-table" id="victory-stats-table">
+          <!-- 플레이어별 점령 칸 수, 카드 획득 수 -->
+        </div>
+
+        <div class="modal-footer-actions">
+          <button class="btn btn-primary btn-large" id="btn-victory-restart">새로운 게임 시작 🚀</button>
+          <button class="btn btn-outline" id="btn-victory-lobby">로비로 이동</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- E. 도감 & 룰북 전체 모달 -->
+    <div id="modal-guide" class="modal-backdrop">
+      <div class="modal-dialog glass-dialog guide-dialog">
+        <div class="modal-header">
+          <h3>📖 세계여행 말판놀이 가이드 & 카드 도감</h3>
+          <button class="btn-close" id="btn-close-guide">✕</button>
+        </div>
+        <div class="modal-body guide-body">
+          <div class="guide-tabs">
+            <button class="tab-btn active" id="guide-tab-rule">놀이 규칙</button>
+            <button class="tab-btn" id="guide-tab-board">🗺️ 교과서 보드판 원본</button>
+            <button class="tab-btn" id="guide-tab-terrain">지형 카드 8종</button>
+            <button class="tab-btn" id="guide-tab-climate">기후 카드 8종</button>
+          </div>
+
+          <div id="guide-content-rule" class="guide-tab-pane active">
+            <h4>🎯 놀이 방법</h4>
+            <ol class="rule-list">
+              <li><strong>인원:</strong> 2~4명의 친구가 함께 플레이합니다.</li>
+              <li><strong>진행:</strong> 차례대로 주사위를 굴려 나온 숫자만큼 자신의 말을 이동합니다.</li>
+              <li><strong>문제 칸:</strong> 도착한 칸의 퀴즈를 맞히면 해당 칸을 <strong>자신의 색상으로 점령(색칠)</strong>합니다.</li>
+              <li><strong>카드 칸:</strong> 지형/기후 카드가 뽑히면 사진을 보고 정답을 맞혀 칸을 점령합니다.</li>
+              <li><strong>특수 칸:</strong>
+                <ul>
+                  <li>✈️ <strong>세계여행:</strong> 다음 차례에 원하는 칸으로 즉시 이동!</li>
+                  <li>🏝️ <strong>무인도:</strong> 1턴 동안 쉬고 다음 차례에 이동합니다.</li>
+                  <li>🔑 <strong>힌트 열쇠:</strong> 퀴즈 풀이 시 50:50 찬스를 쓸 수 있는 열쇠 획득!</li>
+                </ul>
+              </li>
+              <li><strong>승리 조건:</strong> 모든 문제 칸이 점령되거나 정해진 턴이 끝났을 때 <strong>가장 많은 칸을 점령한 탐험가</strong>가 승리합니다!</li>
+            </ol>
+          </div>
+
+          <div id="guide-content-board" class="guide-tab-pane">
+            <div class="textbook-board-wrapper">
+              <div class="textbook-board-header">
+                <h4>🗺️ 6학년 2학기 세계의 자연환경 말판놀이 원본 (52~53쪽)</h4>
+                <a href="assets/board/full_textbook_board.jpg" target="_blank" class="btn btn-sm btn-secondary">🔍 새 탭에서 고화질 확대</a>
+              </div>
+              <div class="textbook-board-scroll">
+                <img src="assets/board/full_textbook_board.jpg" alt="교과서 보드판 원본" class="textbook-board-img" />
+              </div>
+            </div>
+          </div>
+
+          <div id="guide-content-terrain" class="guide-tab-pane">
+            <div class="cards-gallery-grid" id="guide-terrain-grid"></div>
+          </div>
+
+          <div id="guide-content-climate" class="guide-tab-pane">
+            <div class="cards-gallery-grid" id="guide-climate-grid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 알림 토스트 메시지 -->
+    <div id="toast-container" class="toast-container"></div>
+
+  </div>
+
+  <!-- 메인 스크립트 모듈 로드 -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

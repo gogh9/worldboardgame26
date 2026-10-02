@@ -1,0 +1,5 @@
+*.pdf
+build.zip
+.agents
+.tempmediaStorage
+.netlify/
