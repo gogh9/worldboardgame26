@@ -3,3 +3,4 @@ build.zip
 .agents
 .tempmediaStorage
 .netlify/
+.firebase/
