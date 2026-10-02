@@ -961,11 +961,8 @@ class WorldGameApp {
             <span class="track-direction-arrow">${trackArrow}</span>
             <span class="cell-icon">${cell.type === 'start' ? '🏁' : (cell.type.includes('card') ? '🎴' : (cell.type === 'world_travel' ? '✈️' : (cell.type === 'desert_island' ? '🏝️' : (cell.type === 'hint_key' ? '🔑' : '❓'))))}</span>
           </div>
-          <div class="cell-title-box">
-            <div class="cell-title">${cell.title}</div>
-          </div>
-          <div class="cell-owner-tag" id="cell-owner-${cell.index}">🚩 점령</div>
         </div>
+        <div class="cell-owner-stamp" id="cell-owner-${cell.index}"></div>
       `;
 
       if (cell.ownerId !== null) {
@@ -974,11 +971,13 @@ class WorldGameApp {
           const prof = PLAYER_PROFILES[owner.charId] || PLAYER_PROFILES[0];
           cellElem.classList.add('conquered');
           cellElem.style.borderColor = prof.colorHex;
-          cellElem.style.boxShadow = `inset 0 0 14px ${prof.glowHex}, 0 0 14px ${prof.glowHex}`;
-          const tagElem = cellElem.querySelector('.cell-owner-tag');
+          cellElem.style.boxShadow = `inset 0 0 16px ${prof.glowHex}, 0 0 18px ${prof.glowHex}`;
+          const tagElem = cellElem.querySelector('.cell-owner-stamp');
           if (tagElem) {
-            tagElem.textContent = `🚩 ${owner.name}`;
+            tagElem.innerHTML = `<span class="stamp-icon">${prof.avatar}</span>`;
             tagElem.style.backgroundColor = prof.colorHex;
+            tagElem.style.setProperty('--owner-glow', prof.glowHex);
+            tagElem.style.display = 'flex';
           }
         }
       }
@@ -997,13 +996,13 @@ class WorldGameApp {
 
   getTrackDirectionIcon(index) {
     if (index === 0) return '🏁';
-    if (index >= 1 && index <= 4) return '➔';
-    if (index === 5) return '⤵';
-    if (index >= 6 && index <= 9) return '⬇';
+    if (index >= 1 && index <= 5) return '➔';
+    if (index === 6) return '⤵';
+    if (index >= 7 && index <= 9) return '⬇';
     if (index === 10) return '↙';
-    if (index >= 11 && index <= 14) return '⬅';
-    if (index === 15) return '↖';
-    if (index >= 16 && index <= 19) return '⬆';
+    if (index >= 11 && index <= 15) return '⬅';
+    if (index === 16) return '↖';
+    if (index >= 17 && index <= 19) return '⬆';
     return '➔';
   }
 
@@ -1521,9 +1520,11 @@ class WorldGameApp {
     if (cellElem && tagElem) {
       cellElem.classList.add('conquered');
       cellElem.style.borderColor = prof.colorHex;
-      cellElem.style.boxShadow = `inset 0 0 14px ${prof.glowHex}`;
-      tagElem.textContent = `🚩 ${player.name}`;
+      cellElem.style.boxShadow = `inset 0 0 16px ${prof.glowHex}, 0 0 18px ${prof.glowHex}`;
+      tagElem.innerHTML = `<span class="stamp-icon">${prof.avatar}</span>`;
       tagElem.style.backgroundColor = prof.colorHex;
+      tagElem.style.setProperty('--owner-glow', prof.glowHex);
+      tagElem.style.display = 'flex';
     }
 
     this.updateGameUI();
