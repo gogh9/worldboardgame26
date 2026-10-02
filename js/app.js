@@ -484,7 +484,7 @@ class WorldGameApp {
 
     try {
       const res = await this.network.createRoom(nick);
-      this.dispRoomCode.textContent = res.roomCode;
+      if (this.dispRoomCode) this.dispRoomCode.textContent = res.roomCode;
       this.state.players = [{
         id: 0,
         peerId: this.network.myId,
@@ -515,7 +515,7 @@ class WorldGameApp {
 
     try {
       const res = await this.network.joinRoom(code, nick);
-      this.dispRoomCode.textContent = res.roomCode;
+      if (this.dispRoomCode) this.dispRoomCode.textContent = res.roomCode;
       this.setupLobbyView(true);
 
       const sendJoin = () => {
