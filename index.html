@@ -128,48 +128,57 @@
         <div class="board-wrapper">
           <div class="board-container" id="board-container">
             
-            <!-- 중앙 영역: 세계 지도 제거 -> 탐험가 현황 + 주사위 + 실시간 일지 조화로운 배치 -->
+            <!-- 중앙 영역: 탐험가 현황 + 주사위 조작 + 실시간 일지 (세련된 통합 대시보드) -->
             <div class="board-center-area">
               
-              <!-- 좌측 영역: 플레이어 탐험가 카드 목록 (Image 3) -->
+              <!-- 상단 통합 관제 바: 타이틀 & 점령 현황 & 교과서 버튼 -->
+              <div class="center-top-bar-integrated">
+                <div class="center-title-tag">
+                  <span class="pulse-dot"></span>
+                  <span class="title-text">🧭 세계 탐험 관제실</span>
+                </div>
+                <div class="conquest-progress-box">
+                  <span class="progress-title">전체 점령: <strong id="conquest-ratio">0 / 16</strong></span>
+                  <div class="progress-bar-multi" id="conquest-progress-bar"></div>
+                </div>
+                <button class="btn btn-sm btn-outline btn-textbook-view" id="btn-quick-textbook" title="교과서 원본 말판 보기">📖 교과서 말판</button>
+              </div>
+
+              <!-- 중앙 좌측: 참가 탐험가 패널 (컴팩트 카드 디자인) -->
               <div class="center-players-section" id="players-status-panel">
                 <!-- JS 동적 렌더링 -->
               </div>
 
-              <!-- 우측 영역: 주사위 롤러 + 실시간 일지 (Image 2) -->
+              <!-- 중앙 우측: 주사위 롤러 + 실시간 일지 -->
               <div class="center-controls-section">
-                <!-- 상단 미니 바: 점령 현황 & 교과서 원본 보기 -->
-                <div class="center-top-bar-integrated">
-                  <div class="conquest-progress-box">
-                    <span class="progress-title">전체 점령: <strong id="conquest-ratio">0 / 16</strong></span>
-                    <div class="progress-bar-multi" id="conquest-progress-bar"></div>
-                  </div>
-                  <button class="btn btn-sm btn-outline btn-textbook-view" id="btn-quick-textbook" title="교과서 원본 말판 보기">📖 교과서 말판</button>
-                </div>
-
                 <!-- 주사위 롤러 위젯 -->
                 <div class="dice-widget glass-card">
-                  <div class="widget-header">🎲 주사위 굴리기</div>
+                  <div class="dice-widget-top">
+                    <span class="widget-header">🎲 주사위</span>
+                    <span class="dice-result-text" id="dice-result-text">주사위를 굴려주세요!</span>
+                  </div>
                   
-                  <div class="dice-3d-scene" id="dice-scene">
-                    <div class="dice-cube" id="dice-cube">
-                      <div class="dice-face face-1"><span></span></div>
-                      <div class="dice-face face-2"><span></span><span></span></div>
-                      <div class="dice-face face-3"><span></span><span></span><span></span></div>
-                      <div class="dice-face face-4"><span></span><span></span><span></span><span></span></div>
-                      <div class="dice-face face-5"><span></span><span></span><span></span><span></span><span></span></div>
-                      <div class="dice-face face-6"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                  <div class="dice-arena-wrap">
+                    <div class="dice-3d-scene" id="dice-scene">
+                      <div class="dice-cube" id="dice-cube">
+                        <div class="dice-face face-1"><span></span></div>
+                        <div class="dice-face face-2"><span></span><span></span></div>
+                        <div class="dice-face face-3"><span></span><span></span><span></span></div>
+                        <div class="dice-face face-4"><span></span><span></span><span></span><span></span></div>
+                        <div class="dice-face face-5"><span></span><span></span><span></span><span></span><span></span></div>
+                        <div class="dice-face face-6"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                      </div>
+                    </div>
+                    <div class="dice-action-wrap">
+                      <button class="btn btn-primary btn-roll" id="btn-roll-dice">주사위 굴리기 🎲</button>
+                      <div class="dice-hint-text" id="dice-hint-text">내 차례가 되면 활성화됩니다.</div>
                     </div>
                   </div>
-
-                  <div class="dice-result-text" id="dice-result-text">주사위를 굴려주세요!</div>
-                  <button class="btn btn-primary btn-roll" id="btn-roll-dice">주사위 굴리기 🎲</button>
-                  <div class="dice-hint-text" id="dice-hint-text">내 차례가 되면 버튼이 활성화됩니다.</div>
                 </div>
 
                 <!-- 실시간 탐험 로그 패널 -->
                 <div class="log-widget glass-card">
-                  <div class="widget-header">📜 탐험 실시간 일지</div>
+                  <div class="widget-header">📜 실시간 탐험 일지</div>
                   <div class="log-list" id="game-log-list">
                     <div class="log-item system">세계여행 탐험이 시작되었습니다!</div>
                   </div>

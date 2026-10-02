@@ -1604,7 +1604,7 @@ class WorldGameApp {
       diceWidget.classList.toggle('my-turn-active', canRoll);
     }
 
-    // 좌측 플레이어 카드 패널
+    // 좌측 플레이어 카드 패널 (컴팩트 & 세련된 디자인)
     this.playersPanel.innerHTML = '';
     this.state.players.forEach((p, idx) => {
       const pProf = PLAYER_PROFILES[p.charId] || PLAYER_PROFILES[0];
@@ -1616,18 +1616,23 @@ class WorldGameApp {
       card.style.setProperty('--card-glow', pProf.glowHex);
 
       card.innerHTML = `
-        <div class="player-card-header">
-          <div class="card-avatar">${pProf.avatar}</div>
-          <div class="card-names">
-            <div class="card-player-name">${p.name} ${this.mode === 'ONLINE' && p.id === this.myPlayerId ? '(나)' : ''}</div>
+        <div class="card-left">
+          <div class="card-avatar-wrap">
+            <span class="card-avatar">${pProf.avatar}</span>
+            ${isTurn ? '<span class="turn-pulse-ring"></span>' : ''}
+          </div>
+          <div class="card-info">
+            <div class="card-player-name">
+              ${p.name} ${this.mode === 'ONLINE' && p.id === this.myPlayerId ? '<span class="me-tag">나</span>' : ''}
+            </div>
             <div class="card-player-role" style="color: ${pProf.colorHex}">${pProf.role}</div>
           </div>
         </div>
-        <div class="card-stats-row">
-          <div class="stat-item">점령: <strong>${p.conqueredCount || 0}칸</strong></div>
-          <div class="stat-item">열쇠: <strong>${p.hintKeys || 0}개</strong></div>
+        <div class="card-stats-pills">
+          <span class="stat-pill conquer" title="점령한 칸 수">🚩 <strong>${p.conqueredCount || 0}</strong></span>
+          <span class="stat-pill keys" title="보유한 힌트 열쇠">🔑 <strong>${p.hintKeys || 0}</strong></span>
         </div>
-        ${p.isIslandSkip ? '<span class="island-status-badge">🏝️ 무인도 1회 휴식</span>' : ''}
+        ${p.isIslandSkip ? '<span class="island-status-badge">🏝️ 무인도</span>' : ''}
       `;
 
       this.playersPanel.appendChild(card);
