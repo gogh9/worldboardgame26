@@ -975,112 +975,38 @@ button, input {
   animation: pulse-glow 1.5s infinite;
 }
 
-/* Game Layout Grid */
+/* Game Layout: 전체 화면 꽉 찬 중앙 정렬 */
 .game-layout {
-  display: grid;
-  grid-template-columns: 230px minmax(0, 1fr) 250px;
-  gap: 10px;
-  flex-grow: 1;
-  min-height: 0;
-  height: calc(100vh - 80px);
-  overflow: hidden;
-}
-
-/* Players Status Panel (Left) */
-.players-panel {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  overflow-y: auto;
-  min-height: 0;
-}
-
-.player-card {
-  background: var(--surface-glass);
-  backdrop-filter: blur(12px);
-  border: 2px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-lg);
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.player-card.active-turn {
-  border-color: var(--card-color, #ef4444);
-  box-shadow: 0 0 20px var(--card-glow, rgba(239, 68, 68, 0.4));
-  transform: scale(1.02);
-  background: rgba(30, 41, 59, 0.9);
-}
-
-.player-card-header {
-  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 8px;
-}
-
-.card-avatar {
-  font-size: 1.6rem;
-}
-
-.card-names {
-  flex-grow: 1;
-  text-align: left;
-}
-
-.card-player-name {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: #fff;
-}
-
-.card-player-role {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-}
-
-.card-stats-row {
-  display: flex;
-  justify-content: space-between;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: var(--radius-sm);
-  padding: 4px 8px;
-  font-size: 0.8rem;
-}
-
-.stat-item strong {
-  color: #38bdf8;
-}
-
-.island-status-badge {
-  font-size: 0.72rem;
-  padding: 1px 6px;
-  border-radius: var(--radius-full);
-  background: rgba(234, 179, 8, 0.2);
-  color: #facc15;
-  border: 1px solid rgba(234, 179, 8, 0.4);
-  align-self: flex-start;
+  width: 100%;
+  height: calc(100vh - 75px);
+  padding: 6px;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* ==========================================================================
-   4. CENTRAL INTERACTIVE BOARD
+   4. CENTRAL INTERACTIVE BOARD (육상 트랙 테두리 + 중앙 패널 통합)
    ========================================================================== */
 .board-wrapper {
-  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.98) 100%);
   backdrop-filter: blur(16px);
-  border: 2px solid rgba(56, 189, 248, 0.3);
-  border-radius: 28px;
+  border: 2px solid rgba(56, 189, 248, 0.35);
+  border-radius: 24px;
   padding: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   height: 100%;
-  min-height: 0;
-  min-width: 0;
+  max-height: calc(100vh - 85px);
+  max-width: calc(100vh - 85px);
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
   box-shadow: 0 0 35px rgba(15, 23, 42, 0.9), inset 0 0 25px rgba(56, 189, 248, 0.1);
 }
 
@@ -1090,22 +1016,18 @@ button, input {
   position: absolute;
   inset: 4px;
   border: 2px dashed rgba(56, 189, 248, 0.2);
-  border-radius: 24px;
+  border-radius: 20px;
   pointer-events: none;
 }
 
 .board-container {
   height: 100%;
   width: 100%;
-  max-height: 100%;
-  max-width: 100%;
-  aspect-ratio: 1 / 1;
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   grid-template-rows: repeat(6, minmax(0, 1fr));
   gap: 5px;
   position: relative;
-  padding: 4px;
   box-sizing: border-box;
 }
 
@@ -1114,137 +1036,155 @@ button, input {
   display: contents;
 }
 
-/* Center Artwork Area (4x4 Grid in middle) */
+/* Center Integrated Area (4x4 Grid in middle: 지도를 제거하고 플레이어 현황 + 주사위 + 로그 조화롭게 배치) */
 .board-center-area {
   grid-column: 2 / 6;
   grid-row: 2 / 6;
-  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+  background: rgba(15, 23, 42, 0.88);
   border: 2px solid rgba(56, 189, 248, 0.35);
-  border-radius: 18px;
+  border-radius: 16px;
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 8px;
+  padding: 8px;
   overflow: hidden;
   min-width: 0;
   min-height: 0;
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(56, 189, 248, 0.2);
-}
-
-.world-map-backdrop {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  opacity: 0.72;
-  filter: saturate(1.25) contrast(1.1);
-  transition: all 0.5s ease;
-}
-
-.center-overlay {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.75) 100%);
-  pointer-events: none;
-}
-
-.center-content {
-  position: relative;
+  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.7), 0 0 15px rgba(56, 189, 248, 0.15);
   z-index: 2;
-  text-align: center;
-  padding: 6px;
+}
+
+/* Center Left: Players Status Panel (Image 3) */
+.center-players-section {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  max-width: 92%;
+  gap: 6px;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 2px;
 }
 
-.center-header-badge {
-  display: inline-flex;
+.player-card {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.player-card.active-turn {
+  border-color: var(--card-color, #ef4444);
+  box-shadow: 0 0 16px var(--card-glow, rgba(239, 68, 68, 0.45));
+  transform: scale(1.02);
+  background: rgba(30, 41, 59, 0.95);
+}
+
+.player-card-header {
+  display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  padding: 3px 10px;
-  border-radius: var(--radius-full);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }
 
-.world-compass {
-  font-size: 1.15rem;
-  display: inline-block;
-  animation: rotate-compass 25s linear infinite;
+.card-avatar {
+  font-size: 1.3rem;
+  line-height: 1;
 }
 
-@keyframes rotate-compass {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.card-names {
+  flex-grow: 1;
+  text-align: left;
 }
 
-.center-title-text {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  color: #38bdf8;
-  letter-spacing: 0.5px;
-  text-shadow: 0 2px 8px rgba(56, 189, 248, 0.5);
+.card-player-name {
+  font-weight: 800;
+  font-size: 0.82rem;
+  color: #fff;
+  line-height: 1.1;
 }
 
-.center-subtext {
+.card-player-role {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  line-height: 1.1;
+}
+
+.card-stats-row {
+  display: flex;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 3px 6px;
   font-size: 0.72rem;
-  color: #cbd5e1;
-  max-width: 220px;
-  line-height: 1.25;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.stat-item strong {
+  color: #38bdf8;
+}
+
+.island-status-badge {
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  border-radius: var(--radius-full);
+  background: rgba(234, 179, 8, 0.2);
+  color: #facc15;
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  align-self: flex-start;
+}
+
+/* Center Right: Controls Section (Image 2: Dice + Logs + Progress) */
+.center-controls-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  justify-content: space-between;
+}
+
+.center-top-bar-integrated {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 3px 6px;
 }
 
 .conquest-progress-box {
-  width: 100%;
-  max-width: 190px;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: var(--radius-sm);
-  padding: 4px 8px;
+  flex-grow: 1;
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  align-items: center;
+  gap: 6px;
 }
 
 .progress-title {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 700;
   color: #e2e8f0;
+  white-space: nowrap;
 }
 
 .progress-bar-multi {
-  height: 6px;
+  flex-grow: 1;
+  height: 5px;
   background: rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-full);
   display: flex;
   overflow: hidden;
+  min-width: 40px;
 }
 
 .btn-textbook-view {
-  font-size: 0.7rem;
-  padding: 3px 10px;
-  border-radius: var(--radius-full);
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: #f8fafc;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(6px);
-}
-
-.btn-textbook-view:hover {
-  background: rgba(56, 189, 248, 0.25);
-  border-color: #38bdf8;
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
 }
 
 /* Individual Board Cells (육상 트랙 카드 스타일) */
@@ -1579,48 +1519,48 @@ button, input {
 }
 
 /* ==========================================================================
-   5. CONTROLS PANEL (RIGHT): 3D DICE & LOGS
+   5. INTEGRATED CONTROLS: 3D DICE & LOGS
    ========================================================================== */
-.controls-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
 .dice-widget {
+  background: rgba(30, 41, 59, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  padding: 6px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 4px;
   text-align: center;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .dice-widget.my-turn-active {
   border-color: #fbbf24;
-  box-shadow: 0 0 24px rgba(251, 191, 36, 0.45);
-  background: rgba(30, 41, 59, 0.95);
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.4);
+  background: rgba(30, 41, 59, 0.92);
   animation: turnPulse 1.8s infinite;
 }
 
 @keyframes turnPulse {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
+  50% { transform: scale(1.01); }
 }
 
 .widget-header {
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: 0.78rem;
+  font-weight: 800;
   color: #cbd5e1;
   align-self: flex-start;
 }
 
 /* 3D Dice Cube Scene */
 .dice-3d-scene {
-  width: 80px;
-  height: 80px;
-  perspective: 400px;
-  margin: 10px 0;
+  width: 50px;
+  height: 50px;
+  perspective: 300px;
+  margin: 2px 0;
 }
 
 .dice-cube {
@@ -1629,7 +1569,7 @@ button, input {
   position: relative;
   transform-style: preserve-3d;
   transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  transform: translateZ(-40px) rotateX(-20deg) rotateY(25deg);
+  transform: translateZ(-25px) rotateX(-20deg) rotateY(25deg);
 }
 
 .dice-cube.rolling {
@@ -1637,79 +1577,80 @@ button, input {
 }
 
 @keyframes rollDice {
-  0% { transform: translateZ(-40px) rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-  30% { transform: translateZ(-40px) rotateX(360deg) rotateY(180deg) rotateZ(90deg); }
-  70% { transform: translateZ(-40px) rotateX(720deg) rotateY(540deg) rotateZ(360deg); }
-  100% { transform: translateZ(-40px) rotateX(1080deg) rotateY(720deg) rotateZ(540deg); }
+  0% { transform: translateZ(-25px) rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+  30% { transform: translateZ(-25px) rotateX(360deg) rotateY(180deg) rotateZ(90deg); }
+  70% { transform: translateZ(-25px) rotateX(720deg) rotateY(540deg) rotateZ(360deg); }
+  100% { transform: translateZ(-25px) rotateX(1080deg) rotateY(720deg) rotateZ(540deg); }
 }
 
 .dice-face {
   position: absolute;
-  width: 80px;
-  height: 80px;
+  width: 50px;
+  height: 50px;
   background: #ffffff;
-  border: 2px solid #cbd5e1;
-  border-radius: 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
   display: grid;
-  padding: 10px;
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.15);
+  padding: 6px;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.15);
 }
 
 .dice-face span {
   display: block;
-  width: 14px;
-  height: 14px;
+  width: 9px;
+  height: 9px;
   background: #1e293b;
   border-radius: var(--radius-full);
   margin: auto;
 }
 
 /* Dice Face 3D Transformations */
-.face-1 { transform: rotateY(0deg) translateZ(40px); grid-template-columns: 1fr; }
-.face-1 span { background: #ef4444; width: 18px; height: 18px; }
+.face-1 { transform: rotateY(0deg) translateZ(25px); grid-template-columns: 1fr; }
+.face-1 span { background: #ef4444; width: 12px; height: 12px; }
 
-.face-2 { transform: rotateY(90deg) translateZ(40px); grid-template-columns: 1fr 1fr; }
+.face-2 { transform: rotateY(90deg) translateZ(25px); grid-template-columns: 1fr 1fr; }
 .face-2 span:nth-child(1) { grid-column: 1; grid-row: 1; }
 .face-2 span:nth-child(2) { grid-column: 2; grid-row: 2; }
 
-.face-3 { transform: rotateY(180deg) translateZ(40px); grid-template-columns: 1fr 1fr 1fr; }
+.face-3 { transform: rotateY(180deg) translateZ(25px); grid-template-columns: 1fr 1fr 1fr; }
 .face-3 span:nth-child(1) { grid-column: 1; grid-row: 1; }
 .face-3 span:nth-child(2) { grid-column: 2; grid-row: 2; }
 .face-3 span:nth-child(3) { grid-column: 3; grid-row: 3; }
 
-.face-4 { transform: rotateY(-90deg) translateZ(40px); grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
-.face-5 { transform: rotateX(90deg) translateZ(40px); grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
+.face-4 { transform: rotateY(-90deg) translateZ(25px); grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.face-5 { transform: rotateX(90deg) translateZ(25px); grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
 .face-5 span:nth-child(1) { grid-column: 1; grid-row: 1; }
 .face-5 span:nth-child(2) { grid-column: 3; grid-row: 1; }
 .face-5 span:nth-child(3) { grid-column: 2; grid-row: 2; }
 .face-5 span:nth-child(4) { grid-column: 1; grid-row: 3; }
 .face-5 span:nth-child(5) { grid-column: 3; grid-row: 3; }
 
-.face-6 { transform: rotateX(-90deg) translateZ(40px); grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
+.face-6 { transform: rotateX(-90deg) translateZ(25px); grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
 
 /* Result orientations */
-.dice-cube[data-face="1"] { transform: translateZ(-40px) rotateY(0deg) rotateX(0deg); }
-.dice-cube[data-face="2"] { transform: translateZ(-40px) rotateY(-90deg); }
-.dice-cube[data-face="3"] { transform: translateZ(-40px) rotateY(-180deg); }
-.dice-cube[data-face="4"] { transform: translateZ(-40px) rotateY(90deg); }
-.dice-cube[data-face="5"] { transform: translateZ(-40px) rotateX(-90deg); }
-.dice-cube[data-face="6"] { transform: translateZ(-40px) rotateX(90deg); }
+.dice-cube[data-face="1"] { transform: translateZ(-25px) rotateY(0deg) rotateX(0deg); }
+.dice-cube[data-face="2"] { transform: translateZ(-25px) rotateY(-90deg); }
+.dice-cube[data-face="3"] { transform: translateZ(-25px) rotateY(-180deg); }
+.dice-cube[data-face="4"] { transform: translateZ(-25px) rotateY(90deg); }
+.dice-cube[data-face="5"] { transform: translateZ(-25px) rotateX(-90deg); }
+.dice-cube[data-face="6"] { transform: translateZ(-25px) rotateX(90deg); }
 
 .dice-result-text {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 0.82rem;
+  font-weight: 800;
   color: #38bdf8;
-  min-height: 24px;
+  min-height: 18px;
 }
 
 .btn-roll {
   width: 100%;
-  font-size: 1.15rem;
-  padding: 14px;
+  font-size: 0.88rem;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
 }
 
 .dice-hint-text {
-  font-size: 0.78rem;
+  font-size: 0.65rem;
   color: var(--text-muted);
 }
 
@@ -1719,6 +1660,11 @@ button, input {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  gap: 4px;
 }
 
 .log-list {
@@ -1726,33 +1672,33 @@ button, input {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-right: 4px;
-  font-size: 0.85rem;
+  gap: 4px;
+  padding-right: 2px;
+  font-size: 0.7rem;
   text-align: left;
 }
 
 .log-item {
-  background: rgba(0, 0, 0, 0.25);
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  line-height: 1.35;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px 6px;
+  border-radius: 4px;
+  line-height: 1.25;
   color: #cbd5e1;
 }
 
 .log-item.system {
   color: #38bdf8;
-  border-left: 3px solid #38bdf8;
+  border-left: 2px solid #38bdf8;
 }
 
 .log-item.correct {
   color: #34d399;
-  border-left: 3px solid #10b981;
+  border-left: 2px solid #10b981;
 }
 
 .log-item.wrong {
   color: #f87171;
-  border-left: 3px solid #ef4444;
+  border-left: 2px solid #ef4444;
 }
 
 /* ==========================================================================
@@ -2228,48 +2174,29 @@ button, input {
 /* ==========================================================================
    7. RESPONSIVE BREAKPOINTS
    ========================================================================== */
-@media (max-width: 1024px) {
-  .game-layout {
-    grid-template-columns: 200px 1fr 220px;
-  }
-}
-
 @media (max-width: 860px) {
   .menu-cards-grid {
     grid-template-columns: 1fr;
   }
   
   .title-main {
-    font-size: 2.6rem;
+    font-size: 2.4rem;
   }
 
-  .game-layout {
+  .board-center-area {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto;
+    gap: 6px;
     overflow-y: auto;
-    height: auto;
   }
 
-  .players-panel {
+  .center-players-section {
     flex-direction: row;
     overflow-x: auto;
+    max-height: 80px;
   }
 
   .player-card {
-    min-width: 150px;
-  }
-
-  .board-container {
-    max-width: 100%;
-    max-height: 90vw;
-  }
-
-  .controls-panel {
-    flex-direction: row;
-  }
-
-  .dice-widget, .log-widget {
-    flex: 1;
+    min-width: 120px;
   }
 
   .cards-gallery-grid {
