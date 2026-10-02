@@ -450,9 +450,13 @@ class WorldGameApp {
     if (me && me.isHost) {
       this.btnToggleReady.classList.add('hidden');
       this.btnStartGame.classList.remove('hidden');
-      const allClientsReady = this.state.players.length >= 2 && this.state.players.filter(p => !p.isHost).every(p => p.isReady);
-      this.btnStartGame.disabled = !allClientsReady;
-      this.btnStartGame.style.opacity = allClientsReady ? '1' : '0.5';
+      
+      const otherClients = this.state.players.filter(p => !p.isHost);
+      const allClientsReady = otherClients.length === 0 || otherClients.every(p => p.isReady);
+      
+      this.btnStartGame.disabled = false;
+      this.btnStartGame.style.opacity = allClientsReady ? '1' : '0.7';
+      this.btnStartGame.className = allClientsReady ? 'btn btn-primary btn-pulse' : 'btn btn-primary';
 
       if (this.network) {
         this.network.updateHostingInfo({
@@ -840,7 +844,19 @@ class WorldGameApp {
   }
 
   startOnlineGame() {
-    if (!this.isHost()) return;
+    if (!this.isHost()) {
+      this.showToast('방장만 게임을 시작할 수 있습니다.');
+      return;
+    }
+
+    const otherClients = this.state.players.filter(p => !p.isHost);
+    const unreadyClients = otherClients.filter(p => !p.isReady);
+    if (unreadyClients.length > 0) {
+      const names = unreadyClients.map(p => `[${p.name}]`).join(', ');
+      this.showToast(`아직 준비하지 않은 참가자가 있습니다: ${names}`);
+      return;
+    }
+
     this.state.status = 'PLAYING';
     this.state.turnIndex = 0;
     this.state.round = 1;
