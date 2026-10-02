@@ -62,9 +62,7 @@ class WorldGameApp {
   // DOM 캐싱
   initDOM() {
     this.screens = {
-      intro: document.getElementById('screen-intro'),
       lobby: document.getElementById('screen-lobby'),
-      localSetup: document.getElementById('screen-local-setup'),
       game: document.getElementById('screen-game')
     };
 
@@ -78,8 +76,6 @@ class WorldGameApp {
     this.charChipsContainer = document.getElementById('character-chips-container');
     this.btnToggleReady = document.getElementById('btn-toggle-ready');
     this.btnStartGame = document.getElementById('btn-start-game');
-    this.netBadge = document.getElementById('network-status-badge');
-    this.netStatusText = document.getElementById('network-status-text');
     this.roomsListContainer = document.getElementById('rooms-list-container');
     this.noRoomsPlaceholder = document.getElementById('no-rooms-placeholder');
 
@@ -258,7 +254,9 @@ class WorldGameApp {
   }
 
   switchScreen(screenName) {
-    Object.values(this.screens).forEach(scr => scr.classList.remove('active'));
+    Object.values(this.screens).forEach(scr => {
+      if (scr) scr.classList.remove('active');
+    });
     if (this.screens[screenName]) {
       this.screens[screenName].classList.add('active');
     }
