@@ -110,17 +110,29 @@
         <div class="board-wrapper">
           <div class="board-container" id="board-container">
             
-            <!-- 중앙 영역: 좌측 컴팩트 조작 패널 + 우측 대형 고화질 세계지도 말판 -->
+            <!-- 중앙 영역: 전체를 꽉 채우는 대형 고화질 세계지도 말판 + 플로팅 주사위 & 탐험가 현황 -->
             <div class="board-center-area">
               
-              <!-- 좌측 사이드바: 참가 탐험가 목록 + 주사위 조작 + 하단 액션 버튼 -->
-              <div class="center-sidebar-panel">
-                <!-- 참가자 목록 (컴팩트 카드) -->
-                <div class="center-players-section" id="players-status-panel">
+              <!-- 대형 고화질 세계지도 뷰 & 실시간 말 레이어 (전체 화면 꽉 찬 뷰) -->
+              <div class="center-map-container" id="center-map-container">
+                <div class="center-map-inner" id="center-map-inner">
+                  <img src="assets/board/world_map_hd.jpg" class="world-map-img" alt="세계지도 말판" id="world-map-img" />
+                  <div class="map-pawns-layer" id="map-pawns-layer"></div>
+                </div>
+
+                <!-- 상단 좌측: 탐험가 현황 플로팅 바 -->
+                <div class="map-floating-players" id="players-status-panel">
                   <!-- JS 동적 렌더링 -->
                 </div>
 
-                <!-- 주사위 위젯 (클릭하여 직접 굴리기) -->
+                <!-- 상단 우측: 퀵 액션 플로팅 버튼 바 -->
+                <div class="map-floating-actions">
+                  <button class="btn btn-sm btn-outline btn-textbook-view" id="btn-quick-textbook" title="교과서 원본 말판 보기">📖 교과서</button>
+                  <button class="btn btn-sm btn-outline" id="btn-game-guide" title="도감 & 규칙">📜 도감</button>
+                  <button class="btn btn-sm btn-outline btn-exit" id="btn-game-exit" title="게임 나가기">🚪</button>
+                </div>
+
+                <!-- 하단 좌측: 3D 인터랙티브 발광 주사위 (직접 클릭 굴리기) -->
                 <div class="dice-widget glass-card" id="dice-widget" title="주사위를 클릭하여 굴리세요!">
                   <div class="dice-3d-scene" id="dice-scene">
                     <div class="dice-cube" id="dice-cube">
@@ -132,21 +144,6 @@
                       <div class="dice-face face-6"><span></span><span></span><span></span><span></span><span></span><span></span></div>
                     </div>
                   </div>
-                </div>
-
-                <!-- 하단 액션 버튼 바 -->
-                <div class="sidebar-action-buttons">
-                  <button class="btn btn-sm btn-outline btn-textbook-view" id="btn-quick-textbook" title="교과서 원본 말판 보기">📖 교과서</button>
-                  <button class="btn btn-sm btn-outline" id="btn-game-guide" title="도감 & 규칙">📜 도감</button>
-                  <button class="btn btn-sm btn-outline btn-exit" id="btn-game-exit" title="게임 나가기">🚪</button>
-                </div>
-              </div>
-
-              <!-- 우측 대형 고화질 세계지도 말판 뷰 & 실시간 말 레이어 -->
-              <div class="center-map-container" id="center-map-container">
-                <div class="center-map-inner" id="center-map-inner">
-                  <img src="assets/board/world_map_hd.jpg" class="world-map-img" alt="세계지도 말판" id="world-map-img" />
-                  <div class="map-pawns-layer" id="map-pawns-layer"></div>
                 </div>
               </div>
 
