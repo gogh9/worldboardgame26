@@ -216,17 +216,6 @@
             <p id="quiz-question-text">빙하의 침식으로 만들어진 골짜기에...</p>
           </div>
 
-          <!-- 힌트 열쇠 사용 찬스 바 -->
-          <div class="hint-key-bar" id="hint-key-bar">
-            <span class="hint-count-text">🔑 보유 열쇠: <strong id="user-hint-keys-count">0</strong>개</span>
-            <button class="btn btn-sm btn-gold" id="btn-use-hint-key">초성 힌트 보기 (열쇠 1개 사용)</button>
-          </div>
-
-          <!-- 힌트 표시 박스 (열쇠 사용 시 표시) -->
-          <div class="hint-display-box hidden" id="quiz-hint-display">
-            <span class="hint-label">💡 초성 힌트:</span> <strong id="quiz-hint-text" class="hint-val"></strong>
-          </div>
-
           <!-- 단답형 정답 입력 폼 -->
           <form id="quiz-input-form" class="quiz-input-form" onsubmit="return false;">
             <div class="quiz-input-wrap">
@@ -271,17 +260,6 @@
 
           <div class="card-question-box">
             <p id="card-question-text">위 사진이 나타내는 지형(또는 기후)은 무엇일까요?</p>
-          </div>
-
-          <!-- 힌트 열쇠 사용 찬스 바 (카드용) -->
-          <div class="hint-key-bar" id="card-hint-key-bar">
-            <span class="hint-count-text">🔑 보유 열쇠: <strong id="card-user-hint-keys-count">0</strong>개</span>
-            <button class="btn btn-sm btn-gold" id="btn-card-use-hint-key">초성 힌트 보기 (열쇠 1개 사용)</button>
-          </div>
-
-          <!-- 카드 힌트 표시 박스 -->
-          <div class="hint-display-box hidden" id="card-hint-display">
-            <span class="hint-label">💡 힌트:</span> <strong id="card-hint-text" class="hint-val"></strong>
           </div>
 
           <!-- 카드 단답형 입력 폼 -->
@@ -364,7 +342,6 @@
                 <ul>
                   <li>✈️ <strong>세계여행:</strong> 다음 차례에 원하는 칸으로 즉시 이동!</li>
                   <li>🏝️ <strong>무인도:</strong> 1턴 동안 쉬고 다음 차례에 이동합니다.</li>
-                  <li>🔑 <strong>힌트 열쇠:</strong> 퀴즈 풀이 시 초성 힌트를 볼 수 있는 열쇠 획득!</li>
                 </ul>
               </li>
               <li><strong>승리 조건:</strong> 모든 문제 칸이 점령되거나 정해진 턴이 끝났을 때 <strong>가장 많은 칸을 점령한 탐험가</strong>가 승리합니다!</li>

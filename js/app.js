@@ -492,7 +492,6 @@ class WorldGameApp {
         isReady: true,
         position: 0,
         conqueredCount: 0,
-        hintKeys: 1,
         isIslandSkip: false
       }];
 
@@ -683,7 +682,6 @@ class WorldGameApp {
             isReady: false,
             position: 0,
             conqueredCount: 0,
-            hintKeys: 1,
             isIslandSkip: false
           });
 
@@ -862,7 +860,6 @@ class WorldGameApp {
     this.state.players.forEach(p => {
       p.position = 0;
       p.conqueredCount = 0;
-      p.hintKeys = 1;
       p.isIslandSkip = false;
     });
 
@@ -921,7 +918,6 @@ class WorldGameApp {
         charId: i,
         position: 0,
         conqueredCount: 0,
-        hintKeys: 1,
         isIslandSkip: false
       });
     }
@@ -959,7 +955,7 @@ class WorldGameApp {
           <div class="cell-top-bar">
             <span class="cell-badge">${cell.badge}</span>
             <span class="track-direction-arrow">${trackArrow}</span>
-            <span class="cell-icon">${cell.type === 'start' ? '🏁' : (cell.type.includes('card') ? '🎴' : (cell.type === 'world_travel' ? '✈️' : (cell.type === 'desert_island' ? '🏝️' : (cell.type === 'hint_key' ? '🔑' : '❓'))))}</span>
+            <span class="cell-icon">${cell.type === 'start' ? '🏁' : (cell.type.includes('card') ? '🎴' : (cell.type === 'world_travel' ? '✈️' : (cell.type === 'desert_island' ? '🏝️' : (cell.type === 'hint_key' ? '📖' : '❓'))))}</span>
           </div>
         </div>
         <div class="cell-owner-stamp" id="cell-owner-${cell.index}"></div>
@@ -1162,9 +1158,8 @@ class WorldGameApp {
 
     // 1. 출발선
     if (cell.type === 'start') {
-      player.hintKeys = (player.hintKeys || 0) + 1;
       sound.playItemGet();
-      this.showToast('출발선을 통과하여 황금 열쇠 1개를 보너스로 획득했습니다! 🔑');
+      this.showToast('출발선을 통과하여 한 바퀴를 완주했습니다! 🚀');
       if (isCurrentPlayer) this.advanceTurn();
       return;
     }
@@ -1181,12 +1176,11 @@ class WorldGameApp {
       return;
     }
 
-    // 3. 힌트 열쇠
+    // 3. 교과서 찬스 칸
     if (cell.type === 'hint_key') {
-      player.hintKeys = (player.hintKeys || 0) + 1;
       sound.playItemGet();
       if (isCurrentPlayer) {
-        this.openSpecialModal('🔑 힌트 열쇠 획득!', `황금 열쇠를 얻었습니다! 퀴즈 풀이 시 50:50 찬스(오답 2개 제거)를 사용할 수 있습니다.`, () => {
+        this.openSpecialModal('📖 교과서 찬스 칸!', `교과서 찬스 칸에 도착했습니다! 상단의 [교과서 말판] 버튼을 눌러 학습 내용을 확인해 보세요!`, () => {
           this.advanceTurn();
         });
       }
@@ -1267,26 +1261,13 @@ class WorldGameApp {
     document.getElementById('quiz-cell-title').textContent = cell.title;
     document.getElementById('quiz-question-text').textContent = cell.question;
 
-    const userHintCount = document.getElementById('user-hint-keys-count');
-    userHintCount.textContent = player.hintKeys || 0;
-
-    const btnUseHint = document.getElementById('btn-use-hint-key');
-    btnUseHint.disabled = !player.hintKeys || player.hintKeys <= 0;
-    
-    // 힌트 박스 초기화
-    const hintDisplay = document.getElementById('quiz-hint-display');
-    const hintText = document.getElementById('quiz-hint-text');
-    hintDisplay.classList.add('hidden');
-    hintText.textContent = '';
-
-    btnUseHint.onclick = () => this.useHintKeyInQuiz(cell);
-
     // 단답형 입력 폼 및 버튼 초기화
     const inputForm = document.getElementById('quiz-input-form');
     const inputAnswer = document.getElementById('quiz-input-answer');
     const btnSubmit = document.getElementById('btn-quiz-submit');
 
     inputAnswer.value = '';
+    inputAnswer.placeholder = '정답을 입력하세요';
     inputAnswer.disabled = false;
     btnSubmit.disabled = false;
 
@@ -1311,26 +1292,6 @@ class WorldGameApp {
     setTimeout(() => {
       inputAnswer.focus();
     }, 200);
-  }
-
-  useHintKeyInQuiz(cell) {
-    const player = this.state.players[this.state.turnIndex];
-    if (!player.hintKeys || player.hintKeys <= 0) return;
-
-    player.hintKeys--;
-    document.getElementById('user-hint-keys-count').textContent = player.hintKeys;
-    document.getElementById('btn-use-hint-key').disabled = true;
-
-    sound.playItemGet();
-    this.showToast('🔑 힌트 열쇠 사용! 초성 힌트가 공개되었습니다.');
-
-    const hintDisplay = document.getElementById('quiz-hint-display');
-    const hintText = document.getElementById('quiz-hint-text');
-    hintText.textContent = cell.initialHint || cell.answer;
-    hintDisplay.classList.remove('hidden');
-
-    const inputAnswer = document.getElementById('quiz-input-answer');
-    if (inputAnswer) inputAnswer.focus();
   }
 
   // 텍스트 유사도 및 한국어 정규화 정답 판정
@@ -1449,29 +1410,6 @@ class WorldGameApp {
     if (cardModalTitle) {
       cardModalTitle.textContent = isClimate ? '기후 카드를 뒤집었습니다!' : '지형 카드를 뒤집었습니다!';
     }
-
-    const cardUserHintCount = document.getElementById('card-user-hint-keys-count');
-    cardUserHintCount.textContent = player.hintKeys || 0;
-
-    const btnCardUseHint = document.getElementById('btn-card-use-hint-key');
-    btnCardUseHint.disabled = !player.hintKeys || player.hintKeys <= 0;
-
-    const cardHintDisplay = document.getElementById('card-hint-display');
-    const cardHintText = document.getElementById('card-hint-text');
-    cardHintDisplay.classList.add('hidden');
-    cardHintText.textContent = '';
-
-    btnCardUseHint.onclick = () => {
-      if (!player.hintKeys || player.hintKeys <= 0) return;
-      player.hintKeys--;
-      cardUserHintCount.textContent = player.hintKeys;
-      btnCardUseHint.disabled = true;
-      sound.playItemGet();
-      this.showToast('🔑 힌트 열쇠 사용! 초성 힌트가 공개되었습니다.');
-      cardHintText.textContent = cardData.initialHint || cardData.answer;
-      cardHintDisplay.classList.remove('hidden');
-      document.getElementById('card-input-answer').focus();
-    };
 
     const cardInputForm = document.getElementById('card-input-form');
     const cardInputAnswer = document.getElementById('card-input-answer');
@@ -1706,7 +1644,6 @@ class WorldGameApp {
         </div>
         <div class="card-stats-pills">
           <span class="stat-pill conquer" title="점령한 칸 수">🚩 <strong>${p.conqueredCount || 0}</strong></span>
-          <span class="stat-pill keys" title="보유한 힌트 열쇠">🔑 <strong>${p.hintKeys || 0}</strong></span>
         </div>
         ${p.isIslandSkip ? '<span class="island-status-badge">🏝️ 무인도</span>' : ''}
       `;
@@ -1796,7 +1733,6 @@ class WorldGameApp {
     this.state.players.forEach(p => {
       p.position = 0;
       p.conqueredCount = 0;
-      p.hintKeys = 1;
       p.isIslandSkip = false;
     });
     this.renderBoard();

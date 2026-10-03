@@ -416,11 +416,11 @@ export const BOARD_CELLS = [
   {
     index: 17,
     type: 'hint_key',
-    title: '힌트 열쇠 획득!',
-    badge: '🔑',
+    title: '교과서 찬스!',
+    badge: '📖',
     category: '특수 찬스',
     region: '사하라 오아시스',
-    description: '황금 열쇠를 획득했습니다! 다음 퀴즈 풀이 시 초성 힌트 찬스를 사용할 수 있습니다.',
+    description: '교과서 찬스 칸에 도착했습니다! 상단의 [교과서 말판]을 눌러 정답과 개념을 복습해 보세요.',
     color: '#facc15'
   },
   {
