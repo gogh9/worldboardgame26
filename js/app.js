@@ -1004,6 +1004,19 @@ class WorldGameApp {
       cellElem.addEventListener('click', () => {
         if (this.state.worldTravelPending && this.isMyTurn()) {
           this.handleWorldTravelSelect(cell.index);
+          return;
+        }
+
+        // 보드판의 칸을 클릭했을 때 문제/카드 내용 즉시 팝업 표시
+        const currPlayer = this.state.players[this.state.turnIndex];
+        const isCurrentCell = currPlayer && currPlayer.position === cell.index;
+
+        if (cell.type === 'quiz') {
+          this.openQuizModal(cell, this.state.turnIndex, cell.index, !isCurrentCell);
+        } else if (cell.type === 'terrain_card' || cell.type === 'climate_card') {
+          this.openCardModal(cell.type, this.state.turnIndex, cell.index, !isCurrentCell);
+        } else if (cell.type === 'desert_island' || cell.type === 'world_travel' || cell.type === 'hint_key') {
+          this.openSpecialModal(cell.title, cell.description, null);
         }
       });
 
@@ -1222,23 +1235,18 @@ class WorldGameApp {
      CELL ARRIVAL & EVENT HANDLING (Quiz / Cards / Special)
      ======================================================================== */
   handleCellArrival(playerIdx, cellIndex) {
+    this.state.isRolling = false;
     const cell = this.state.cells[cellIndex];
     const player = this.state.players[playerIdx];
     if (!player || !cell) return;
 
     this.addLog(`📍 ${player.name}님이 [${cell.title}] 칸에 도착했습니다.`);
 
-    // 현재 기기에서 조작해야 하는 플레이어인지 확인 (로컬 1기기, 1인 플레이, 온라인 내 차례)
-    const isCurrentPlayer = (this.mode === 'LOCAL') || 
-                            (this.state.players.length <= 1) || 
-                            (player.id === this.myPlayerId) || 
-                            (this.network && player.peerId === this.network.myId);
-
     // 1. 출발선
     if (cell.type === 'start') {
       sound.playItemGet();
       this.showToast('출발선을 통과하여 한 바퀴를 완주했습니다! 🚀');
-      if (isCurrentPlayer) this.advanceTurn();
+      if (this.isMyTurn()) this.advanceTurn();
       return;
     }
 
@@ -1246,34 +1254,30 @@ class WorldGameApp {
     if (cell.type === 'desert_island') {
       player.isIslandSkip = true;
       sound.playWrong();
-      if (isCurrentPlayer) {
-        this.openSpecialModal('🏝️ 무인도 조난!', `${player.name}님이 무인도에 표류되었습니다. 다음 차례 1회 휴식합니다!`, () => {
-          this.advanceTurn();
-        });
-      }
+      this.openSpecialModal('🏝️ 무인도 조난!', `${player.name}님이 무인도에 표류되었습니다. 다음 차례 1회 휴식합니다!`, () => {
+        if (this.isMyTurn()) this.advanceTurn();
+      });
       return;
     }
 
     // 3. 교과서 찬스 칸
     if (cell.type === 'hint_key') {
       sound.playItemGet();
-      if (isCurrentPlayer) {
-        this.openSpecialModal('📖 교과서 찬스 칸!', `교과서 찬스 칸에 도착했습니다! 상단의 [교과서] 버튼을 눌러 학습 내용을 확인해 보세요!`, () => {
-          this.advanceTurn();
-        });
-      }
+      this.openSpecialModal('📖 교과서 찬스 칸!', `교과서 찬스 칸에 도착했습니다! 상단의 [교과서] 버튼을 눌러 학습 내용을 확인해 보세요!`, () => {
+        if (this.isMyTurn()) this.advanceTurn();
+      });
       return;
     }
 
     // 4. 세계여행
     if (cell.type === 'world_travel') {
       sound.playItemGet();
-      if (isCurrentPlayer) {
-        this.openSpecialModal('✈️ 세계여행 찬스!', `축하합니다! 지금 보드판에서 원하는 칸을 직접 클릭하여 즉시 날아갈 수 있습니다!`, () => {
+      this.openSpecialModal('✈️ 세계여행 찬스!', `축하합니다! 지금 보드판에서 원하는 칸을 직접 클릭하여 즉시 날아갈 수 있습니다!`, () => {
+        if (this.isMyTurn()) {
           this.state.worldTravelPending = true;
           this.showToast('보드판에서 가고 싶은 칸을 클릭하세요! ✈️');
-        });
-      }
+        }
+      });
       return;
     }
 
@@ -1282,27 +1286,21 @@ class WorldGameApp {
       const owner = this.state.players.find(p => p.id === cell.ownerId);
       const ownerName = owner ? owner.name : '다른 플레이어';
       this.addLog(`이미 ${ownerName}님이 점령한 칸입니다. 다음 턴으로 넘어갑니다.`);
-      if (isCurrentPlayer) this.advanceTurn();
+      this.showToast(`이미 ${ownerName}님이 점령한 칸입니다.`);
+      if (this.isMyTurn()) this.advanceTurn();
       return;
     }
 
-    // 6. 지형/기후 카드 미션
+    // 6. 지형/기후 카드 미션 (언제나 팝업 표시!)
     if (cell.type === 'terrain_card' || cell.type === 'climate_card') {
-      if (isCurrentPlayer) {
-        this.openCardModal(cell.type, playerIdx, cellIndex);
-      } else {
-        this.showToast(`${player.name}님이 ${cell.title} 미션을 풀고 있습니다... 🎴`);
-      }
+      this.openCardModal(cell.type, playerIdx, cellIndex);
       return;
     }
 
-    // 7. 일반 퀴즈
+    // 7. 일반 퀴즈 (언제나 팝업 표시!)
     if (cell.type === 'quiz') {
-      if (isCurrentPlayer) {
-        this.openQuizModal(cell, playerIdx, cellIndex);
-      } else {
-        this.showToast(`${player.name}님이 ${cell.title} 퀴즈를 풀고 있습니다... ❓`);
-      }
+      this.openQuizModal(cell, playerIdx, cellIndex);
+      return;
     }
   }
 
@@ -1338,8 +1336,8 @@ class WorldGameApp {
   /* ========================================================================
      QUIZ MODAL HANDLING (단답형 주관식)
      ======================================================================== */
-  openQuizModal(cell, playerIdx, cellIndex) {
-    const player = this.state.players[playerIdx];
+  openQuizModal(cell, playerIdx, cellIndex, isPreview = false) {
+    const player = this.state.players[playerIdx] || this.state.players[0] || { name: '탐험가', id: 0 };
     this.state.activeQuiz = { cell, playerIdx, cellIndex };
 
     const badgeElem = document.getElementById('quiz-cell-badge');
@@ -1355,29 +1353,69 @@ class WorldGameApp {
     const inputForm = document.getElementById('quiz-input-form');
     const inputAnswer = document.getElementById('quiz-input-answer');
     const btnSubmit = document.getElementById('btn-quiz-submit');
-
-    if (inputAnswer) {
-      inputAnswer.value = '';
-      inputAnswer.placeholder = '정답을 입력하세요';
-      inputAnswer.disabled = false;
-    }
-    if (btnSubmit) btnSubmit.disabled = false;
-
     const feedbackBox = document.getElementById('quiz-feedback-box');
     if (feedbackBox) feedbackBox.classList.add('hidden');
 
-    // 폼 제출 핸들러 (버튼 클릭 & 엔터키)
-    if (inputForm) {
-      inputForm.onsubmit = (e) => {
-        e.preventDefault();
-        const userText = inputAnswer ? inputAnswer.value.trim() : '';
-        if (!userText) {
-          this.showToast('⚠️ 정답을 입력해주세요!');
-          if (inputAnswer) inputAnswer.focus();
-          return;
+    // 현재 플레이어가 직접 정답을 맞힐 수 있는 권한인지 확인
+    const canAnswer = !isPreview && (
+      (this.mode === 'LOCAL') || 
+      (this.state.players.length <= 1) || 
+      (playerIdx === this.state.turnIndex && (player.id === this.myPlayerId || !this.network))
+    );
+
+    if (canAnswer) {
+      if (inputForm) inputForm.style.display = 'flex';
+      if (inputAnswer) {
+        inputAnswer.value = '';
+        inputAnswer.placeholder = '정답을 입력하세요';
+        inputAnswer.disabled = false;
+      }
+      if (btnSubmit) {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = '정답 제출 ➔';
+        btnSubmit.style.display = 'block';
+      }
+
+      if (inputForm) {
+        inputForm.onsubmit = (e) => {
+          e.preventDefault();
+          const userText = inputAnswer ? inputAnswer.value.trim() : '';
+          if (!userText) {
+            this.showToast('⚠️ 정답을 입력해주세요!');
+            if (inputAnswer) inputAnswer.focus();
+            return;
+          }
+          this.submitQuizAnswer(userText, cell, playerIdx, cellIndex);
+        };
+      }
+    } else if (isPreview) {
+      if (inputForm) inputForm.style.display = 'none';
+      if (feedbackBox) {
+        const icon = document.getElementById('feedback-icon');
+        const title = document.getElementById('feedback-title');
+        const desc = document.getElementById('feedback-desc');
+        const btnConfirm = document.getElementById('btn-quiz-confirm');
+        if (icon) icon.textContent = '📖';
+        if (title) title.textContent = cell.ownerId !== null ? `점령 완료 (${cell.answer})` : '교과서 탐험 퀴즈';
+        if (desc) desc.textContent = cell.explanation || '교과서에 수록된 지형/기후 문제 칸입니다.';
+        if (btnConfirm) {
+          btnConfirm.textContent = '확인 (닫기)';
+          btnConfirm.onclick = () => this.closeModal(this.modalQuiz);
         }
-        this.submitQuizAnswer(userText, cell, playerIdx, cellIndex);
-      };
+        feedbackBox.classList.remove('hidden');
+      }
+    } else {
+      if (inputForm) inputForm.style.display = 'flex';
+      if (inputAnswer) {
+        inputAnswer.value = '';
+        inputAnswer.placeholder = `⏳ ${player.name}님이 정답을 생각하고 있습니다...`;
+        inputAnswer.disabled = true;
+      }
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = `${player.name}님의 차례 ⏳`;
+        btnSubmit.style.display = 'block';
+      }
     }
 
     if (!this.modalQuiz) {
@@ -1385,10 +1423,9 @@ class WorldGameApp {
     }
     this.openModal(this.modalQuiz);
 
-    // 모달 오픈 후 입력창 자동 포커스
-    setTimeout(() => {
-      if (inputAnswer) inputAnswer.focus();
-    }, 200);
+    if (canAnswer && inputAnswer) {
+      setTimeout(() => inputAnswer.focus(), 250);
+    }
   }
 
   // 텍스트 유사도 및 한국어 정규화 정답 판정
@@ -1413,8 +1450,8 @@ class WorldGameApp {
 
     const inputAnswer = document.getElementById('quiz-input-answer');
     const btnSubmit = document.getElementById('btn-quiz-submit');
-    inputAnswer.disabled = true;
-    btnSubmit.disabled = true;
+    if (inputAnswer) inputAnswer.disabled = true;
+    if (btnSubmit) btnSubmit.disabled = true;
 
     if (isCorrect) {
       sound.playCorrect();
@@ -1430,12 +1467,14 @@ class WorldGameApp {
     const feedbackTitle = document.getElementById('feedback-title');
     const feedbackDesc = document.getElementById('feedback-desc');
 
-    feedbackIcon.textContent = isCorrect ? '🎉' : '💡';
-    feedbackTitle.textContent = isCorrect
-      ? `정답입니다! ('${cell.answer}') 칸을 점령했습니다.`
-      : `아쉽네요! 입력: '${userText}' ➔ 정답: '${cell.answer}'`;
-    feedbackDesc.textContent = cell.explanation;
-    feedbackBox.classList.remove('hidden');
+    if (feedbackIcon) feedbackIcon.textContent = isCorrect ? '🎉' : '💡';
+    if (feedbackTitle) {
+      feedbackTitle.textContent = isCorrect
+        ? `정답입니다! ('${cell.answer}') 칸을 점령했습니다.`
+        : `아쉽네요! 입력: '${userText}' ➔ 정답: '${cell.answer}'`;
+    }
+    if (feedbackDesc) feedbackDesc.textContent = cell.explanation;
+    if (feedbackBox) feedbackBox.classList.remove('hidden');
 
     // 온라인 멀티 동기화 전송
     if (this.mode === 'ONLINE') {
@@ -1453,35 +1492,37 @@ class WorldGameApp {
     const btnConfirm = document.getElementById('btn-quiz-confirm');
     let autoTimer = null;
     let countdown = 3;
-    btnConfirm.textContent = `다음으로 진행 ➔ (${countdown}초)`;
+    if (btnConfirm) {
+      btnConfirm.textContent = `다음으로 진행 ➔ (${countdown}초)`;
 
-    autoTimer = setInterval(() => {
-      countdown--;
-      if (countdown <= 0) {
-        clearInterval(autoTimer);
+      autoTimer = setInterval(() => {
+        countdown--;
+        if (countdown <= 0) {
+          clearInterval(autoTimer);
+          this.closeModal(this.modalQuiz);
+          this.advanceTurn();
+        } else {
+          btnConfirm.textContent = `다음으로 진행 ➔ (${countdown}초)`;
+        }
+      }, 1000);
+
+      btnConfirm.onclick = () => {
+        if (autoTimer) clearInterval(autoTimer);
         this.closeModal(this.modalQuiz);
         this.advanceTurn();
-      } else {
-        btnConfirm.textContent = `다음으로 진행 ➔ (${countdown}초)`;
-      }
-    }, 1000);
-
-    btnConfirm.onclick = () => {
-      if (autoTimer) clearInterval(autoTimer);
-      this.closeModal(this.modalQuiz);
-      this.advanceTurn();
-    };
+      };
+    }
   }
 
   /* ========================================================================
      CARD MISSION MODAL HANDLING (단답형 주관식)
      ======================================================================== */
-  openCardModal(cardType, playerIdx, cellIndex) {
+  openCardModal(cardType, playerIdx, cellIndex, isPreview = false) {
     const isClimate = cardType === 'climate_card';
     const cardList = isClimate ? CLIMATE_CARDS : TERRAIN_CARDS;
     const cardData = cardList[Math.floor(Math.random() * cardList.length)];
     this.state.activeCard = { cardData, cardType, playerIdx, cellIndex };
-    const player = this.state.players[playerIdx];
+    const player = this.state.players[playerIdx] || this.state.players[0] || { name: '탐험가', id: 0 };
 
     const typeBadge = document.getElementById('card-type-badge');
     if (typeBadge) {
@@ -1493,7 +1534,7 @@ class WorldGameApp {
     if (photoImg) {
       photoImg.src = cardData.image;
       photoImg.style.animation = 'none';
-      void photoImg.offsetWidth; // trigger reflow for smooth pop-in animation
+      void photoImg.offsetWidth;
       photoImg.style.animation = 'cardPhotoReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
     }
 
@@ -1512,28 +1553,66 @@ class WorldGameApp {
     const cardInputForm = document.getElementById('card-input-form');
     const cardInputAnswer = document.getElementById('card-input-answer');
     const btnCardSubmit = document.getElementById('btn-card-submit');
-
-    if (cardInputAnswer) {
-      cardInputAnswer.value = '';
-      cardInputAnswer.placeholder = '정답을 입력하세요';
-      cardInputAnswer.disabled = false;
-    }
-    if (btnCardSubmit) btnCardSubmit.disabled = false;
-
     const feedbackBox = document.getElementById('card-feedback-box');
     if (feedbackBox) feedbackBox.classList.add('hidden');
 
-    if (cardInputForm) {
-      cardInputForm.onsubmit = (e) => {
-        e.preventDefault();
-        const userText = cardInputAnswer ? cardInputAnswer.value.trim() : '';
-        if (!userText) {
-          this.showToast('⚠️ 사진의 정답을 입력해주세요!');
-          if (cardInputAnswer) cardInputAnswer.focus();
-          return;
+    const canAnswer = !isPreview && (
+      (this.mode === 'LOCAL') || 
+      (this.state.players.length <= 1) || 
+      (playerIdx === this.state.turnIndex && (player.id === this.myPlayerId || !this.network))
+    );
+
+    if (canAnswer) {
+      if (cardInputForm) cardInputForm.style.display = 'flex';
+      if (cardInputAnswer) {
+        cardInputAnswer.value = '';
+        cardInputAnswer.placeholder = '정답을 입력하세요';
+        cardInputAnswer.disabled = false;
+      }
+      if (btnCardSubmit) {
+        btnCardSubmit.disabled = false;
+        btnCardSubmit.textContent = '정답 제출 ➔';
+        btnCardSubmit.style.display = 'block';
+      }
+
+      if (cardInputForm) {
+        cardInputForm.onsubmit = (e) => {
+          e.preventDefault();
+          const userText = cardInputAnswer ? cardInputAnswer.value.trim() : '';
+          if (!userText) {
+            this.showToast('⚠️ 사진의 정답을 입력해주세요!');
+            if (cardInputAnswer) cardInputAnswer.focus();
+            return;
+          }
+          this.submitCardAnswer(userText, cardData, playerIdx, cellIndex);
+        };
+      }
+    } else if (isPreview) {
+      if (cardInputForm) cardInputForm.style.display = 'none';
+      if (feedbackBox) {
+        const title = document.getElementById('card-feedback-title');
+        const desc = document.getElementById('card-feedback-desc');
+        const btnConfirm = document.getElementById('btn-card-confirm');
+        if (title) title.textContent = `카드: ${cardData.name}`;
+        if (desc) desc.textContent = cardData.description;
+        if (btnConfirm) {
+          btnConfirm.textContent = '확인 (닫기)';
+          btnConfirm.onclick = () => this.closeModal(this.modalCard);
         }
-        this.submitCardAnswer(userText, cardData, playerIdx, cellIndex);
-      };
+        feedbackBox.classList.remove('hidden');
+      }
+    } else {
+      if (cardInputForm) cardInputForm.style.display = 'flex';
+      if (cardInputAnswer) {
+        cardInputAnswer.value = '';
+        cardInputAnswer.placeholder = `⏳ ${player.name}님이 사진의 정답을 생각하고 있습니다...`;
+        cardInputAnswer.disabled = true;
+      }
+      if (btnCardSubmit) {
+        btnCardSubmit.disabled = true;
+        btnCardSubmit.textContent = `${player.name}님의 차례 ⏳`;
+        btnCardSubmit.style.display = 'block';
+      }
     }
 
     if (!this.modalCard) {
@@ -1541,9 +1620,9 @@ class WorldGameApp {
     }
     this.openModal(this.modalCard);
 
-    setTimeout(() => {
-      if (cardInputAnswer) cardInputAnswer.focus();
-    }, 400);
+    if (canAnswer && cardInputAnswer) {
+      setTimeout(() => cardInputAnswer.focus(), 250);
+    }
   }
 
   submitCardAnswer(userText, cardData, playerIdx, cellIndex) {
@@ -1552,8 +1631,8 @@ class WorldGameApp {
 
     const cardInputAnswer = document.getElementById('card-input-answer');
     const btnCardSubmit = document.getElementById('btn-card-submit');
-    cardInputAnswer.disabled = true;
-    btnCardSubmit.disabled = true;
+    if (cardInputAnswer) cardInputAnswer.disabled = true;
+    if (btnCardSubmit) btnCardSubmit.disabled = true;
 
     if (isCorrect) {
       sound.playCorrect();
@@ -1568,11 +1647,13 @@ class WorldGameApp {
     const feedbackTitle = document.getElementById('card-feedback-title');
     const feedbackDesc = document.getElementById('card-feedback-desc');
 
-    feedbackTitle.textContent = isCorrect
-      ? `정답입니다! ('${cardData.answer}') 카드 칸을 점령했습니다.`
-      : `아쉽네요! 입력: '${userText}' ➔ 정답: '${cardData.answer}'`;
-    feedbackDesc.textContent = cardData.description;
-    feedbackBox.classList.remove('hidden');
+    if (feedbackTitle) {
+      feedbackTitle.textContent = isCorrect
+        ? `정답입니다! ('${cardData.answer}') 카드 칸을 점령했습니다.`
+        : `아쉽네요! 입력: '${userText}' ➔ 정답: '${cardData.answer}'`;
+    }
+    if (feedbackDesc) feedbackDesc.textContent = cardData.description;
+    if (feedbackBox) feedbackBox.classList.remove('hidden');
 
     if (this.mode === 'ONLINE') {
       this.network.send('SUBMIT_ANSWER', {
@@ -1589,24 +1670,26 @@ class WorldGameApp {
     const btnConfirm = document.getElementById('btn-card-confirm');
     let autoCardTimer = null;
     let cardCountdown = 3;
-    btnConfirm.textContent = `다음으로 진행 ➔ (${cardCountdown}초)`;
+    if (btnConfirm) {
+      btnConfirm.textContent = `다음으로 진행 ➔ (${cardCountdown}초)`;
 
-    autoCardTimer = setInterval(() => {
-      cardCountdown--;
-      if (cardCountdown <= 0) {
-        clearInterval(autoCardTimer);
+      autoCardTimer = setInterval(() => {
+        cardCountdown--;
+        if (cardCountdown <= 0) {
+          clearInterval(autoCardTimer);
+          this.closeModal(this.modalCard);
+          this.advanceTurn();
+        } else {
+          btnConfirm.textContent = `다음으로 진행 ➔ (${cardCountdown}초)`;
+        }
+      }, 1000);
+
+      btnConfirm.onclick = () => {
+        if (autoCardTimer) clearInterval(autoCardTimer);
         this.closeModal(this.modalCard);
         this.advanceTurn();
-      } else {
-        btnConfirm.textContent = `다음으로 진행 ➔ (${cardCountdown}초)`;
-      }
-    }, 1000);
-
-    btnConfirm.onclick = () => {
-      if (autoCardTimer) clearInterval(autoCardTimer);
-      this.closeModal(this.modalCard);
-      this.advanceTurn();
-    };
+      };
+    }
   }
 
   // 타 플레이어의 답안 제출 결과 반영
@@ -1617,10 +1700,39 @@ class WorldGameApp {
     if (payload.isCorrect) {
       sound.playCorrect();
       this.claimCell(payload.playerIdx, payload.cellIndex);
-      this.addLog(`🎉 ${player ? player.name : '플레이어'}님이 [${cell.title}] 문제를 맞혀 점령했습니다!`, 'correct');
+      this.addLog(`🎉 ${player ? player.name : '플레이어'}님이 [${cell ? cell.title : '미션'}] 정답을 맞혀 점령했습니다!`, 'correct');
     } else {
       sound.playWrong();
-      this.addLog(`❌ ${player ? player.name : '플레이어'}님이 아쉽게 문제를 틀렸습니다.`, 'wrong');
+      this.addLog(`❌ ${player ? player.name : '플레이어'}님이 아쉽게 문제를 틀렸습니다. (정답: ${payload.correctAnswer})`, 'wrong');
+    }
+
+    // 모달 결과 화면 갱신
+    const isCard = payload.type === 'CARD';
+    const targetModal = isCard ? this.modalCard : this.modalQuiz;
+    const feedbackBox = document.getElementById(isCard ? 'card-feedback-box' : 'quiz-feedback-box');
+    const feedbackTitle = document.getElementById(isCard ? 'card-feedback-title' : 'feedback-title');
+    const feedbackDesc = document.getElementById(isCard ? 'card-feedback-desc' : 'feedback-desc');
+    const inputForm = document.getElementById(isCard ? 'card-input-form' : 'quiz-input-form');
+    const btnConfirm = document.getElementById(isCard ? 'btn-card-confirm' : 'btn-quiz-confirm');
+
+    if (inputForm) inputForm.style.display = 'none';
+    if (feedbackBox) {
+      if (feedbackTitle) {
+        feedbackTitle.textContent = payload.isCorrect
+          ? `🎉 ${player ? player.name : '플레이어'}님 정답! ('${payload.correctAnswer}') 칸을 점령했습니다.`
+          : `아쉽네요! 입력: '${payload.userText}' ➔ 정답: '${payload.correctAnswer}'`;
+      }
+      if (feedbackDesc) {
+        feedbackDesc.textContent = payload.explanation || payload.description || '';
+      }
+      feedbackBox.classList.remove('hidden');
+
+      if (btnConfirm) {
+        btnConfirm.textContent = '다음으로 진행 ➔';
+        btnConfirm.onclick = () => {
+          this.closeModal(targetModal);
+        };
+      }
     }
   }
 
