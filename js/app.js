@@ -118,6 +118,12 @@ class WorldGameApp {
 
   // 이벤트 바인딩
   initEvents() {
+    window.addEventListener('resize', () => {
+      if (this.state && this.state.status === 'PLAYING') {
+        this.renderPawns();
+      }
+    });
+
     // 1. Navigation & Modals
     const btnGotoLocal = document.getElementById('btn-goto-local');
     if (btnGotoLocal) {
@@ -1066,9 +1072,10 @@ class WorldGameApp {
         offsetY = (orderIndex % 2 === 1) ? -4 : 4;
       }
 
-      // 카드 아래쪽에 말 배치 (문제 지문 가림 방지)
-      const centerX = cellRect.left - layerRect.left + cellRect.width / 2 + offsetX;
-      const centerY = cellRect.top - layerRect.top + cellRect.height * 0.74 + offsetY;
+      // 카드 문제 지문 가림을 100% 방지하기 위해 상단 지문 영역을 피해 하단 풍경 영역(83%) 및 점령스탬프를 피해 좌하단(32%)에 배치
+      const baseX = totalInCell > 1 ? cellRect.width * 0.38 : cellRect.width * 0.32;
+      const centerX = cellRect.left - layerRect.left + baseX + offsetX;
+      const centerY = cellRect.top - layerRect.top + cellRect.height * 0.83 + offsetY;
 
       pawn.style.left = `${centerX}px`;
       pawn.style.top = `${centerY}px`;
