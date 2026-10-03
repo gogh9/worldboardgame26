@@ -1044,7 +1044,7 @@ class WorldGameApp {
       let offsetY = 0;
       if (totalInCell > 1) {
         const angles = [0, Math.PI, Math.PI / 2, (3 * Math.PI) / 2];
-        const radius = 12;
+        const radius = 24;
         offsetX = Math.cos(angles[orderIndex % 4]) * radius;
         offsetY = Math.sin(angles[orderIndex % 4]) * radius;
       }
