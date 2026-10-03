@@ -1705,8 +1705,8 @@ button, input {
    ========================================================================== */
 .dice-widget {
   position: absolute;
-  top: 48%;
-  left: 68%;
+  top: 43%;
+  left: 59%;
   transform: translate(-50%, -50%);
   background: rgba(211, 239, 251, 0.92);
   border: 2px solid rgba(56, 189, 248, 0.6);
