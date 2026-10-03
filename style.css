@@ -3325,3 +3325,37 @@ body {
 #lobby-room-section .player-slot { padding: 20px 22px; }
 #lobby-room-section .character-select-box { padding: 20px 22px; }
 #lobby-room-section .lobby-actions { margin-top: 4px; gap: 16px; }
+
+/* 정답 입력창 + 제출 버튼: 크기 절반 / 한 줄 배치 */
+.quiz-input-form {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.quiz-input-form .quiz-input-wrap { flex: 1 1 auto; width: auto; min-width: 0; }
+.quiz-input-form .quiz-text-input {
+  padding: 7px 12px 7px 32px;
+  font-size: 0.85rem;
+}
+.quiz-input-form .quiz-text-input::placeholder { font-size: 0.75rem; }
+.quiz-input-form .quiz-input-icon { left: 10px; font-size: 0.85rem; }
+.quiz-input-form .btn-submit-quiz {
+  width: auto;
+  flex: 0 0 auto;
+  padding: 7px 16px;
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+/* 로비 버튼(새로운 방 만들기 / 우리반 함께 게임하기): 크기 절반 / 한 줄 배치 */
+.lobby-action-buttons {
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+.lobby-action-buttons .btn {
+  padding: 7px 14px;
+  font-size: 0.7rem;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+}
