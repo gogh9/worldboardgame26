@@ -1635,13 +1635,17 @@ class WorldGameApp {
       currentCell.classList.add('cell-turn-focus');
     }
 
-    // 상단 턴 배너
-    this.turnPlayerName.textContent = currPlayer.name;
-    this.turnPlayerName.style.color = prof.colorHex;
-    this.turnDot.style.backgroundColor = prof.colorHex;
-    this.turnDot.style.boxShadow = `0 0 10px ${prof.colorHex}`;
-    this.gameRoundTag.textContent = `${this.state.round} 라운드`;
-    this.gameModeTag.textContent = this.mode === 'ONLINE' ? '온라인 멀티' : '로컬 1기기';
+    // 상단 턴 배너 (존재할 경우에만 갱신)
+    if (this.turnPlayerName) {
+      this.turnPlayerName.textContent = currPlayer.name;
+      this.turnPlayerName.style.color = prof.colorHex;
+    }
+    if (this.turnDot) {
+      this.turnDot.style.backgroundColor = prof.colorHex;
+      this.turnDot.style.boxShadow = `0 0 10px ${prof.colorHex}`;
+    }
+    if (this.gameRoundTag) this.gameRoundTag.textContent = `${this.state.round} 라운드`;
+    if (this.gameModeTag) this.gameModeTag.textContent = this.mode === 'ONLINE' ? '온라인 멀티' : '로컬 1기기';
 
     // 주사위 버튼 활성화 제어
     const canRoll = this.isMyTurn() && !this.state.isRolling;

@@ -103,25 +103,7 @@
 
     <!-- 4. 메인 보드게임 플레이 화면 -->
     <section id="screen-game" class="screen">
-      <!-- 상단 네비게이션 헤더 -->
-      <header class="game-header">
-        <div class="header-left">
-          <span class="game-logo">🌍 세계여행 말판놀이</span>
-          <span class="mode-tag" id="game-mode-tag">온라인 멀티</span>
-          <span class="round-tag" id="game-round-tag">1 라운드</span>
-        </div>
-        <div class="turn-announcer" id="turn-announcer-banner">
-          <span class="turn-dot" id="turn-dot"></span>
-          <strong id="turn-player-name">레오</strong>님의 차례입니다! 주사위를 굴리세요.
-        </div>
-        <div class="header-right">
-          <button class="btn-icon" id="btn-sound-toggle" title="사운드 켜기/끄기" style="display: none;">🔊</button>
-          <button class="btn-icon" id="btn-game-guide" title="도감 & 규칙">📖</button>
-          <button class="btn-icon btn-exit" id="btn-game-exit" title="게임 나가기">🚪</button>
-        </div>
-      </header>
-
-      <!-- 게임 메인 컨텐츠 영역 (중앙 보드판 내부에 플레이어 현황 및 주사위/로그 완벽 통합) -->
+      <!-- 게임 메인 컨텐츠 영역 (화면 전체 확장) -->
       <main class="game-layout">
         
         <!-- 중앙 보드판 영역 -->
@@ -131,7 +113,7 @@
             <!-- 중앙 영역: 좌측 컴팩트 조작 패널 + 우측 대형 고화질 세계지도 말판 -->
             <div class="board-center-area">
               
-              <!-- 좌측 사이드바: 참가 탐험가 목록 + 주사위 조작 + 교과서 버튼 -->
+              <!-- 좌측 사이드바: 참가 탐험가 목록 + 주사위 조작 + 하단 액션 버튼 -->
               <div class="center-sidebar-panel">
                 <!-- 참가자 목록 (컴팩트 카드) -->
                 <div class="center-players-section" id="players-status-panel">
@@ -163,7 +145,12 @@
                   </div>
                 </div>
 
-                <button class="btn btn-sm btn-outline btn-textbook-view" id="btn-quick-textbook" title="교과서 원본 말판 보기">📖 교과서 말판</button>
+                <!-- 하단 액션 버튼 바 -->
+                <div class="sidebar-action-buttons">
+                  <button class="btn btn-sm btn-outline btn-textbook-view" id="btn-quick-textbook" title="교과서 원본 말판 보기">📖 교과서</button>
+                  <button class="btn btn-sm btn-outline" id="btn-game-guide" title="도감 & 규칙">📜 도감</button>
+                  <button class="btn btn-sm btn-outline btn-exit" id="btn-game-exit" title="게임 나가기">🚪</button>
+                </div>
               </div>
 
               <!-- 우측 대형 고화질 세계지도 말판 뷰 & 실시간 말 레이어 -->
