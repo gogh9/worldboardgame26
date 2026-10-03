@@ -1019,7 +1019,8 @@ class WorldGameApp {
         } else if (cell.type === 'terrain_card' || cell.type === 'climate_card') {
           this.openCardModal(cell.type, this.state.turnIndex, cell.index, !isCurrentCell);
         } else if (cell.type === 'desert_island' || cell.type === 'world_travel' || cell.type === 'hint_key') {
-          this.openSpecialModal(cell.title, cell.description, null);
+          const icon = cell.badge || (cell.type === 'desert_island' ? '🏝️' : cell.type === 'world_travel' ? '✈️' : '📖');
+          this.openSpecialModal(cell.title, cell.description, null, icon);
         }
       });
 
@@ -1266,9 +1267,9 @@ class WorldGameApp {
     // 3. 교과서 찬스 칸
     if (cell.type === 'hint_key') {
       sound.playItemGet();
-      this.openSpecialModal('📖 교과서 찬스 칸!', `교과서 찬스 칸에 도착했습니다! 상단의 [교과서] 버튼을 눌러 학습 내용을 확인해 보세요!`, () => {
+      this.openSpecialModal('📖 교과서 찬스!', `다음 차례에 교과서를 10초 동안 볼 수 있어요.`, () => {
         if (this.isMyTurn()) this.advanceTurn();
-      });
+      }, '📖');
       return;
     }
 
@@ -1314,7 +1315,21 @@ class WorldGameApp {
     this.teleportPawn(this.state.turnIndex, targetIndex);
   }
 
-  openSpecialModal(title, desc, onConfirm) {
+  openSpecialModal(title, desc, onConfirm, icon = null) {
+    const iconElem = document.getElementById('special-icon');
+    if (iconElem) {
+      if (icon) {
+        iconElem.textContent = icon;
+      } else if (title && title.includes('무인도')) {
+        iconElem.textContent = '🏝️';
+      } else if (title && title.includes('세계여행')) {
+        iconElem.textContent = '✈️';
+      } else if (title && title.includes('교과서')) {
+        iconElem.textContent = '📖';
+      } else {
+        iconElem.textContent = '⭐';
+      }
+    }
     const titleElem = document.getElementById('special-title');
     if (titleElem) titleElem.textContent = title;
     const descElem = document.getElementById('special-desc');

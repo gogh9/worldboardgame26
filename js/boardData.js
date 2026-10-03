@@ -420,7 +420,7 @@ export const BOARD_CELLS = [
     badge: '📖',
     category: '특수 찬스',
     region: '사하라 오아시스',
-    description: '교과서 찬스 칸에 도착했습니다! 상단의 [교과서 말판]을 눌러 정답과 개념을 복습해 보세요.',
+    description: '다음 차례에 교과서를 10초 동안 볼 수 있어요.',
     color: '#facc15'
   },
   {
