@@ -1359,11 +1359,11 @@ class WorldGameApp {
     this.state.activeQuiz = { cell, playerIdx, cellIndex };
 
     const badgeElem = document.getElementById('quiz-cell-badge');
-    if (badgeElem) badgeElem.textContent = cell.category || '퀴즈';
+    if (badgeElem) {
+      badgeElem.textContent = cell.badge && !isNaN(cell.badge) ? `문제 ${cell.badge} (${cell.category || '퀴즈'})` : (cell.category || '퀴즈');
+    }
     const regionElem = document.getElementById('quiz-cell-region');
     if (regionElem) regionElem.textContent = cell.region || '';
-    const titleElem = document.getElementById('quiz-cell-title');
-    if (titleElem) titleElem.textContent = cell.title || '';
     const qTextElem = document.getElementById('quiz-question-text');
     if (qTextElem) qTextElem.textContent = cell.question || '';
 
