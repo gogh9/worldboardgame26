@@ -67,6 +67,10 @@ button, input {
   font-family: inherit;
 }
 
+.hidden, [hidden] {
+  display: none !important;
+}
+
 /* Common Screen Management */
 .app-container {
   width: 100vw;

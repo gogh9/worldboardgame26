@@ -274,11 +274,15 @@ class WorldGameApp {
   }
 
   openModal(modalElem) {
+    if (!modalElem) return;
     modalElem.classList.add('active');
+    modalElem.style.display = 'flex';
   }
 
   closeModal(modalElem) {
+    if (!modalElem) return;
     modalElem.classList.remove('active');
+    modalElem.style.display = 'none';
   }
 
   showToast(msg) {
