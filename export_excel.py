@@ -1,156 +1,188 @@
-import json
+import csv
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-# 1. 데이터 정의
+# 1. 데이터 정의 (지형/기후 단답형 정답 및 글자 수 표기 완벽 반영)
 CLIMATE_CARDS = [
   {
     "id": "c1",
-    "name": "열대 우림 (밀림/정글)",
+    "name": "1. 열대 (열대 우림/밀림)",
     "image": "assets/cards/climate_1.jpg",
-    "description": "연중 기온이 높고 강수량이 많아 키 큰 나무들이 빽빽하게 우거진 숲입니다.",
-    "options": ["열대 우림 (밀림)", "온대 활엽수림", "냉대 타이가 침엽수림", "사바나 초원"],
-    "answerIndex": 0,
-    "hint": "적도 부근으로 키가 큰 상록활엽수가 울창하게 숲을 이룹니다."
+    "question": "위 사진이 나타내는 기후는 무엇일까요? (○○)",
+    "description": "연중 기온이 높고 강수량이 많아 키 큰 나무들이 빽빽하게 우거진 밀림이 형성되는 열대 기후입니다.",
+    "answer": "열대",
+    "acceptableAnswers": "열대, 열대 기후, 열대 우림, 밀림, 정글",
+    "initialHint": "ㅇㄷ",
+    "hint": "적도 부근으로 1년 내내 덥고 비가 많이 내리는 기후입니다."
   },
   {
     "id": "c2",
-    "name": "열대 기후 고상 가옥",
+    "name": "2. 열대 (고상 가옥)",
     "image": "assets/cards/climate_2.jpg",
-    "description": "지면의 열기와 습기를 피하고 통풍을 원활하게 하기 위해 바닥을 높게 띄워 지은 가옥입니다.",
-    "options": ["열대 기후 고상 가옥", "사막 흙벽돌집", "한대 기후 이글루", "지중해식 흰벽 가옥"],
-    "answerIndex": 0,
-    "hint": "지면에서 올라오는 습기, 해충, 열기를 막기 위해 기둥 위에 집을 짓습니다."
+    "question": "위 사진의 고상 가옥이 주로 발달한 기후는 무엇일까요? (○○)",
+    "description": "지면의 열기와 습기, 해충을 피하고 통풍을 원활하게 하기 위해 기둥 위에 집을 짓는 열대 기후입니다.",
+    "answer": "열대",
+    "acceptableAnswers": "열대, 열대 기후, 고상 가옥",
+    "initialHint": "ㅇㄷ",
+    "hint": "지면에서 올라오는 습기와 열기를 막기 위해 바닥을 띄워 집을 짓는 기후입니다."
   },
   {
     "id": "c3",
-    "name": "사막 흙벽돌 가옥 (카스바)",
+    "name": "3. 건조 (흙벽돌 가옥)",
     "image": "assets/cards/climate_3.jpg",
-    "description": "건조 기후 지역에서 뜨거운 햇볕과 모래바람을 막기 위해 벽을 두껍게 하고 창문을 작게 낸 흙벽돌 가옥입니다.",
-    "options": ["사막 건조 흙벽돌 가옥", "열대 고상 가옥", "유목민 텐트(게르)", "툰드라 목조 가옥"],
-    "answerIndex": 0,
-    "hint": "주변에서 구하기 쉬운 진흙을 햇볕에 말려 벽을 두껍게 만듭니다."
+    "question": "위 사진의 흙벽돌 가옥이 주로 발달한 기후는 무엇일까요? (○○)",
+    "description": "뜨거운 햇볕과 모래바람을 막기 위해 벽을 두껍게 하고 창문을 작게 낸 흙벽돌집이 많은 건조 기후입니다.",
+    "answer": "건조",
+    "acceptableAnswers": "건조, 건조 기후, 사막 기후, 사막",
+    "initialHint": "ㄱㅈ",
+    "hint": "비가 거의 오지 않고 햇볕이 뜨거워 흙벽돌로 두껍게 집을 짓는 기후입니다."
   },
   {
     "id": "c4",
-    "name": "게르 (초원 유목민 이동식 가옥)",
+    "name": "4. 건조 (게르/초원 유목)",
     "image": "assets/cards/climate_4.jpg",
-    "description": "몽골 등 건조 스텝 초원 지대에서 풀을 찾아 가축을 몰고 이동하기 위해 조립과 해체가 쉽게 만든 이동식 천막입니다.",
-    "options": ["게르 (이동식 천막 가옥)", "이글루", "수상 가옥", "고상 가옥"],
-    "answerIndex": 0,
-    "hint": "가축의 가죽과 펠트로 덮은 둥근 형태의 몽골 전통 가옥입니다."
+    "question": "위 사진의 이동식 천막(게르)이 주로 발달한 기후는 무엇일까요? (○○)",
+    "description": "풀을 찾아 가축을 몰고 이동하기 위해 조립과 해체가 쉬운 천막(게르)을 짓고 유목 생활을 하는 건조(스텝) 기후입니다.",
+    "answer": "건조",
+    "acceptableAnswers": "건조, 건조 기후, 스텝 기후, 스텝, 게르",
+    "initialHint": "ㄱㅈ",
+    "hint": "비가 적게 내려 나무는 잘 자라지 않고 풀이 자라는 초원에서 유목을 하는 기후입니다."
   },
   {
     "id": "c5",
-    "name": "지중해성 기후 올리브 농업",
+    "name": "5. 온대 (지중해성 올리브 농업)",
     "image": "assets/cards/climate_5.jpg",
-    "description": "여름이 덥고 건조한 지중해 연안에서 가뭄을 잘 견디는 올리브, 코르크, 포도 등을 재배하는 수목 농업입니다.",
-    "options": ["지중해성 수목 농업 (올리브)", "열대 플랜테이션 (고무)", "냉대 임업 (목재)", "벼농사"],
-    "answerIndex": 0,
-    "hint": "여름철 건조한 기후에 잎이 두껍고 단단한 나무를 재배합니다."
+    "question": "위 사진의 올리브 농업이 주로 발달한 기후는 무엇일까요? (○○)",
+    "description": "여름이 덥고 건조하여 가뭄을 잘 견디는 올리브, 코르크, 포도 등을 재배하는 온대(지중해성) 기후입니다.",
+    "answer": "온대",
+    "acceptableAnswers": "온대, 온대 기후, 지중해성 기후, 지중해성",
+    "initialHint": "ㅇㄷ",
+    "hint": "사계절이 비교적 뚜렷하며 지중해 연안처럼 여름철 건조한 기후에 올리브를 재배합니다."
   },
   {
     "id": "c6",
-    "name": "냉대 타이가 침엽수림",
+    "name": "6. 냉대 (타이가 침엽수림)",
     "image": "assets/cards/climate_6.jpg",
-    "description": "러시아 시베리아와 캐나다 등 냉대 기후 지역에 넓게 펼쳐진 가문비나무, 소나무 등 침엽수림 지대입니다.",
-    "options": ["냉대 타이가 (침엽수림)", "열대 우림", "지중해 관목림", "사바나 초원"],
-    "answerIndex": 0,
-    "hint": "추운 겨울을 견디기 위해 잎이 바늘 모양인 침엽수로 가득한 숲입니다."
+    "question": "위 사진의 침엽수림(타이가)이 넓게 펼쳐진 기후는 무엇일까요? (○○)",
+    "description": "겨울이 춥고 길어 가문비나무, 소나무 등 바늘잎 침엽수림(타이가)이 울창하게 발달한 냉대 기후입니다.",
+    "answer": "냉대",
+    "acceptableAnswers": "냉대, 냉대 기후, 타이가",
+    "initialHint": "ㄴㄷ",
+    "hint": "러시아 시베리아와 캐나다 등 겨울이 매우 춥고 침엽수림이 가득한 기후입니다."
   },
   {
     "id": "c7",
-    "name": "이글루 (한대 기후 얼음집)",
+    "name": "7. 한대 (이글루/얼음집)",
     "image": "assets/cards/climate_7.jpg",
-    "description": "극지방의 이누이트족이 겨울철 사냥 중에 눈과 얼음 벽돌을 둥글게 쌓아 임시로 거처하던 집입니다.",
-    "options": ["이글루 (눈과 얼음집)", "고상 가옥", "황토 굴집", "게르"],
-    "answerIndex": 0,
-    "hint": "눈 블록을 나선형으로 돔 형태로 쌓아 만듭니다."
+    "question": "위 사진의 이글루가 주로 발달한 기후는 무엇일까요? (○○)",
+    "description": "눈과 얼음 벽돌을 둥글게 쌓은 이글루처럼 1년 내내 매우 추운 극지방의 한대 기후입니다.",
+    "answer": "한대",
+    "acceptableAnswers": "한대, 한대 기후, 툰드라 기후, 툰드라",
+    "initialHint": "ㅎㄷ",
+    "hint": "북극이나 남극 주변처럼 1년 내내 영하의 기온으로 얼음과 눈이 가득한 기후입니다."
   },
   {
     "id": "c8",
-    "name": "안데스 고산 도시 (라파스)",
+    "name": "8. 고산 (상춘 기후 도시)",
     "image": "assets/cards/climate_8.jpg",
-    "description": "열대 지역이지만 해발고도가 높아 1년 내내 봄과 같은 온화한 기후(상춘 기후)가 나타나는 고산 지대 도시입니다.",
-    "options": ["고산 기후 도시 (라파스)", "해안 무역항", "사막 오아시스 도시", "극지방 빙설 기지"],
-    "answerIndex": 0,
-    "hint": "해발 3,000m 이상의 높은 산지에 형성된 대도시입니다."
+    "question": "위 사진처럼 높은 산지에 대도시가 형성된 기후는 무엇일까요? (○○)",
+    "description": "열대 지역이지만 해발고도가 높아 1년 내내 봄과 같은 온화한 날씨(상춘 기후)가 나타나는 고산 기후입니다.",
+    "answer": "고산",
+    "acceptableAnswers": "고산, 고산 기후, 상춘 기후",
+    "initialHint": "ㄱㅅ",
+    "hint": "해발 3,000m 이상의 높은 산지에 위치하여 1년 내내 봄 날씨가 이어지는 기후입니다."
   }
 ]
 
 TERRAIN_CARDS = [
   {
     "id": "t1",
-    "name": "혼 / 호른 (빙하 침식 뾰족봉)",
+    "name": "1. 산 (마터호른/혼)",
     "image": "assets/cards/terrain_1.jpg",
-    "description": "여러 빙하의 침식 작용으로 산봉우리가 깎여 만들어진 뾰족한 피라미드 모양의 봉우리(예: 마터호른)입니다.",
-    "options": ["혼 / 호른 (빙하 침식 봉우리)", "화산 분화구", "석회암 카르스트 탑", "사막 모래 언덕"],
-    "answerIndex": 0,
-    "hint": "스위스 마터호른처럼 빙하가 사방에서 깎아내어 뾰족해진 봉우리입니다."
+    "question": "위 사진이 나타내는 지형은 무엇일까요? (○)",
+    "description": "여러 빙하의 침식 작용으로 산봉우리가 뾰족하게 깎인 스위스 마터호른 같은 험준한 산 지형입니다.",
+    "answer": "산",
+    "acceptableAnswers": "산, 산지, 높은 산, 혼, 호른",
+    "initialHint": "ㅅ",
+    "hint": "주변보다 높이 솟아오른 험준한 지형으로, 봉우리가 뾰족합니다."
   },
   {
     "id": "t2",
-    "name": "대협곡 (그랜드 캐니언)",
+    "name": "2. 고원 (대협곡/평탄지)",
     "image": "assets/cards/terrain_2.jpg",
-    "description": "오랜 세월 하천의 깊은 침식과 풍화 작용으로 깎여 형성된 웅장한 계곡 지형입니다.",
-    "options": ["대협곡 (그랜드 캐니언)", "화산 칼데라", "빙하 유자곡", "해안 절벽"],
-    "answerIndex": 0,
-    "hint": "강물이 단단한 지층을 수백만 년 동안 깊게 깎아 만든 거대한 계곡입니다."
+    "question": "위 사진이 나타내는 지형은 무엇일까요? (○○)",
+    "description": "해발고도가 높은 곳에 평탄한 면이 넓게 펼쳐져 있는 고원 지형입니다.",
+    "answer": "고원",
+    "acceptableAnswers": "고원, 고원지대, 고원 지대, 대협곡",
+    "initialHint": "ㄱㅇ",
+    "hint": "높은 산지에 위치하지만 위쪽이 평평하게 펼쳐진 지형입니다."
   },
   {
     "id": "t3",
-    "name": "화산 및 용암 분출 지형",
+    "name": "3. 화산 (용암 분출)",
     "image": "assets/cards/terrain_3.jpg",
-    "description": "지하 마그마가 지표면을 뚫고 분출하여 용암이 흘러내리며 형성된 화산 지형입니다.",
-    "options": ["화산 및 용암 지형", "빙하 지형", "카르스트 지형", "풍식 지형"],
-    "answerIndex": 0,
-    "hint": "지구 내부의 뜨거운 마그마와 가스가 뿜어져 나오는 지형입니다."
+    "question": "위 사진이 나타내는 지형은 무엇일까요? (○○)",
+    "description": "지하 마그마가 지표면을 뚫고 분출하여 용암과 화산재가 흘러내려 형성된 화산 지형입니다.",
+    "answer": "화산",
+    "acceptableAnswers": "화산, 화산 지형, 화산지형, 용암",
+    "initialHint": "ㅎㅅ",
+    "hint": "지구 내부의 뜨거운 마그마와 용암이 뿜어져 나와 만들어진 산입니다."
   },
   {
     "id": "t4",
-    "name": "하천 곡류 및 범람원/삼각주",
+    "name": "4. 강 (하천 곡류/평야)",
     "image": "assets/cards/terrain_4.jpg",
-    "description": "강물이 굽이쳐 흐르며 퇴적물이 쌓여 만들어진 넓은 평야와 농경지 지형입니다.",
-    "options": ["하천 곡류 및 충적 평야", "사막 오아시스", "해안 사구", "빙하 퇴석구"],
-    "answerIndex": 0,
-    "hint": "강 하류 주변에 흙과 모래가 쌓여 비옥한 농토를 이루는 지형입니다."
+    "question": "위 사진이 나타내는 지형은 무엇일까요? (○)",
+    "description": "물이 굽이쳐 흐르며 퇴적물이 쌓여 비옥한 평야와 농경지를 만드는 강(하천) 지형입니다.",
+    "answer": "강",
+    "acceptableAnswers": "강, 하천, 강물, 곡류",
+    "initialHint": "ㄱ",
+    "hint": "육지 위를 흘러 바다나 호수로 들어가는 물줄기입니다."
   },
   {
     "id": "t5",
-    "name": "갯벌 (조간대 해안 지형)",
+    "name": "5. 갯벌 (해안 조간대)",
     "image": "assets/cards/terrain_5.jpg",
-    "description": "밀물과 썰물의 차이로 인해 물이 빠졌을 때 넓게 드러나는 고운 펄과 모래로 이루어진 해안 지형입니다.",
-    "options": ["갯벌 (해안 조간대)", "산호초 해안", "피오르 해안", "사막 염호"],
-    "answerIndex": 0,
-    "hint": "조석 간만의 차가 큰 서해안 등에서 넓게 발달하는 생태계의 보고입니다."
+    "question": "위 사진이 나타내는 지형은 무엇일까요? (○○)",
+    "description": "밀물과 썰물의 차이로 인해 물이 빠졌을 때 넓게 드러나는 고운 펄과 모래로 이루어진 갯벌 해안 지형입니다.",
+    "answer": "갯벌",
+    "acceptableAnswers": "갯벌, 조간대, 갯벌 해안",
+    "initialHint": "ㄱㅂ",
+    "hint": "바닷물이 빠져나갔을 때 드러나는 질퍽한 펄 바닥입니다."
   },
   {
     "id": "t6",
-    "name": "사구 / 바르한 (사막 모래언덕)",
+    "name": "6. 사막 (사구/모래언덕)",
     "image": "assets/cards/terrain_6.jpg",
-    "description": "바람에 날린 모래가 쌓여 만들어진 초승달 모양이나 물결 모양의 거대한 모래 언덕입니다.",
-    "options": ["사구 / 모래언덕 (바르한)", "빙하 언덕 (모레인)", "석회암 돌리네", "화산 쇄설구"],
-    "answerIndex": 0,
-    "hint": "사막에서 바람에 의해 모래가 이동하고 쌓여 파도처럼 굴곡진 언덕입니다."
+    "question": "위 사진이 나타내는 지형은 무엇일까요? (○○)",
+    "description": "바람에 날린 모래가 쌓여 거대한 모래 언덕(사구)을 이루고 비가 거의 오지 않는 건조한 사막 지형입니다.",
+    "answer": "사막",
+    "acceptableAnswers": "사막, 사구, 모래언덕, 모래 언덕, 바르한",
+    "initialHint": "ㅅㅁ",
+    "hint": "비가 매우 적게 내리고 끝없이 모래와 자갈이 펼쳐진 건조 지형입니다."
   },
   {
     "id": "t7",
-    "name": "대평원 / 초원 (스텝·사바나)",
+    "name": "7. 초원 (대평원)",
     "image": "assets/cards/terrain_7.jpg",
-    "description": "나무가 거의 없고 끝없이 풀이 자라는 완만한 구릉과 넓은 평원 지형입니다.",
-    "options": ["대평원 / 초원 지대", "고산 툰드라", "열대 밀림", "빙설 지대"],
-    "answerIndex": 0,
-    "hint": "야생 동물이나 유목민들의 가축이 자유롭게 풀을 뜯는 끝없는 벌판입니다."
+    "question": "위 사진이 나타내는 지형은 무엇일까요? (○○)",
+    "description": "나무가 거의 없고 끝없이 풀이 자라는 완만한 구릉과 넓은 평원 지형인 초원입니다.",
+    "answer": "초원",
+    "acceptableAnswers": "초원, 대평원, 평원, 스텝, 사바나",
+    "initialHint": "ㅊㅇ",
+    "hint": "나무 대신 푸른 풀이 끝없이 펼쳐져 동물들이 풀을 뜯는 땅입니다."
   },
   {
     "id": "t8",
-    "name": "빙하 및 빙벽 (피오르드/빙설)",
+    "name": "8. 빙하 (빙벽/빙설)",
     "image": "assets/cards/terrain_8.jpg",
+    "question": "위 사진이 나타내는 지형은 무엇일까요? (○○)",
     "description": "오랜 시간 쌓인 눈이 단단한 얼음이 되어 천천히 흐르며 거대한 빙벽과 계곡을 만든 빙하 지형입니다.",
-    "options": ["빙하 및 빙벽 지형", "석회동굴 종유석", "해안 파식대", "단층 절벽"],
-    "answerIndex": 0,
-    "hint": "푸른빛을 띠는 거대한 얼음 덩어리가 바다나 호수로 흘러내리는 장관입니다."
+    "answer": "빙하",
+    "acceptableAnswers": "빙하, 빙벽, 빙설, 빙하 지형",
+    "initialHint": "ㅂㅎ",
+    "hint": "눈이 단단하게 굳어져 큰 덩어리가 되어 천천히 흘러내리는 얼음 지형입니다."
   }
 ]
 
@@ -160,9 +192,10 @@ BOARD_QUIZZES = [
     "title": "1번. 피오르 해안",
     "category": "지형 퀴즈",
     "region": "북유럽 노르웨이",
-    "question": "빙하의 침식으로 만들어진 골짜기에 빙하가 없어진 후 바닷물이 들어와서 생긴 좁고 깊은 해안을 무엇이라고 하나요?",
-    "options": ["피오르 (피오르드) 해안", "리아스식 해안", "산호초 해안", "모래사장 (사빈)"],
-    "answerIndex": 0,
+    "question": "빙하의 침식으로 만들어진 골짜기에 빙하가 없어진 후 바닷물이 들어와서 생긴 해안을 무엇이라고 하나요? (○○ ○○)",
+    "answer": "피오르 해안",
+    "acceptableAnswers": "피오르 해안, 피오르, 피오르드, 피오르드 해안",
+    "initialHint": "ㅍㅇㄹ ㅎㅇ",
     "explanation": "노르웨이 등 고위도 지역에서 빙하가 깎아 만든 U자곡에 바닷물이 유입되어 형성된 해안을 피오르(Fiord)라고 합니다."
   },
   {
@@ -170,39 +203,43 @@ BOARD_QUIZZES = [
     "title": "2번. 지중해 가옥",
     "category": "기후/문화",
     "region": "남유럽 지중해",
-    "question": "[ _____ ] 주변 지역에는 여름철 뜨거운 햇볕을 막으려고 벽을 흰색으로 칠하고 창문을 작게 낸 가옥이 많습니다. 빈칸에 들어갈 바다는?",
-    "options": ["지중해", "북극해", "발트해", "홍해"],
-    "answerIndex": 0,
+    "question": "[ _____ ] 주변 지역에는 여름철 뜨거운 햇볕을 막으려고 벽을 흰색으로 칠하는 가옥이 많습니다. 빈칸에 들어갈 바다는 어디인가요? (○○○)",
+    "answer": "지중해",
+    "acceptableAnswers": "지중해, 지중해 주변, 지중해성",
+    "initialHint": "ㅈㅈㅎ",
     "explanation": "지중해 연안(그리스 산토리니 등)은 여름이 맑고 햇볕이 매우 강하기 때문에 빛을 반사하는 흰색 벽 가옥이 발달했습니다."
   },
   {
     "num": 3,
-    "title": "3번. 히말라야 산맥",
+    "title": "3번. 히말라야산맥",
     "category": "지형 퀴즈",
     "region": "남아시아/중앙아시아",
-    "question": "인도와 네팔, 중국 등에 걸쳐 있는 산맥으로, 세계에서 가장 높은 에베레스트산(8,848m)이 있는 산맥은 무엇인가요?",
-    "options": ["히말라야 산맥", "알프스 산맥", "안데스 산맥", "로키 산맥"],
-    "answerIndex": 0,
-    "explanation": "대륙판끼리 충돌하여 솟아오른 세계의 지붕, 히말라야 산맥입니다."
+    "question": "인도와 네팔, 중국 등에 걸쳐 있는 산맥으로, 세계에서 가장 높은 에베레스트산이 있는 산맥은 무엇인가요? (○○○○○)",
+    "answer": "히말라야산맥",
+    "acceptableAnswers": "히말라야산맥, 히말라야 산맥, 히말라야",
+    "initialHint": "ㅎㅁㄹㅇㅅㅁ",
+    "explanation": "대륙판끼리 충돌하여 솟아오른 세계의 지붕이자 에베레스트산이 있는 히말라야산맥입니다."
   },
   {
     "num": 4,
     "title": "4번. 냉대 기후 산업",
     "category": "기후/산업",
     "region": "시베리아/캐나다",
-    "question": "캐나다와 러시아 등 침엽수가 울창한 냉대 기후 지역(타이가)에서 주로 발달한 대표적인 산업은 무엇인가요?",
-    "options": ["임업 (목재·펄프 산업)", "벼농사", "목화 재배", "열대 과일 농업"],
-    "answerIndex": 0,
-    "explanation": "넓은 침엽수림을 바탕으로 목재, 종이 펄프, 가구 등을 만드는 임업이 크게 발달했습니다."
+    "question": "캐나다와 러시아 등 침엽수가 많은 냉대 기후 지역에서 주로 발달한 산업에는 무엇이 있나요? (○○, ○○ ○○)",
+    "answer": "임업, 펄프 공업",
+    "acceptableAnswers": "임업, 펄프 공업, 임업 펄프 공업, 임업과 펄프 공업, 임업, 펄프",
+    "initialHint": "ㅇㅇ, ㅍㅍ ㄱㅇ",
+    "explanation": "냉대 타이가 침엽수림의 풍부한 목재를 바탕으로 임업과 펄프·종이 가공 공업이 크게 발달했습니다."
   },
   {
     "num": 5,
     "title": "5번. 툰드라 순록 유목",
     "category": "기후/생활",
     "region": "북아메리카/북극권",
-    "question": "한대 기후(툰드라) 지역에서는 여름철 짧은 기간 동안 풀과 이끼를 찾아다니며 순록을 기르는 [ _____ ] 생활을 합니다. 빈칸은?",
-    "options": ["유목 (이동 목축)", "정착 농경", "기업적 곡물 농업", "플랜테이션"],
-    "answerIndex": 0,
+    "question": "한대 기후 지역에서는 여름에 풀과 이끼를 찾아다니며 순록을 기르는 [ _____ ] 생활을 하기도 합니다. 빈칸에 들어갈 말은 무엇인가요? (○○)",
+    "answer": "유목",
+    "acceptableAnswers": "유목, 유목 생활, 이동 목축, 순록 유목",
+    "initialHint": "ㅇㅁ",
     "explanation": "작물이 자라기 힘든 극한의 환경에서 순록 떼를 몰고 이동하며 젖과 털, 고기를 얻는 유목 생활을 합니다."
   },
   {
@@ -210,29 +247,32 @@ BOARD_QUIZZES = [
     "title": "6번. 아마존강",
     "category": "지형 퀴즈",
     "region": "남아메리카 브라질",
-    "question": "브라질, 페루 등에 걸쳐 흐르는 하천으로, 전 세계 열대 우림을 적시며 세계에서 가장 유량이 많은 하천은 무엇인가요?",
-    "options": ["아마존강", "나일강", "양쯔강", "미시시피강"],
-    "answerIndex": 0,
-    "explanation": "나일강이 가장 긴 강이라면, 아마존강은 전 세계 하천 유량의 약 20%를 차지할 정도로 가장 물이 풍부한 강입니다."
+    "question": "브라질, 페루 등에 걸쳐 흐르는 하천으로, 세계에서 가장 유량이 많은 하천은 무엇인가요? (○○○)",
+    "answer": "아마존강",
+    "acceptableAnswers": "아마존강, 아마존 강, 아마존",
+    "initialHint": "ㅇㅁㅈㄱ",
+    "explanation": "아마존강은 전 세계 하천 유량의 약 20%를 차지할 정도로 가장 물이 풍부하고 유역 면적이 넓은 하천입니다."
   },
   {
     "num": 7,
-    "title": "7번. 안데스 폰초",
+    "title": "7번. 안데스 판초",
     "category": "의생활 문화",
     "region": "남아메리카 안데스",
-    "question": "남아메리카 안데스 고산 지대에 사는 원주민들이 일교차가 크고 쌀쌀한 날씨를 막기 위해 입는 망토 모양의 전통 옷은 무엇인가요?",
-    "options": ["폰초 (판초)", "사리", "기모노", "한복"],
-    "answerIndex": 0,
-    "explanation": "라마나 알파카의 털로 짠 두꺼운 천 가운데에 머리를 넣는 구멍을 뚫어 망토처럼 두르는 옷입니다."
+    "question": "남아메리카 적도 주변의 고산 지역에 사는 사람들이 추위를 막으려고 입는 망토와 같은 옷을 무엇이라고 하나요? (○○)",
+    "answer": "판초",
+    "acceptableAnswers": "판초, 폰초, 안데스 판초",
+    "initialHint": "ㅍㅊ",
+    "explanation": "라마나 알파카의 털로 짠 두꺼운 천 가운데에 머리를 넣는 구멍을 뚫어 망토처럼 두르는 안데스 고산 지대의 전통 옷입니다."
   },
   {
     "num": 8,
     "title": "8번. 산호초 해안",
     "category": "지형/생태",
     "region": "오세아니아/호주",
-    "question": "따뜻한 열대 기후 지역의 얕고 깨끗한 바닷속에 산호충의 석회질 껍데기가 쌓여 형성된 화려한 암초 해안은 무엇인가요?",
-    "options": ["산호초 (대보초) 해안", "갯벌 해안", "피오르 해안", "모래 언덕 해안"],
-    "answerIndex": 0,
+    "question": "따뜻한 기후 지역의 얕은 바닷속에 사는 산호와 산호충의 뼈 등이 쌓여 이루어진 암초 해안을 무엇이라고 하나요? (○○○ ○○)",
+    "answer": "산호초 해안",
+    "acceptableAnswers": "산호초 해안, 산호초, 대보초, 그레이트 배리어 리프",
+    "initialHint": "ㅅㅎㅊ ㅎㅇ",
     "explanation": "호주의 그레이트 배리어 리프(대보초)처럼 산호들이 오랜 세월 군락을 이루며 만든 신비한 해안 지형입니다."
   },
   {
@@ -240,29 +280,32 @@ BOARD_QUIZZES = [
     "title": "9번. 수상 가옥",
     "category": "주생활 문화",
     "region": "동남아시아/하천",
-    "question": "동남아시아나 아마존 등 하천이나 호숫가 주변에서 물 위에 나무 기둥을 세우거나 뗏목 형태로 지은 가옥을 무엇이라고 하나요?",
-    "options": ["수상 가옥", "이글루", "게르", "동굴 가옥"],
-    "answerIndex": 0,
-    "explanation": "홍수 피해를 막고 물 위에서 물고기를 잡거나 배를 교통수단으로 활용하기 위해 지은 가옥입니다."
+    "question": "하천 주변 지역에서 물 위에 지은 가옥을 무엇이라고 하나요? (○○ ○○)",
+    "answer": "수상 가옥",
+    "acceptableAnswers": "수상 가옥, 수상가옥, 수상집",
+    "initialHint": "ㅅㅅ ㄱㅇ",
+    "explanation": "홍수 피해를 막고 물 위에서 물고기를 잡거나 배를 교통수단으로 활용하기 위해 물 위에 나무 기둥을 세워 지은 가옥입니다."
   },
   {
     "num": 10,
-    "title": "10번. 사파리 투어",
+    "title": "10번. 사파리",
     "category": "기후/문화",
     "region": "아프리카 세렝게티",
-    "question": "열대 사바나(우기와 건기가 뚜렷한 초원) 지역에서 지프차를 타고 다니며 사자, 기린, 코끼리 등 야생 동물을 관찰하는 여행은?",
-    "options": ["사파리 (사파리 투어)", "스노클링 투어", "빙하 트래킹", "오로라 관측 투어"],
-    "answerIndex": 0,
-    "explanation": "사바나 초원에 서식하는 다양한 초식동물과 맹수를 자연 그대로 관찰하는 대표적인 관광 활동입니다."
+    "question": "열대 사바나 기후 지역에서 차를 타고 다니면서 야생 동물을 관찰하는 여행을 무엇이라고 하나요? (○○○)",
+    "answer": "사파리",
+    "acceptableAnswers": "사파리, 사파리 여행, 사파리 투어",
+    "initialHint": "ㅅㅍㄹ",
+    "explanation": "사바나 초원에 서식하는 다양한 초식동물과 맹수를 지프차 등을 타고 자연 그대로 관찰하는 대표적인 관광 여행입니다."
   },
   {
     "num": 11,
     "title": "11번. 사하라 사막",
     "category": "지형 퀴즈",
     "region": "북부 아프리카",
-    "question": "세계에서 가장 면적이 넓은 열대 건조 사막으로, 아프리카 북부 대부분을 차지하고 있는 사막은 무엇인가요?",
-    "options": ["사하라 사막", "고비 사막", "아타카마 사막", "빅토리아 사막"],
-    "answerIndex": 0,
+    "question": "세계에서 가장 면적이 넓은 사막으로, 아프리카의 북부에 있는 사막은 무엇인가요? (○○○ ○○)",
+    "answer": "사하라 사막",
+    "acceptableAnswers": "사하라 사막, 사하라",
+    "initialHint": "ㅅㅎㄹ ㅅㅁ",
     "explanation": "미국 본토 면적에 맞먹는 약 900만 ㎢의 광활한 면적을 자랑하는 세계 최대의 열대 사막입니다."
   },
   {
@@ -270,266 +313,119 @@ BOARD_QUIZZES = [
     "title": "12번. 오아시스 농업",
     "category": "건조 기후 농업",
     "region": "서남아시아/중동",
-    "question": "비가 거의 내리지 않는 건조 기후 지역에서 오아시스나 외래 하천의 물을 끌어들여 대추야자와 밀 등을 재배하는 농업은 무엇인가요?",
-    "options": ["오아시스 (관개) 농업", "화전 농업", "수목 농업", "낙농업"],
-    "answerIndex": 0,
-    "explanation": "사막 한가운데 솟아나는 오아시스나 주변 산지에서 흘러오는 지하수를 이용하여 생명수를 공급하는 농업입니다."
+    "question": "건조 기후 지역에서 오아시스나 하천의 물을 이용하여 대추야자 및 밀 등을 재배하는 농업을 무엇이라고 하나요? (○○○○ ○○)",
+    "answer": "오아시스 농업",
+    "acceptableAnswers": "오아시스 농업, 오아시스, 관개 농업",
+    "initialHint": "ㅇㅇㅅㅅ ㄴㅇ",
+    "explanation": "사막 한가운데 솟아나는 오아시스나 주변 산지에서 흘러오는 지하수를 이용하여 대추야자와 곡물을 재배하는 농업입니다."
   }
 ]
 
-# 2. 엑셀 워크북 생성 및 스타일 정의
-wb = openpyxl.Workbook()
+def export_to_csv():
+    with open('Worldgame_Quiz_Data.csv', 'w', encoding='utf-8-sig', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(['구분', '번호/ID', '문제/카드명', '카테고리', '지역/특징', '문제 내용 (질문)', '대표 정답 (단답형)', '인정 정답(유사어)', '초성 힌트', '상세 해설/설명'])
+        
+        for q in BOARD_QUIZZES:
+            writer.writerow(['말판 단답형문제', f"{q['num']}번", q['title'], q['category'], q['region'], q['question'], q['answer'], q['acceptableAnswers'], q['initialHint'], q['explanation']])
+            
+        for c in CLIMATE_CARDS:
+            writer.writerow(['기후 카드 미션', c['id'], c['name'], '기후/문화', '세계 기후', c['question'], c['answer'], c['acceptableAnswers'], c['initialHint'], c['hint']])
+            
+        for t in TERRAIN_CARDS:
+            writer.writerow(['지형 카드 미션', t['id'], t['name'], '지형/경관', '세계 지형', t['question'], t['answer'], t['acceptableAnswers'], t['initialHint'], t['hint']])
+            
+    print("Exported Worldgame_Quiz_Data.csv")
 
-# 스타일
-header_font = Font(name='맑은 고딕', size=11, bold=True, color='FFFFFF')
-header_fill_blue = PatternFill(start_color='1E3A8A', end_color='1E3A8A', fill_type='solid')
-header_fill_green = PatternFill(start_color='065F46', end_color='065F46', fill_type='solid')
-header_fill_orange = PatternFill(start_color='9A3412', end_color='9A3412', fill_type='solid')
-header_fill_purple = PatternFill(start_color='5B21B6', end_color='5B21B6', fill_type='solid')
+def export_to_excel():
+    wb = openpyxl.Workbook()
+    
+    # Sheet 1: 말판 기본문제
+    ws1 = wb.active
+    ws1.title = "말판_단답형문제(1~12번)"
+    
+    headers1 = ['번호', '문제 제목', '카테고리', '관련 지역', '문제 질문 내용 (단답형 글자수 포함)', '교과서 정답', '인정 정답(유의어)', '초성 힌트', '상세 해설 및 교육 팁']
+    ws1.append(headers1)
+    
+    for q in BOARD_QUIZZES:
+        ws1.append([
+            f"{q['num']}번",
+            q['title'],
+            q['category'],
+            q['region'],
+            q['question'],
+            q['answer'],
+            q['acceptableAnswers'],
+            q['initialHint'],
+            q['explanation']
+        ])
+        
+    # Sheet 2: 기후 카드
+    ws2 = wb.create_sheet("기후카드_미션(8종)")
+    headers2 = ['카드 ID', '기후/생활 명칭', '카드 질문 (단답형)', '교과서 정답', '인정 정답(유의어)', '초성 힌트', '교육 힌트', '카드 이미지 경로']
+    ws2.append(headers2)
+    for c in CLIMATE_CARDS:
+        ws2.append([
+            c['id'],
+            c['name'],
+            c['question'],
+            c['answer'],
+            c['acceptableAnswers'],
+            c['initialHint'],
+            c['hint'],
+            c['image']
+        ])
+        
+    # Sheet 3: 지형 카드
+    ws3 = wb.create_sheet("지형카드_미션(8종)")
+    headers3 = ['카드 ID', '지형 명칭', '카드 질문 (단답형)', '교과서 정답', '인정 정답(유의어)', '초성 힌트', '교육 힌트', '카드 이미지 경로']
+    ws3.append(headers3)
+    for t in TERRAIN_CARDS:
+        ws3.append([
+            t['id'],
+            t['name'],
+            t['question'],
+            t['answer'],
+            t['acceptableAnswers'],
+            t['initialHint'],
+            t['hint'],
+            t['image']
+        ])
 
-data_font = Font(name='맑은 고딕', size=10)
-bold_font = Font(name='맑은 고딕', size=10, bold=True)
-answer_font = Font(name='맑은 고딕', size=10, bold=True, color='1D4ED8')
+    # Styling
+    header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
+    header_font = Font(name="맑은 고딕", size=11, bold=True, color="FFFFFF")
+    body_font = Font(name="맑은 고딕", size=10)
+    thin_border = Border(
+        left=Side(style='thin', color='CBD5E1'),
+        right=Side(style='thin', color='CBD5E1'),
+        top=Side(style='thin', color='CBD5E1'),
+        bottom=Side(style='thin', color='CBD5E1')
+    )
 
-thin_border = Border(
-    left=Side(style='thin', color='CBD5E1'),
-    right=Side(style='thin', color='CBD5E1'),
-    top=Side(style='thin', color='CBD5E1'),
-    bottom=Side(style='thin', color='CBD5E1')
-)
+    for ws in [ws1, ws2, ws3]:
+        for col in range(1, ws.max_column + 1):
+            cell = ws.cell(row=1, column=col)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            
+        for row in range(2, ws.max_row + 1):
+            for col in range(1, ws.max_column + 1):
+                c = ws.cell(row=row, column=col)
+                c.font = body_font
+                c.border = thin_border
+                c.alignment = Alignment(vertical="center", wrap_text=True)
+                
+        for col in ws.columns:
+            max_len = max(len(str(cell.value or '')) for cell in col)
+            col_letter = get_column_letter(col[0].column)
+            ws.column_dimensions[col_letter].width = min(max(max_len * 1.8, 12), 45)
 
-align_center = Alignment(horizontal='center', vertical='center', wrap_text=True)
-align_left = Alignment(horizontal='left', vertical='center', wrap_text=True)
+    wb.save('Worldgame_Quiz_Data.xlsx')
+    wb.save('세계여행_말판놀이_문제데이터.xlsx')
+    print("Exported Worldgame_Quiz_Data.xlsx and 세계여행_말판놀이_문제데이터.xlsx")
 
-# -------------------------------------------------------------
-# Sheet 1: 전체_문제_통합목록
-# -------------------------------------------------------------
-ws_all = wb.active
-ws_all.title = '전체_문제_통합목록'
-
-headers_all = ['유형', '번호/ID', '주제/명칭', '구분/카테고리', '지역', '문제(질문/지문)', '보기 1 (정답)', '보기 2', '보기 3', '보기 4', '정답 번호', '정답 내용', '해설 / 힌트']
-ws_all.append(headers_all)
-
-for col_idx, cell in enumerate(ws_all[1], 1):
-    cell.font = header_font
-    cell.fill = header_fill_blue
-    cell.alignment = align_center
-    cell.border = thin_border
-
-# 말판 퀴즈 1~12번
-for q in BOARD_QUIZZES:
-    row = [
-        '말판 기본문제',
-        f"{q['num']}번",
-        q['title'],
-        q['category'],
-        q['region'],
-        q['question'],
-        q['options'][0],
-        q['options'][1],
-        q['options'][2],
-        q['options'][3],
-        1,
-        q['options'][0],
-        q['explanation']
-    ]
-    ws_all.append(row)
-
-# 기후 카드 8개
-for c in CLIMATE_CARDS:
-    row = [
-        '기후 카드 미션',
-        c['id'],
-        c['name'],
-        '기후/생활 미션',
-        '세계 기후대',
-        c['description'],
-        c['options'][0],
-        c['options'][1],
-        c['options'][2],
-        c['options'][3],
-        1,
-        c['options'][0],
-        c['hint']
-    ]
-    ws_all.append(row)
-
-# 지형 카드 8개
-for t in TERRAIN_CARDS:
-    row = [
-        '지형 카드 미션',
-        t['id'],
-        t['name'],
-        '지형/경관 미션',
-        '세계 주요 지형',
-        t['description'],
-        t['options'][0],
-        t['options'][1],
-        t['options'][2],
-        t['options'][3],
-        1,
-        t['options'][0],
-        t['hint']
-    ]
-    ws_all.append(row)
-
-# 스타일 적용 (통합)
-for row in ws_all.iter_rows(min_row=2, max_row=ws_all.max_row, min_col=1, max_col=len(headers_all)):
-    for col_idx, cell in enumerate(row, 1):
-        cell.font = data_font
-        cell.border = thin_border
-        if col_idx in [1, 2, 4, 5, 11]:
-            cell.alignment = align_center
-        else:
-            cell.alignment = align_left
-        if col_idx in [7, 12]:
-            cell.font = answer_font
-
-# -------------------------------------------------------------
-# Sheet 2: 말판_기본문제 (1~12번)
-# -------------------------------------------------------------
-ws_board = wb.create_sheet(title='말판_기본문제(1~12번)')
-headers_board = ['문제 번호', '칸 명칭', '구분', '지역', '문제 내용 (질문)', '보기 1 (정답)', '보기 2', '보기 3', '보기 4', '정답 번호', '정답 내용', '해설']
-ws_board.append(headers_board)
-
-for cell in ws_board[1]:
-    cell.font = header_font
-    cell.fill = header_fill_green
-    cell.alignment = align_center
-    cell.border = thin_border
-
-for q in BOARD_QUIZZES:
-    ws_board.append([
-        f"{q['num']}번",
-        q['title'],
-        q['category'],
-        q['region'],
-        q['question'],
-        q['options'][0],
-        q['options'][1],
-        q['options'][2],
-        q['options'][3],
-        1,
-        q['options'][0],
-        q['explanation']
-    ])
-
-for row in ws_board.iter_rows(min_row=2, max_row=ws_board.max_row, min_col=1, max_col=len(headers_board)):
-    for col_idx, cell in enumerate(row, 1):
-        cell.font = data_font
-        cell.border = thin_border
-        if col_idx in [1, 3, 4, 10]:
-            cell.alignment = align_center
-        else:
-            cell.alignment = align_left
-        if col_idx in [6, 11]:
-            cell.font = answer_font
-
-# -------------------------------------------------------------
-# Sheet 3: 기후카드_미션 (8개)
-# -------------------------------------------------------------
-ws_climate = wb.create_sheet(title='기후카드_미션(8개)')
-headers_card = ['카드 ID', '기후/생활 명칭', '카드 지문 (설명)', '보기 1 (정답)', '보기 2', '보기 3', '보기 4', '정답 번호', '정답 내용', '힌트', '연결 이미지 파일']
-ws_climate.append(headers_card)
-
-for cell in ws_climate[1]:
-    cell.font = header_font
-    cell.fill = header_fill_orange
-    cell.alignment = align_center
-    cell.border = thin_border
-
-for c in CLIMATE_CARDS:
-    ws_climate.append([
-        c['id'],
-        c['name'],
-        c['description'],
-        c['options'][0],
-        c['options'][1],
-        c['options'][2],
-        c['options'][3],
-        1,
-        c['options'][0],
-        c['hint'],
-        c['image']
-    ])
-
-for row in ws_climate.iter_rows(min_row=2, max_row=ws_climate.max_row, min_col=1, max_col=len(headers_card)):
-    for col_idx, cell in enumerate(row, 1):
-        cell.font = data_font
-        cell.border = thin_border
-        if col_idx in [1, 8]:
-            cell.alignment = align_center
-        else:
-            cell.alignment = align_left
-        if col_idx in [4, 9]:
-            cell.font = answer_font
-
-# -------------------------------------------------------------
-# Sheet 4: 지형카드_미션 (8개)
-# -------------------------------------------------------------
-ws_terrain = wb.create_sheet(title='지형카드_미션(8개)')
-headers_terrain = ['카드 ID', '지형 명칭', '카드 지문 (설명)', '보기 1 (정답)', '보기 2', '보기 3', '보기 4', '정답 번호', '정답 내용', '힌트', '연결 이미지 파일']
-ws_terrain.append(headers_terrain)
-
-for cell in ws_terrain[1]:
-    cell.font = header_font
-    cell.fill = header_fill_purple
-    cell.alignment = align_center
-    cell.border = thin_border
-
-for t in TERRAIN_CARDS:
-    ws_terrain.append([
-        t['id'],
-        t['name'],
-        t['description'],
-        t['options'][0],
-        t['options'][1],
-        t['options'][2],
-        t['options'][3],
-        1,
-        t['options'][0],
-        t['hint'],
-        t['image']
-    ])
-
-for row in ws_terrain.iter_rows(min_row=2, max_row=ws_terrain.max_row, min_col=1, max_col=len(headers_terrain)):
-    for col_idx, cell in enumerate(row, 1):
-        cell.font = data_font
-        cell.border = thin_border
-        if col_idx in [1, 8]:
-            cell.alignment = align_center
-        else:
-            cell.alignment = align_left
-        if col_idx in [4, 9]:
-            cell.font = answer_font
-
-# 모든 시트 컬럼 너비 자동 조정
-for ws in wb.worksheets:
-    for col in ws.columns:
-        max_len = 0
-        col_letter = get_column_letter(col[0].column)
-        for cell in col:
-            val_str = str(cell.value or '')
-            # 한글 길이를 고려한 너비 계산
-            val_len = sum(2 if ord(char) > 127 else 1 for char in val_str)
-            if val_len > max_len:
-                max_len = val_len
-        ws.column_dimensions[col_letter].width = min(max(max_len + 3, 12), 48)
-
-# 저장
-wb.save('Worldgame_Quiz_Data.xlsx')
-wb.save('세계여행_말판놀이_문제데이터.xlsx')
-
-# CSV 통합 내보내기 (Excel 한글 호환 utf-8-sig)
-import csv
-with open('세계여행_말판놀이_문제데이터.csv', 'w', encoding='utf-8-sig', newline='') as f:
-    writer = csv.writer(f)
-    for row in ws_all.iter_rows(values_only=True):
-        writer.writerow(row)
-
-with open('Worldgame_Quiz_Data.csv', 'w', encoding='utf-8-sig', newline='') as f:
-    writer = csv.writer(f)
-    for row in ws_all.iter_rows(values_only=True):
-        writer.writerow(row)
-
-print("Export completed successfully!")
+if __name__ == '__main__':
+    export_to_csv()
+    export_to_excel()

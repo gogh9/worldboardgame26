@@ -200,7 +200,7 @@
 
     <!-- 5. 팝업 모달들 -->
 
-    <!-- A. 퀴즈 팝업 모달 (1~12번 일반 문제 칸) -->
+    <!-- A. 퀴즈 팝업 모달 (1~12번 일반 문제 칸: 단답형 주관식) -->
     <div id="modal-quiz" class="modal-backdrop">
       <div class="modal-dialog glass-dialog">
         <div class="modal-header">
@@ -219,15 +219,24 @@
           <!-- 힌트 열쇠 사용 찬스 바 -->
           <div class="hint-key-bar" id="hint-key-bar">
             <span class="hint-count-text">🔑 보유 열쇠: <strong id="user-hint-keys-count">0</strong>개</span>
-            <button class="btn btn-sm btn-gold" id="btn-use-hint-key">50:50 찬스 쓰기 (오답 2개 제거)</button>
+            <button class="btn btn-sm btn-gold" id="btn-use-hint-key">초성 힌트 보기 (열쇠 1개 사용)</button>
           </div>
 
-          <!-- 보기 4개 버튼 -->
-          <div class="quiz-options-grid" id="quiz-options-container">
-            <!-- JS 동적 생성 -->
+          <!-- 힌트 표시 박스 (열쇠 사용 시 표시) -->
+          <div class="hint-display-box hidden" id="quiz-hint-display">
+            <span class="hint-label">💡 초성 힌트:</span> <strong id="quiz-hint-text" class="hint-val"></strong>
           </div>
 
-          <!-- 정답/오답 결과 해설창 (답안 클릭 후 표시) -->
+          <!-- 단답형 정답 입력 폼 -->
+          <form id="quiz-input-form" class="quiz-input-form" onsubmit="return false;">
+            <div class="quiz-input-wrap">
+              <span class="quiz-input-icon">✏️</span>
+              <input type="text" id="quiz-input-answer" class="quiz-text-input" placeholder="정답을 직접 입력하세요 (예: 피오르 해안)" autocomplete="off" />
+            </div>
+            <button type="submit" class="btn btn-primary btn-submit-quiz" id="btn-quiz-submit">정답 제출 ➔</button>
+          </form>
+
+          <!-- 정답/오답 결과 해설창 (답안 제출 후 표시) -->
           <div class="quiz-feedback-box hidden" id="quiz-feedback-box">
             <div class="feedback-icon" id="feedback-icon">🎉</div>
             <div class="feedback-title" id="feedback-title">정답입니다!</div>
@@ -238,7 +247,7 @@
       </div>
     </div>
 
-    <!-- B. 카드 뽑기 팝업 모달 (지형 카드 / 기후 카드) -->
+    <!-- B. 카드 뽑기 팝업 모달 (지형 카드 / 기후 카드: 단답형 주관식) -->
     <div id="modal-card" class="modal-backdrop">
       <div class="modal-dialog glass-dialog card-dialog">
         <div class="modal-header">
@@ -264,9 +273,25 @@
             <p id="card-question-text">위 사진이 나타내는 지형(또는 기후)은 무엇일까요?</p>
           </div>
 
-          <div class="quiz-options-grid" id="card-options-container">
-            <!-- JS 동적 생성 -->
+          <!-- 힌트 열쇠 사용 찬스 바 (카드용) -->
+          <div class="hint-key-bar" id="card-hint-key-bar">
+            <span class="hint-count-text">🔑 보유 열쇠: <strong id="card-user-hint-keys-count">0</strong>개</span>
+            <button class="btn btn-sm btn-gold" id="btn-card-use-hint-key">초성 힌트 보기 (열쇠 1개 사용)</button>
           </div>
+
+          <!-- 카드 힌트 표시 박스 -->
+          <div class="hint-display-box hidden" id="card-hint-display">
+            <span class="hint-label">💡 힌트:</span> <strong id="card-hint-text" class="hint-val"></strong>
+          </div>
+
+          <!-- 카드 단답형 입력 폼 -->
+          <form id="card-input-form" class="quiz-input-form" onsubmit="return false;">
+            <div class="quiz-input-wrap">
+              <span class="quiz-input-icon">📷</span>
+              <input type="text" id="card-input-answer" class="quiz-text-input" placeholder="사진의 정답을 입력하세요 (예: 혼, 대협곡, 게르)" autocomplete="off" />
+            </div>
+            <button type="submit" class="btn btn-primary btn-submit-quiz" id="btn-card-submit">정답 제출 ➔</button>
+          </form>
 
           <!-- 카드 해설 및 확인 -->
           <div class="quiz-feedback-box hidden" id="card-feedback-box">
@@ -333,13 +358,13 @@
             <ol class="rule-list">
               <li><strong>인원:</strong> 2~4명의 친구가 함께 플레이합니다.</li>
               <li><strong>진행:</strong> 차례대로 주사위를 굴려 나온 숫자만큼 자신의 말을 이동합니다.</li>
-              <li><strong>문제 칸:</strong> 도착한 칸의 퀴즈를 맞히면 해당 칸을 <strong>자신의 색상으로 점령(색칠)</strong>합니다.</li>
-              <li><strong>카드 칸:</strong> 지형/기후 카드가 뽑히면 사진을 보고 정답을 맞혀 칸을 점령합니다.</li>
+              <li><strong>문제 칸:</strong> 도착한 칸의 <strong>단답형 문제</strong>를 맞히면 해당 칸을 <strong>자신의 색상으로 점령(색칠)</strong>합니다.</li>
+              <li><strong>카드 칸:</strong> 지형/기후 카드가 뽑히면 사진을 보고 알맞은 정답을 입력하여 칸을 점령합니다.</li>
               <li><strong>특수 칸:</strong>
                 <ul>
                   <li>✈️ <strong>세계여행:</strong> 다음 차례에 원하는 칸으로 즉시 이동!</li>
                   <li>🏝️ <strong>무인도:</strong> 1턴 동안 쉬고 다음 차례에 이동합니다.</li>
-                  <li>🔑 <strong>힌트 열쇠:</strong> 퀴즈 풀이 시 50:50 찬스를 쓸 수 있는 열쇠 획득!</li>
+                  <li>🔑 <strong>힌트 열쇠:</strong> 퀴즈 풀이 시 초성 힌트를 볼 수 있는 열쇠 획득!</li>
                 </ul>
               </li>
               <li><strong>승리 조건:</strong> 모든 문제 칸이 점령되거나 정해진 턴이 끝났을 때 <strong>가장 많은 칸을 점령한 탐험가</strong>가 승리합니다!</li>

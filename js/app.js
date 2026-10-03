@@ -1256,7 +1256,7 @@ class WorldGameApp {
   }
 
   /* ========================================================================
-     QUIZ MODAL HANDLING
+     QUIZ MODAL HANDLING (단답형 주관식)
      ======================================================================== */
   openQuizModal(cell, playerIdx, cellIndex) {
     const player = this.state.players[playerIdx];
@@ -1272,28 +1272,45 @@ class WorldGameApp {
 
     const btnUseHint = document.getElementById('btn-use-hint-key');
     btnUseHint.disabled = !player.hintKeys || player.hintKeys <= 0;
+    
+    // 힌트 박스 초기화
+    const hintDisplay = document.getElementById('quiz-hint-display');
+    const hintText = document.getElementById('quiz-hint-text');
+    hintDisplay.classList.add('hidden');
+    hintText.textContent = '';
+
     btnUseHint.onclick = () => this.useHintKeyInQuiz(cell);
 
-    const optionsContainer = document.getElementById('quiz-options-container');
-    optionsContainer.innerHTML = '';
+    // 단답형 입력 폼 및 버튼 초기화
+    const inputForm = document.getElementById('quiz-input-form');
+    const inputAnswer = document.getElementById('quiz-input-answer');
+    const btnSubmit = document.getElementById('btn-quiz-submit');
+
+    inputAnswer.value = '';
+    inputAnswer.disabled = false;
+    btnSubmit.disabled = false;
 
     const feedbackBox = document.getElementById('quiz-feedback-box');
     feedbackBox.classList.add('hidden');
 
-    cell.options.forEach((optText, optIdx) => {
-      const optBtn = document.createElement('button');
-      optBtn.className = 'quiz-opt-btn';
-      optBtn.id = `quiz-opt-${optIdx}`;
-      optBtn.innerHTML = `<strong>${optIdx + 1}.</strong> <span>${optText}</span>`;
-
-      optBtn.addEventListener('click', () => {
-        this.submitQuizAnswer(optIdx, cell, playerIdx, cellIndex);
-      });
-
-      optionsContainer.appendChild(optBtn);
-    });
+    // 폼 제출 핸들러 (버튼 클릭 & 엔터키)
+    inputForm.onsubmit = (e) => {
+      e.preventDefault();
+      const userText = inputAnswer.value.trim();
+      if (!userText) {
+        this.showToast('⚠️ 정답을 입력해주세요!');
+        inputAnswer.focus();
+        return;
+      }
+      this.submitQuizAnswer(userText, cell, playerIdx, cellIndex);
+    };
 
     this.openModal(this.modalQuiz);
+
+    // 모달 오픈 후 입력창 자동 포커스
+    setTimeout(() => {
+      inputAnswer.focus();
+    }, 200);
   }
 
   useHintKeyInQuiz(cell) {
@@ -1305,37 +1322,50 @@ class WorldGameApp {
     document.getElementById('btn-use-hint-key').disabled = true;
 
     sound.playItemGet();
-    this.showToast('50:50 힌트 열쇠 찬스! 오답 2개가 사라집니다.');
+    this.showToast('🔑 힌트 열쇠 사용! 초성 힌트가 공개되었습니다.');
 
-    const wrongIndices = cell.options.map((_, idx) => idx).filter(idx => idx !== cell.answerIndex);
-    wrongIndices.sort(() => Math.random() - 0.5);
-    const toDisable = wrongIndices.slice(0, 2);
+    const hintDisplay = document.getElementById('quiz-hint-display');
+    const hintText = document.getElementById('quiz-hint-text');
+    hintText.textContent = cell.initialHint || cell.answer;
+    hintDisplay.classList.remove('hidden');
 
-    toDisable.forEach(idx => {
-      const btn = document.getElementById(`quiz-opt-${idx}`);
-      if (btn) btn.classList.add('disabled');
-    });
+    const inputAnswer = document.getElementById('quiz-input-answer');
+    if (inputAnswer) inputAnswer.focus();
   }
 
-  submitQuizAnswer(chosenIdx, cell, playerIdx, cellIndex) {
-    const isCorrect = chosenIdx === cell.answerIndex;
+  // 텍스트 유사도 및 한국어 정규화 정답 판정
+  checkAnswerCorrectness(userAnswer, targetAnswer, acceptableList = []) {
+    if (!userAnswer) return false;
+    const norm = (s) => (s || '').toLowerCase().replace(/[\s\(\)\[\]\.\,\/\-_~]/g, '');
+    const userNorm = norm(userAnswer);
+    if (!userNorm) return false;
+
+    const targetNorm = norm(targetAnswer);
+    if (userNorm === targetNorm) return true;
+
+    for (const acc of acceptableList) {
+      if (userNorm === norm(acc)) return true;
+    }
+    return false;
+  }
+
+  submitQuizAnswer(userText, cell, playerIdx, cellIndex) {
+    const isCorrect = this.checkAnswerCorrectness(userText, cell.answer, cell.acceptableAnswers);
     const player = this.state.players[playerIdx];
 
-    const optBtn = document.getElementById(`quiz-opt-${chosenIdx}`);
+    const inputAnswer = document.getElementById('quiz-input-answer');
+    const btnSubmit = document.getElementById('btn-quiz-submit');
+    inputAnswer.disabled = true;
+    btnSubmit.disabled = true;
+
     if (isCorrect) {
-      if (optBtn) optBtn.classList.add('correct');
       sound.playCorrect();
       this.claimCell(playerIdx, cellIndex);
-      this.addLog(`🎉 ${player.name}님이 [${cell.title}] 퀴즈를 맞혀 칸을 점령했습니다!`, 'correct');
+      this.addLog(`🎉 ${player.name}님이 [${cell.title}] 정답('${cell.answer}')을 맞혀 칸을 점령했습니다!`, 'correct');
     } else {
-      if (optBtn) optBtn.classList.add('wrong');
-      const correctBtn = document.getElementById(`quiz-opt-${cell.answerIndex}`);
-      if (correctBtn) correctBtn.classList.add('correct');
       sound.playWrong();
-      this.addLog(`❌ ${player.name}님이 아쉽게 오답을 선택했습니다. (정답: ${cell.options[cell.answerIndex]})`, 'wrong');
+      this.addLog(`❌ ${player.name}님이 오답('${userText}')을 제출했습니다. (정답: ${cell.answer})`, 'wrong');
     }
-
-    document.querySelectorAll('.quiz-opt-btn').forEach(btn => btn.style.pointerEvents = 'none');
 
     const feedbackBox = document.getElementById('quiz-feedback-box');
     const feedbackIcon = document.getElementById('feedback-icon');
@@ -1343,7 +1373,9 @@ class WorldGameApp {
     const feedbackDesc = document.getElementById('feedback-desc');
 
     feedbackIcon.textContent = isCorrect ? '🎉' : '💡';
-    feedbackTitle.textContent = isCorrect ? '정답입니다! 칸을 점령했습니다.' : `아쉽네요! 정답은 '${cell.options[cell.answerIndex]}'입니다.`;
+    feedbackTitle.textContent = isCorrect
+      ? `정답입니다! ('${cell.answer}') 칸을 점령했습니다.`
+      : `아쉽네요! 입력: '${userText}' ➔ 정답: '${cell.answer}'`;
     feedbackDesc.textContent = cell.explanation;
     feedbackBox.classList.remove('hidden');
 
@@ -1352,7 +1384,8 @@ class WorldGameApp {
       this.network.send('SUBMIT_ANSWER', {
         type: 'QUIZ',
         isCorrect,
-        chosenIdx,
+        userText,
+        correctAnswer: cell.answer,
         playerIdx,
         cellIndex,
         explanation: cell.explanation
@@ -1383,13 +1416,14 @@ class WorldGameApp {
   }
 
   /* ========================================================================
-     CARD MISSION MODAL HANDLING
+     CARD MISSION MODAL HANDLING (단답형 주관식)
      ======================================================================== */
   openCardModal(cardType, playerIdx, cellIndex) {
     const isClimate = cardType === 'climate_card';
     const cardList = isClimate ? CLIMATE_CARDS : TERRAIN_CARDS;
     const cardData = cardList[Math.floor(Math.random() * cardList.length)];
     this.state.activeCard = { cardData, cardType, playerIdx, cellIndex };
+    const player = this.state.players[playerIdx];
 
     const typeBadge = document.getElementById('card-type-badge');
     typeBadge.textContent = isClimate ? '☀️ 기후 카드 미션' : '🏔️ 지형 카드 미션';
@@ -1406,53 +1440,94 @@ class WorldGameApp {
       sound.playCardFlip();
     }, 400);
 
+    const questionElem = document.getElementById('card-question-text');
+    if (questionElem) {
+      questionElem.textContent = cardData.question || (isClimate ? '위 사진이 나타내는 기후는 무엇일까요? (○○)' : '위 사진이 나타내는 지형은 무엇일까요? (○○)');
+    }
+
+    const cardModalTitle = document.getElementById('card-modal-title');
+    if (cardModalTitle) {
+      cardModalTitle.textContent = isClimate ? '기후 카드를 뒤집었습니다!' : '지형 카드를 뒤집었습니다!';
+    }
+
+    const cardUserHintCount = document.getElementById('card-user-hint-keys-count');
+    cardUserHintCount.textContent = player.hintKeys || 0;
+
+    const btnCardUseHint = document.getElementById('btn-card-use-hint-key');
+    btnCardUseHint.disabled = !player.hintKeys || player.hintKeys <= 0;
+
+    const cardHintDisplay = document.getElementById('card-hint-display');
+    const cardHintText = document.getElementById('card-hint-text');
+    cardHintDisplay.classList.add('hidden');
+    cardHintText.textContent = '';
+
+    btnCardUseHint.onclick = () => {
+      if (!player.hintKeys || player.hintKeys <= 0) return;
+      player.hintKeys--;
+      cardUserHintCount.textContent = player.hintKeys;
+      btnCardUseHint.disabled = true;
+      sound.playItemGet();
+      this.showToast('🔑 힌트 열쇠 사용! 초성 힌트가 공개되었습니다.');
+      cardHintText.textContent = cardData.initialHint || cardData.answer;
+      cardHintDisplay.classList.remove('hidden');
+      document.getElementById('card-input-answer').focus();
+    };
+
+    const cardInputForm = document.getElementById('card-input-form');
+    const cardInputAnswer = document.getElementById('card-input-answer');
+    const btnCardSubmit = document.getElementById('btn-card-submit');
+
+    cardInputAnswer.value = '';
+    cardInputAnswer.placeholder = `정답을 입력하세요 (${cardData.answer.length === 1 ? '○ 1글자' : '○○ 2글자'})`;
+    cardInputAnswer.disabled = false;
+    btnCardSubmit.disabled = false;
+
     const feedbackBox = document.getElementById('card-feedback-box');
     feedbackBox.classList.add('hidden');
 
-    const optionsContainer = document.getElementById('card-options-container');
-    optionsContainer.innerHTML = '';
-
-    cardData.options.forEach((optText, optIdx) => {
-      const optBtn = document.createElement('button');
-      optBtn.className = 'quiz-opt-btn';
-      optBtn.id = `card-opt-${optIdx}`;
-      optBtn.innerHTML = `<strong>${optIdx + 1}.</strong> <span>${optText}</span>`;
-
-      optBtn.addEventListener('click', () => {
-        this.submitCardAnswer(optIdx, cardData, playerIdx, cellIndex);
-      });
-
-      optionsContainer.appendChild(optBtn);
-    });
+    cardInputForm.onsubmit = (e) => {
+      e.preventDefault();
+      const userText = cardInputAnswer.value.trim();
+      if (!userText) {
+        this.showToast('⚠️ 사진의 정답을 입력해주세요!');
+        cardInputAnswer.focus();
+        return;
+      }
+      this.submitCardAnswer(userText, cardData, playerIdx, cellIndex);
+    };
 
     this.openModal(this.modalCard);
+
+    setTimeout(() => {
+      cardInputAnswer.focus();
+    }, 500);
   }
 
-  submitCardAnswer(chosenIdx, cardData, playerIdx, cellIndex) {
-    const isCorrect = chosenIdx === cardData.answerIndex;
+  submitCardAnswer(userText, cardData, playerIdx, cellIndex) {
+    const isCorrect = this.checkAnswerCorrectness(userText, cardData.answer, cardData.acceptableAnswers);
     const player = this.state.players[playerIdx];
 
-    const optBtn = document.getElementById(`card-opt-${chosenIdx}`);
+    const cardInputAnswer = document.getElementById('card-input-answer');
+    const btnCardSubmit = document.getElementById('btn-card-submit');
+    cardInputAnswer.disabled = true;
+    btnCardSubmit.disabled = true;
+
     if (isCorrect) {
-      if (optBtn) optBtn.classList.add('correct');
       sound.playCorrect();
       this.claimCell(playerIdx, cellIndex);
       this.addLog(`🌟 ${player.name}님이 [${cardData.name}] 카드 미션을 맞혀 점령했습니다!`, 'correct');
     } else {
-      if (optBtn) optBtn.classList.add('wrong');
-      const correctBtn = document.getElementById(`card-opt-${cardData.answerIndex}`);
-      if (correctBtn) correctBtn.classList.add('correct');
       sound.playWrong();
-      this.addLog(`❌ ${player.name}님이 카드 미션 오답을 선택했습니다. (정답: ${cardData.name})`, 'wrong');
+      this.addLog(`❌ ${player.name}님이 카드 미션 오답('${userText}')을 제출했습니다. (정답: ${cardData.answer})`, 'wrong');
     }
-
-    document.querySelectorAll('#card-options-container .quiz-opt-btn').forEach(btn => btn.style.pointerEvents = 'none');
 
     const feedbackBox = document.getElementById('card-feedback-box');
     const feedbackTitle = document.getElementById('card-feedback-title');
     const feedbackDesc = document.getElementById('card-feedback-desc');
 
-    feedbackTitle.textContent = isCorrect ? '정답입니다! 카드 칸을 점령했습니다.' : `정답은 '${cardData.name}'입니다.`;
+    feedbackTitle.textContent = isCorrect
+      ? `정답입니다! ('${cardData.answer}') 카드 칸을 점령했습니다.`
+      : `아쉽네요! 입력: '${userText}' ➔ 정답: '${cardData.answer}'`;
     feedbackDesc.textContent = cardData.description;
     feedbackBox.classList.remove('hidden');
 
@@ -1460,7 +1535,8 @@ class WorldGameApp {
       this.network.send('SUBMIT_ANSWER', {
         type: 'CARD',
         isCorrect,
-        chosenIdx,
+        userText,
+        correctAnswer: cardData.answer,
         playerIdx,
         cellIndex,
         description: cardData.description

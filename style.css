@@ -1115,15 +1115,16 @@ button, input {
   white-space: nowrap;
 }
 
-/* Center Left: Players Status Panel (새롭고 컴팩트한 참가자 카드 디자인) */
+/* Center Left: Players Status Panel (컴팩트 & 겉 테두리 잘림 방지) */
 .center-players-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
-  padding-right: 3px;
+  padding: 4px 6px;
+  box-sizing: border-box;
 }
 
 .player-card {
@@ -1131,19 +1132,20 @@ button, input {
   backdrop-filter: blur(12px);
   border: 1.5px solid rgba(255, 255, 255, 0.1);
   border-left: 4px solid var(--card-color, #ef4444);
-  border-radius: 10px;
-  padding: 6px 10px;
+  border-radius: 8px;
+  padding: 4px 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   position: relative;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .player-card:hover {
-  transform: translateX(2px);
   border-color: rgba(255, 255, 255, 0.25);
   border-left-color: var(--card-color, #ef4444);
 }
@@ -1151,36 +1153,36 @@ button, input {
 .player-card.active-turn {
   border-color: var(--card-color, #ef4444);
   border-left-color: var(--card-color, #ef4444);
-  box-shadow: 0 0 16px var(--card-glow, rgba(239, 68, 68, 0.45)), 0 4px 12px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 10px var(--card-glow, rgba(239, 68, 68, 0.45)), 0 2px 8px rgba(0, 0, 0, 0.5);
   background: linear-gradient(135deg, rgba(45, 55, 72, 0.95) 0%, rgba(20, 28, 44, 0.98) 100%);
-  transform: scale(1.02);
+  transform: none;
 }
 
 .card-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
 }
 
 .card-avatar-wrap {
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: rgba(15, 23, 42, 0.9);
   border: 2px solid var(--card-color, #ef4444);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .turn-pulse-ring {
   position: absolute;
-  inset: -3px;
+  inset: -2px;
   border-radius: 50%;
   border: 2px solid var(--card-color, #ef4444);
   animation: turnRingPulse 1.6s infinite;
@@ -1189,7 +1191,7 @@ button, input {
 
 @keyframes turnRingPulse {
   0% { transform: scale(0.95); opacity: 0.8; }
-  50% { transform: scale(1.25); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 0; }
   100% { transform: scale(0.95); opacity: 0; }
 }
 
@@ -1203,7 +1205,7 @@ button, input {
 
 .card-player-name {
   font-weight: 800;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -1214,7 +1216,7 @@ button, input {
 }
 
 .me-tag {
-  font-size: 0.58rem;
+  font-size: 0.56rem;
   padding: 1px 4px;
   border-radius: 4px;
   background: #38bdf8;
@@ -1224,7 +1226,7 @@ button, input {
 }
 
 .card-player-role {
-  font-size: 0.64rem;
+  font-size: 0.60rem;
   font-weight: 600;
   line-height: 1.1;
 }
@@ -1232,14 +1234,14 @@ button, input {
 .card-stats-pills {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   flex-shrink: 0;
 }
 
 .stat-pill {
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 700;
-  padding: 2px 6px;
+  padding: 1px 5px;
   border-radius: var(--radius-sm);
   background: rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1254,8 +1256,8 @@ button, input {
 }
 
 .island-status-badge {
-  font-size: 0.62rem;
-  padding: 1px 5px;
+  font-size: 0.60rem;
+  padding: 1px 4px;
   border-radius: var(--radius-full);
   background: rgba(234, 179, 8, 0.2);
   color: #facc15;
@@ -1960,8 +1962,8 @@ button, input {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(251, 191, 36, 0.1);
-  border: 1px solid rgba(251, 191, 36, 0.3);
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.35);
   padding: 8px 14px;
   border-radius: var(--radius-md);
   margin-top: 10px;
@@ -1972,51 +1974,98 @@ button, input {
   color: #fbbf24;
 }
 
-.quiz-options-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.quiz-opt-btn {
-  background: rgba(30, 41, 59, 0.8);
-  border: 2px solid rgba(255, 255, 255, 0.12);
+/* 초성 힌트 출력 박스 */
+.hint-display-box {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(217, 119, 6, 0.1) 100%);
+  border: 1.5px solid rgba(251, 191, 36, 0.5);
   border-radius: var(--radius-md);
-  padding: 14px 18px;
-  color: #ffffff;
-  font-size: 1rem;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 10px 16px;
+  margin-top: 10px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  animation: hintBoxPulse 0.4s ease-out;
 }
 
-.quiz-opt-btn:hover {
-  background: rgba(99, 102, 241, 0.2);
-  border-color: #6366f1;
-  transform: translateX(4px);
+@keyframes hintBoxPulse {
+  0% { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.quiz-opt-btn.correct {
-  background: rgba(16, 185, 129, 0.3);
-  border-color: #10b981;
-  color: #34d399;
+.hint-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fbbf24;
+  white-space: nowrap;
 }
 
-.quiz-opt-btn.wrong {
-  background: rgba(239, 68, 68, 0.3);
-  border-color: #ef4444;
-  color: #f87171;
+.hint-val {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #fef08a;
+  letter-spacing: 3px;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
 }
 
-.quiz-opt-btn.disabled {
-  opacity: 0.3;
+/* 단답형 정답 입력 폼 */
+.quiz-input-form {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quiz-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.quiz-input-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 1.2rem;
   pointer-events: none;
-  text-decoration: line-through;
+  z-index: 2;
+}
+
+.quiz-text-input {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 2px solid rgba(56, 189, 248, 0.4);
+  border-radius: var(--radius-md);
+  color: #ffffff;
+  font-family: var(--font-main);
+  font-size: 1.15rem;
+  font-weight: 700;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4), 0 0 10px rgba(56, 189, 248, 0.1);
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+
+.quiz-text-input:focus {
+  border-color: #38bdf8;
+  background: rgba(15, 23, 42, 0.95);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4), inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.quiz-text-input::placeholder {
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
+.btn-submit-quiz {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 1px;
 }
 
 .quiz-feedback-box {
