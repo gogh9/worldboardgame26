@@ -31,7 +31,6 @@ class WorldGameApp {
     this.initDOM();
     this.initNickname();
     this.initEvents();
-    this.initGuideModal();
     this.initLobbyNetwork();
     
     // 기본 시작 화면을 방 선택 로비로 바로 진입
@@ -99,7 +98,6 @@ class WorldGameApp {
     this.modalCard = document.getElementById('modal-card');
     this.modalSpecial = document.getElementById('modal-special');
     this.modalVictory = document.getElementById('modal-victory');
-    this.modalGuide = document.getElementById('modal-guide');
   }
 
   // 이벤트 바인딩
@@ -121,43 +119,7 @@ class WorldGameApp {
       });
     }
 
-    const btnOpenGuideLobby = document.getElementById('btn-open-guide-lobby');
-    if (btnOpenGuideLobby) {
-      btnOpenGuideLobby.addEventListener('click', () => {
-        this.openModal(this.modalGuide);
-      });
-    }
-
-    const btnOpenGuide = document.getElementById('btn-open-guide');
-    if (btnOpenGuide) {
-      btnOpenGuide.addEventListener('click', () => {
-        this.openModal(this.modalGuide);
-      });
-    }
-
-    const btnGameGuide = document.getElementById('btn-game-guide');
-    if (btnGameGuide) {
-      btnGameGuide.addEventListener('click', () => {
-        this.openModal(this.modalGuide);
-      });
-    }
-
-    const btnCloseGuide = document.getElementById('btn-close-guide');
-    if (btnCloseGuide) {
-      btnCloseGuide.addEventListener('click', () => {
-        this.closeModal(this.modalGuide);
-      });
-    }
-
-    // 2. Sound Toggle
-    const btnSound = document.getElementById('btn-sound-toggle');
-    if (btnSound) {
-      btnSound.addEventListener('click', () => {
-        const isEnabled = sound.toggleSound();
-        btnSound.textContent = isEnabled ? '🔊' : '🔇';
-        this.showToast(isEnabled ? '사운드가 켜졌습니다.' : '사운드가 음소거되었습니다.');
-      });
-    }
+    // 2. Lobby & Local Back Navigation
 
     // 3. Lobby & Local Back Navigation
     const btnLobbyBack = document.getElementById('btn-lobby-back');
@@ -193,12 +155,6 @@ class WorldGameApp {
     const btnJoinRoom = document.getElementById('btn-join-room');
     if (btnJoinRoom) btnJoinRoom.addEventListener('click', () => this.handleJoinRoom());
 
-    const btnCopyCode = document.getElementById('btn-copy-code');
-    if (btnCopyCode) btnCopyCode.addEventListener('click', () => this.copyRoomCode());
-
-    const btnCopyLink = document.getElementById('btn-copy-link');
-    if (btnCopyLink) btnCopyLink.addEventListener('click', () => this.copyRoomLink());
-
     const btnLeaveRoom = document.getElementById('btn-leave-room');
     if (btnLeaveRoom) btnLeaveRoom.addEventListener('click', () => this.leaveRoom());
 
@@ -221,14 +177,6 @@ class WorldGameApp {
     // 6. Game Actions: 주사위 클릭 굴리기
     if (this.diceWidget) this.diceWidget.addEventListener('click', () => this.handleRollDice());
     if (this.diceCube) this.diceCube.addEventListener('click', () => this.handleRollDice());
-    const btnGameExit = document.getElementById('btn-game-exit');
-    if (btnGameExit) {
-      btnGameExit.addEventListener('click', () => {
-        if (confirm('게임을 종료하고 방 선택 화면으로 나가시겠습니까?')) {
-          this.leaveRoom();
-        }
-      });
-    }
 
     // 7. Victory Modal
     const btnVictoryRestart = document.getElementById('btn-victory-restart');
@@ -241,14 +189,6 @@ class WorldGameApp {
           this.network.send('RESTART_GAME', {});
           this.resetGameState();
         }
-      });
-    }
-
-    const btnVictoryLobby = document.getElementById('btn-victory-lobby');
-    if (btnVictoryLobby) {
-      btnVictoryLobby.addEventListener('click', () => {
-        this.closeModal(this.modalVictory);
-        this.leaveRoom();
       });
     }
   }
@@ -606,19 +546,6 @@ class WorldGameApp {
       });
     }
     this.renderLobbySlots();
-  }
-
-  copyRoomCode() {
-    navigator.clipboard.writeText(this.network.roomCode).then(() => {
-      this.showToast('방 코드가 클립보드에 복사되었습니다! 📋');
-    });
-  }
-
-  copyRoomLink() {
-    const url = `${window.location.origin}${window.location.pathname}?room=${this.network.roomCode}`;
-    navigator.clipboard.writeText(url).then(() => {
-      this.showToast('초대 링크가 복사되었습니다! 🔗');
-    });
   }
 
   leaveRoom() {
@@ -1949,72 +1876,6 @@ class WorldGameApp {
     });
     this.renderBoard();
     this.updateGameUI();
-  }
-
-  initGuideModal() {
-    const tabRule = document.getElementById('guide-tab-rule');
-    const tabBoard = document.getElementById('guide-tab-board');
-    const tabTerrain = document.getElementById('guide-tab-terrain');
-    const tabClimate = document.getElementById('guide-tab-climate');
-
-    const paneRule = document.getElementById('guide-content-rule');
-    const paneBoard = document.getElementById('guide-content-board');
-    const paneTerrain = document.getElementById('guide-content-terrain');
-    const paneClimate = document.getElementById('guide-content-climate');
-
-    const setGuideTab = (activeTab, activePane) => {
-      [tabRule, tabBoard, tabTerrain, tabClimate].filter(Boolean).forEach(t => t.classList.remove('active'));
-      [paneRule, paneBoard, paneTerrain, paneClimate].filter(Boolean).forEach(p => p.classList.remove('active'));
-      if (activeTab) activeTab.classList.add('active');
-      if (activePane) activePane.classList.add('active');
-    };
-
-    if (tabRule && paneRule) tabRule.addEventListener('click', () => setGuideTab(tabRule, paneRule));
-    if (tabBoard && paneBoard) tabBoard.addEventListener('click', () => setGuideTab(tabBoard, paneBoard));
-    if (tabTerrain && paneTerrain) tabTerrain.addEventListener('click', () => setGuideTab(tabTerrain, paneTerrain));
-    if (tabClimate && paneClimate) tabClimate.addEventListener('click', () => setGuideTab(tabClimate, paneClimate));
-
-    const btnQuickTextbook = document.getElementById('btn-quick-textbook');
-    if (btnQuickTextbook) {
-      btnQuickTextbook.addEventListener('click', () => {
-        this.openModal(this.modalGuide);
-        setGuideTab(tabBoard, paneBoard);
-      });
-    }
-
-    const terrainGrid = document.getElementById('guide-terrain-grid');
-    if (terrainGrid) {
-      terrainGrid.innerHTML = '';
-      TERRAIN_CARDS.forEach(card => {
-        const item = document.createElement('div');
-        item.className = 'card-guide-item';
-        item.innerHTML = `
-          <img src="${card.image}" alt="${card.name}" class="card-guide-img">
-          <div class="card-guide-info">
-            <h5>${card.name}</h5>
-            <p>${card.description}</p>
-          </div>
-        `;
-        terrainGrid.appendChild(item);
-      });
-    }
-
-    const climateGrid = document.getElementById('guide-climate-grid');
-    if (climateGrid) {
-      climateGrid.innerHTML = '';
-      CLIMATE_CARDS.forEach(card => {
-        const item = document.createElement('div');
-        item.className = 'card-guide-item';
-        item.innerHTML = `
-          <img src="${card.image}" alt="${card.name}" class="card-guide-img">
-          <div class="card-guide-info">
-            <h5>${card.name}</h5>
-            <p>${card.description}</p>
-          </div>
-        `;
-        climateGrid.appendChild(item);
-      });
-    }
   }
 }
 

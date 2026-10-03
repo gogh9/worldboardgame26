@@ -16,7 +16,7 @@
   <!-- Canvas Confetti for Victory Celebration -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=20261003_v20">
+  <link rel="stylesheet" href="style.css?v=20261003_v21">
 </head>
 <body>
   <div id="app" class="app-container">
@@ -28,10 +28,6 @@
           <div class="lobby-title-area">
             <span class="lobby-logo-icon">🌍</span>
             <h2>세계여행 말판놀이 - 탐험 방 선택</h2>
-          </div>
-          <div class="lobby-header-actions">
-            <button class="btn btn-sm btn-outline" id="btn-sound-toggle" title="사운드 켜기/끄기">🔊</button>
-            <button class="btn btn-sm btn-outline" id="btn-open-guide-lobby" title="도감 & 규칙">📜 도감</button>
           </div>
         </div>
 
@@ -85,10 +81,6 @@
               <span class="room-code-lbl">방 코드:</span>
               <span class="room-code-val" id="disp-room-code">------</span>
             </div>
-            <div class="room-header-btns">
-              <button class="btn btn-sm btn-outline" id="btn-copy-code" title="방 코드 복사">📋 코드 복사</button>
-              <button class="btn btn-sm btn-outline" id="btn-copy-link" title="초대 링크 복사">🔗 초대 링크</button>
-            </div>
           </div>
 
           <!-- 플레이어 슬롯 4개 -->
@@ -140,12 +132,6 @@
                   <!-- JS 동적 렌더링 -->
                 </div>
 
-                <!-- 상단 우측: 퀵 액션 플로팅 버튼 바 -->
-                <div class="map-floating-actions">
-                  <button class="btn btn-sm btn-outline btn-textbook-view" id="btn-quick-textbook" title="교과서 원본 말판 보기">📖 교과서</button>
-                  <button class="btn btn-sm btn-outline" id="btn-game-guide" title="도감 & 규칙">📜 도감</button>
-                  <button class="btn btn-sm btn-outline btn-exit" id="btn-game-exit" title="게임 나가기">🚪</button>
-                </div>
 
                 <!-- 하단 좌측: 3D 인터랙티브 발광 주사위 (직접 클릭 굴리기) -->
                 <div class="dice-widget glass-card" id="dice-widget" title="주사위를 클릭하여 굴리세요!">
@@ -278,62 +264,6 @@
 
         <div class="modal-footer-actions">
           <button class="btn btn-primary btn-large" id="btn-victory-restart">새로운 게임 시작 🚀</button>
-          <button class="btn btn-outline" id="btn-victory-lobby">로비로 이동</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- E. 도감 & 룰북 전체 모달 -->
-    <div id="modal-guide" class="modal-backdrop">
-      <div class="modal-dialog glass-dialog guide-dialog">
-        <div class="modal-header">
-          <h3>📖 세계여행 말판놀이 가이드 & 카드 도감</h3>
-          <button class="btn-close" id="btn-close-guide">✕</button>
-        </div>
-        <div class="modal-body guide-body">
-          <div class="guide-tabs">
-            <button class="tab-btn active" id="guide-tab-rule">놀이 규칙</button>
-            <button class="tab-btn" id="guide-tab-board">🗺️ 교과서 보드판 원본</button>
-            <button class="tab-btn" id="guide-tab-terrain">지형 카드 8종</button>
-            <button class="tab-btn" id="guide-tab-climate">기후 카드 8종</button>
-          </div>
-
-          <div id="guide-content-rule" class="guide-tab-pane active">
-            <h4>🎯 놀이 방법</h4>
-            <ol class="rule-list">
-              <li><strong>인원:</strong> 2~4명의 친구가 함께 플레이합니다.</li>
-              <li><strong>진행:</strong> 차례대로 주사위를 굴려 나온 숫자만큼 자신의 말을 이동합니다.</li>
-              <li><strong>문제 칸:</strong> 도착한 칸의 <strong>단답형 문제</strong>를 맞히면 해당 칸을 <strong>자신의 색상으로 점령(색칠)</strong>합니다.</li>
-              <li><strong>카드 칸:</strong> 지형/기후 카드가 뽑히면 사진을 보고 알맞은 정답을 입력하여 칸을 점령합니다.</li>
-              <li><strong>특수 칸:</strong>
-                <ul>
-                  <li>✈️ <strong>세계여행:</strong> 다음 차례에 원하는 칸으로 즉시 이동!</li>
-                  <li>🏝️ <strong>무인도:</strong> 1턴 동안 쉬고 다음 차례에 이동합니다.</li>
-                </ul>
-              </li>
-              <li><strong>승리 조건:</strong> 모든 문제 칸이 점령되거나 정해진 턴이 끝났을 때 <strong>가장 많은 칸을 점령한 탐험가</strong>가 승리합니다!</li>
-            </ol>
-          </div>
-
-          <div id="guide-content-board" class="guide-tab-pane">
-            <div class="textbook-board-wrapper">
-              <div class="textbook-board-header">
-                <h4>🗺️ 6학년 2학기 세계의 자연환경 말판놀이 원본 (52~53쪽)</h4>
-                <a href="assets/board/full_textbook_board.jpg" target="_blank" class="btn btn-sm btn-secondary">🔍 새 탭에서 고화질 확대</a>
-              </div>
-              <div class="textbook-board-scroll">
-                <img src="assets/board/full_textbook_board.jpg" alt="교과서 보드판 원본" class="textbook-board-img" />
-              </div>
-            </div>
-          </div>
-
-          <div id="guide-content-terrain" class="guide-tab-pane">
-            <div class="cards-gallery-grid" id="guide-terrain-grid"></div>
-          </div>
-
-          <div id="guide-content-climate" class="guide-tab-pane">
-            <div class="cards-gallery-grid" id="guide-climate-grid"></div>
-          </div>
         </div>
       </div>
     </div>
@@ -344,6 +274,6 @@
   </div>
 
   <!-- 메인 스크립트 모듈 로드 -->
-  <script type="module" src="js/app.js?v=20261003_v20"></script>
+  <script type="module" src="js/app.js?v=20261003_v21"></script>
 </body>
 </html>
