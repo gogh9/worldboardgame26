@@ -1548,11 +1548,6 @@ class WorldGameApp {
       questionElem.textContent = cardData.question || (isClimate ? '위 사진이 나타내는 기후는 무엇일까요? (○○)' : '위 사진이 나타내는 지형은 무엇일까요? (○○)');
     }
 
-    const cardModalTitle = document.getElementById('card-modal-title');
-    if (cardModalTitle) {
-      cardModalTitle.textContent = isClimate ? '기후 카드를 뒤집었습니다!' : '지형 카드를 뒤집었습니다!';
-    }
-
     const cardInputForm = document.getElementById('card-input-form');
     const cardInputAnswer = document.getElementById('card-input-answer');
     const btnCardSubmit = document.getElementById('btn-card-submit');
