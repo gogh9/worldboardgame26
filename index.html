@@ -128,34 +128,21 @@
         <div class="board-wrapper">
           <div class="board-container" id="board-container">
             
-            <!-- 중앙 영역: 탐험가 현황 + 주사위 조작 + 실시간 일지 (세련된 통합 대시보드) -->
+            <!-- 중앙 영역: 좌측 컴팩트 조작 패널 + 우측 대형 고화질 세계지도 말판 -->
             <div class="board-center-area">
               
-              <!-- 상단 통합 관제 바: 타이틀 & 점령 현황 & 교과서 버튼 -->
-              <div class="center-top-bar-integrated">
-                <div class="center-title-tag">
-                  <span class="pulse-dot"></span>
-                  <span class="title-text">🧭 세계 탐험 관제실</span>
+              <!-- 좌측 사이드바: 참가 탐험가 목록 + 주사위 조작 + 교과서 버튼 -->
+              <div class="center-sidebar-panel">
+                <!-- 참가자 목록 (컴팩트 카드) -->
+                <div class="center-players-section" id="players-status-panel">
+                  <!-- JS 동적 렌더링 -->
                 </div>
-                <div class="conquest-progress-box">
-                  <span class="progress-title">전체 점령: <strong id="conquest-ratio">0 / 16</strong></span>
-                  <div class="progress-bar-multi" id="conquest-progress-bar"></div>
-                </div>
-                <button class="btn btn-sm btn-outline btn-textbook-view" id="btn-quick-textbook" title="교과서 원본 말판 보기">📖 교과서 말판</button>
-              </div>
 
-              <!-- 중앙 좌측: 참가 탐험가 패널 (컴팩트 카드 디자인) -->
-              <div class="center-players-section" id="players-status-panel">
-                <!-- JS 동적 렌더링 -->
-              </div>
-
-              <!-- 중앙 우측: 주사위 롤러 + 실시간 일지 -->
-              <div class="center-controls-section">
                 <!-- 주사위 롤러 위젯 -->
                 <div class="dice-widget glass-card">
                   <div class="dice-widget-top">
                     <span class="widget-header">🎲 주사위</span>
-                    <span class="dice-result-text" id="dice-result-text">주사위를 굴려주세요!</span>
+                    <span class="dice-result-text" id="dice-result-text">주사위를 굴리세요!</span>
                   </div>
                   
                   <div class="dice-arena-wrap">
@@ -171,17 +158,19 @@
                     </div>
                     <div class="dice-action-wrap">
                       <button class="btn btn-primary btn-roll" id="btn-roll-dice">주사위 굴리기 🎲</button>
-                      <div class="dice-hint-text" id="dice-hint-text">내 차례가 되면 활성화됩니다.</div>
+                      <div class="dice-hint-text" id="dice-hint-text">내 차례에 활성화됩니다.</div>
                     </div>
                   </div>
                 </div>
 
-                <!-- 실시간 탐험 로그 패널 -->
-                <div class="log-widget glass-card">
-                  <div class="widget-header">📜 실시간 탐험 일지</div>
-                  <div class="log-list" id="game-log-list">
-                    <div class="log-item system">세계여행 탐험이 시작되었습니다!</div>
-                  </div>
+                <button class="btn btn-sm btn-outline btn-textbook-view" id="btn-quick-textbook" title="교과서 원본 말판 보기">📖 교과서 말판</button>
+              </div>
+
+              <!-- 우측 대형 고화질 세계지도 말판 뷰 & 실시간 말 레이어 -->
+              <div class="center-map-container" id="center-map-container">
+                <div class="center-map-inner" id="center-map-inner">
+                  <img src="assets/board/world_map_hd.jpg" class="world-map-img" alt="세계지도 말판" id="world-map-img" />
+                  <div class="map-pawns-layer" id="map-pawns-layer"></div>
                 </div>
               </div>
 

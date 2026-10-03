@@ -1,5 +1,5 @@
 // 세계여행 말판놀이 - Main Application Logic (Perfect Multiplayer Synchronization)
-import { BOARD_CELLS, CLIMATE_CARDS, TERRAIN_CARDS, PLAYER_PROFILES } from './boardData.js';
+import { BOARD_CELLS, CLIMATE_CARDS, TERRAIN_CARDS, PLAYER_PROFILES, MAP_CELL_COORDINATES } from './boardData.js';
 import { HybridNetworkManager } from './network.js';
 import { sound } from './sound.js';
 
@@ -82,14 +82,13 @@ class WorldGameApp {
     // Game Elements
     this.boardCellsGrid = document.getElementById('board-cells-grid');
     this.pawnsLayer = document.getElementById('pawns-layer');
+    this.mapPawnsLayer = document.getElementById('map-pawns-layer');
     this.playersPanel = document.getElementById('players-status-panel');
     this.turnBanner = document.getElementById('turn-announcer-banner');
     this.turnPlayerName = document.getElementById('turn-player-name');
     this.turnDot = document.getElementById('turn-dot');
     this.gameRoundTag = document.getElementById('game-round-tag');
     this.gameModeTag = document.getElementById('game-mode-tag');
-    this.conquestRatio = document.getElementById('conquest-ratio');
-    this.conquestProgressBar = document.getElementById('conquest-progress-bar');
     
     // Dice Elements
     this.diceCube = document.getElementById('dice-cube');
@@ -988,6 +987,7 @@ class WorldGameApp {
     });
 
     this.renderPawns();
+    this.renderMapPawns();
   }
 
   getTrackDirectionIcon(index) {
@@ -1003,6 +1003,7 @@ class WorldGameApp {
   }
 
   renderPawns() {
+    if (!this.pawnsLayer) return;
     this.pawnsLayer.innerHTML = '';
     this.state.players.forEach((player) => {
       const prof = PLAYER_PROFILES[player.charId] || PLAYER_PROFILES[0];
@@ -1017,14 +1018,62 @@ class WorldGameApp {
     });
   }
 
+  renderMapPawns() {
+    if (!this.mapPawnsLayer) return;
+    this.mapPawnsLayer.innerHTML = '';
+    this.state.players.forEach((player) => {
+      const prof = PLAYER_PROFILES[player.charId] || PLAYER_PROFILES[0];
+      const mapPawn = document.createElement('div');
+      mapPawn.className = 'map-pawn-piece';
+      mapPawn.id = `map-pawn-player-${player.id}`;
+      mapPawn.style.backgroundColor = prof.colorHex;
+      mapPawn.style.setProperty('--pawn-color', prof.colorHex);
+      mapPawn.style.setProperty('--pawn-glow', prof.glowHex);
+      mapPawn.style.boxShadow = `0 0 10px ${prof.glowHex}, 0 2px 6px rgba(0,0,0,0.8)`;
+      mapPawn.innerHTML = `
+        <span class="map-pawn-icon">${prof.avatar}</span>
+        <span class="map-pawn-tooltip">${player.name}</span>
+      `;
+      this.mapPawnsLayer.appendChild(mapPawn);
+      this.updateMapPawnPosition(player.id, player.position);
+    });
+  }
+
   updatePawnPosition(playerId, cellIndex) {
     const pawn = document.getElementById(`pawn-player-${playerId}`);
     const cell = document.getElementById(`board-cell-${cellIndex}`);
-    if (!pawn || !cell || !this.pawnsLayer) return;
+    if (pawn && cell && this.pawnsLayer) {
+      const cellRect = cell.getBoundingClientRect();
+      const layerRect = this.pawnsLayer.getBoundingClientRect();
 
-    const cellRect = cell.getBoundingClientRect();
-    const layerRect = this.pawnsLayer.getBoundingClientRect();
+      const playersInCell = this.state.players.filter(p => p.position === cellIndex);
+      const orderIndex = playersInCell.findIndex(p => p.id === playerId);
+      const totalInCell = playersInCell.length;
 
+      let offsetX = 0;
+      let offsetY = 0;
+      if (totalInCell > 1) {
+        const angles = [0, Math.PI, Math.PI / 2, (3 * Math.PI) / 2];
+        const radius = 12;
+        offsetX = Math.cos(angles[orderIndex % 4]) * radius;
+        offsetY = Math.sin(angles[orderIndex % 4]) * radius;
+      }
+
+      const centerX = cellRect.left - layerRect.left + cellRect.width / 2 + offsetX;
+      const centerY = cellRect.top - layerRect.top + cellRect.height / 2 + offsetY;
+
+      pawn.style.left = `${centerX}px`;
+      pawn.style.top = `${centerY}px`;
+    }
+
+    this.updateMapPawnPosition(playerId, cellIndex);
+  }
+
+  updateMapPawnPosition(playerId, cellIndex) {
+    const mapPawn = document.getElementById(`map-pawn-player-${playerId}`);
+    if (!mapPawn) return;
+
+    const coord = MAP_CELL_COORDINATES[cellIndex] || { x: 50, y: 50 };
     const playersInCell = this.state.players.filter(p => p.position === cellIndex);
     const orderIndex = playersInCell.findIndex(p => p.id === playerId);
     const totalInCell = playersInCell.length;
@@ -1033,16 +1082,13 @@ class WorldGameApp {
     let offsetY = 0;
     if (totalInCell > 1) {
       const angles = [0, Math.PI, Math.PI / 2, (3 * Math.PI) / 2];
-      const radius = 12;
+      const radius = 1.8;
       offsetX = Math.cos(angles[orderIndex % 4]) * radius;
-      offsetY = Math.sin(angles[orderIndex % 4]) * radius;
+      offsetY = Math.sin(angles[orderIndex % 4]) * (radius * 1.5);
     }
 
-    const centerX = cellRect.left - layerRect.left + cellRect.width / 2 + offsetX;
-    const centerY = cellRect.top - layerRect.top + cellRect.height / 2 + offsetY;
-
-    pawn.style.left = `${centerX}px`;
-    pawn.style.top = `${centerY}px`;
+    mapPawn.style.left = `${coord.x + offsetX}%`;
+    mapPawn.style.top = `${coord.y + offsetY}%`;
   }
 
   // 캐릭터가 이동하거나 서 있는 카드 확대 및 강조 하이라이트
@@ -1112,12 +1158,15 @@ class WorldGameApp {
     if (!player) return;
     let remainingSteps = steps;
     const pawn = document.getElementById(`pawn-player-${player.id}`);
+    const mapPawn = document.getElementById(`map-pawn-player-${player.id}`);
     if (pawn) pawn.classList.add('jumping');
+    if (mapPawn) mapPawn.classList.add('jumping');
 
     const stepInterval = setInterval(() => {
       if (remainingSteps <= 0) {
         clearInterval(stepInterval);
         if (pawn) pawn.classList.remove('jumping');
+        if (mapPawn) mapPawn.classList.remove('jumping');
         this.highlightActiveCell(player.position, true);
         setTimeout(() => {
           this.handleCellArrival(playerIdx, player.position);
@@ -1649,23 +1698,10 @@ class WorldGameApp {
       `;
 
       this.playersPanel.appendChild(card);
-    });
 
-    // 점령 프로그레스 바
-    const conquerableCells = this.state.cells.filter(c => c.type === 'quiz' || c.type.includes('card'));
-    const totalConquered = conquerableCells.filter(c => c.ownerId !== null).length;
-    this.conquestRatio.textContent = `${totalConquered} / ${conquerableCells.length}`;
-
-    this.conquestProgressBar.innerHTML = '';
-    this.state.players.forEach(p => {
-      const pProf = PLAYER_PROFILES[p.charId] || PLAYER_PROFILES[0];
-      const count = p.conqueredCount || 0;
-      if (count > 0) {
-        const seg = document.createElement('div');
-        seg.style.height = '100%';
-        seg.style.width = `${(count / conquerableCells.length) * 100}%`;
-        seg.style.backgroundColor = pProf.colorHex;
-        this.conquestProgressBar.appendChild(seg);
+      const mapPawn = document.getElementById(`map-pawn-player-${p.id}`);
+      if (mapPawn) {
+        mapPawn.classList.toggle('active-turn', isTurn);
       }
     });
   }
