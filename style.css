@@ -1935,13 +1935,14 @@ button, input {
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
   width: 100%;
-  max-width: 580px;
+  max-width: 536px; /* 카드 크기(480px + 좌우 패딩 28px*2)에 맞춰 모든 팝업 창 크기 통일 */
   padding: 28px;
   display: flex;
   flex-direction: column;
   gap: 18px;
   text-align: left;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
 }
 
 @keyframes slideUp {
@@ -2166,10 +2167,22 @@ button, input {
   }
 }
 
+.card-question-box {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: #f8fafc;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
 /* Victory Screen Modal */
 .victory-dialog {
   text-align: center;
-  max-width: 640px;
+  max-width: 536px;
 }
 
 .trophy-icon {
