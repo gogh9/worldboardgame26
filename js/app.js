@@ -49,13 +49,19 @@ class WorldGameApp {
   // 이름 로컬스토리지 영구 저장 및 자동 로드
   initNickname() {
     const savedNick = localStorage.getItem('worldgame_nickname');
-    // 예전에 자동 생성된 이름(탐험가NN)은 무시하고, 직접 입력한 이름만 불러옵니다.
-    if (savedNick && !/^탐험가\d+$/.test(savedNick)) {
+    // 예전에 자동 생성된 이름(탐험가NN)은 무시하고, 저장된 값이 있으면 사용하며 기본값은 '내 이름'
+    if (savedNick && !/^탐험가\d+$/.test(savedNick) && savedNick.trim() !== '') {
       this.inputNickname.value = savedNick;
     } else {
-      this.inputNickname.value = '';
-      localStorage.removeItem('worldgame_nickname');
+      this.inputNickname.value = '내 이름';
+      localStorage.setItem('worldgame_nickname', '내 이름');
     }
+
+    this.inputNickname.addEventListener('focus', () => {
+      if (this.inputNickname.value === '내 이름') {
+        this.inputNickname.select();
+      }
+    });
 
     this.inputNickname.addEventListener('input', (e) => {
       const val = e.target.value.trim();
@@ -481,7 +487,7 @@ class WorldGameApp {
 
   // 방 만들기
   async handleCreateRoom() {
-    const nick = this.inputNickname ? (this.inputNickname.value.trim() || '탐험대장') : '탐험대장';
+    const nick = this.inputNickname ? (this.inputNickname.value.trim() || '내 이름') : '내 이름';
     this.mode = 'ONLINE';
     this.myPlayerId = 0;
     this.selectedCharId = 0;
@@ -518,7 +524,7 @@ class WorldGameApp {
 
   // 방 클릭 또는 코드로 입장
   async joinRoomByCode(code) {
-    const nick = this.inputNickname.value.trim() || '원정대원';
+    const nick = this.inputNickname.value.trim() || '내 이름';
     this.mode = 'ONLINE';
     this.updateNetworkBadge('connecting', '방 접속 중...');
 
