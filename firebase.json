@@ -8,6 +8,17 @@
       "**/node_modules/**",
       "build.zip",
       "*.pdf"
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(html|js|css)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      }
     ]
   }
 }

@@ -384,13 +384,13 @@ class WorldGameApp {
 
   setupLobbyView(isInRoom = false) {
     if (isInRoom) {
-      this.lobbyJoinSec.classList.add('hidden');
-      this.lobbyRoomSec.classList.remove('hidden');
+      if (this.lobbyJoinSec) this.lobbyJoinSec.classList.add('hidden');
+      if (this.lobbyRoomSec) this.lobbyRoomSec.classList.remove('hidden');
       this.renderCharacterChips();
       this.renderLobbySlots();
     } else {
-      this.lobbyJoinSec.classList.remove('hidden');
-      this.lobbyRoomSec.classList.add('hidden');
+      if (this.lobbyJoinSec) this.lobbyJoinSec.classList.remove('hidden');
+      if (this.lobbyRoomSec) this.lobbyRoomSec.classList.add('hidden');
       if (this.network) {
         this.renderRoomsList(this.network.getRoomsList());
       }
@@ -398,6 +398,7 @@ class WorldGameApp {
   }
 
   renderCharacterChips() {
+    if (!this.charChipsContainer) return;
     this.charChipsContainer.innerHTML = '';
     PLAYER_PROFILES.forEach(profile => {
       const isTaken = this.state.players.some(p => p.charId === profile.id && p.id !== this.myPlayerId);
@@ -426,6 +427,7 @@ class WorldGameApp {
   }
 
   renderLobbySlots() {
+    if (!this.lobbySlots) return;
     this.lobbySlots.innerHTML = '';
     for (let i = 0; i < 4; i++) {
       const player = this.state.players[i];
@@ -457,15 +459,15 @@ class WorldGameApp {
     // 방장 여부에 따른 버튼 제어
     const me = this.state.players.find(p => p.id === this.myPlayerId);
     if (me && me.isHost) {
-      this.btnToggleReady.classList.add('hidden');
-      this.btnStartGame.classList.remove('hidden');
-      
-      const otherClients = this.state.players.filter(p => !p.isHost);
-      const allClientsReady = otherClients.length === 0 || otherClients.every(p => p.isReady);
-      
-      this.btnStartGame.disabled = false;
-      this.btnStartGame.style.opacity = allClientsReady ? '1' : '0.7';
-      this.btnStartGame.className = allClientsReady ? 'btn btn-primary btn-pulse' : 'btn btn-primary';
+      if (this.btnToggleReady) this.btnToggleReady.classList.add('hidden');
+      if (this.btnStartGame) {
+        this.btnStartGame.classList.remove('hidden');
+        const otherClients = this.state.players.filter(p => !p.isHost);
+        const allClientsReady = otherClients.length === 0 || otherClients.every(p => p.isReady);
+        this.btnStartGame.disabled = false;
+        this.btnStartGame.style.opacity = allClientsReady ? '1' : '0.7';
+        this.btnStartGame.className = allClientsReady ? 'btn btn-primary btn-pulse' : 'btn btn-primary';
+      }
 
       if (this.network) {
         this.network.updateHostingInfo({
@@ -473,18 +475,20 @@ class WorldGameApp {
         });
       }
     } else {
-      this.btnToggleReady.classList.remove('hidden');
-      this.btnStartGame.classList.add('hidden');
-      if (me) {
-        this.btnToggleReady.textContent = me.isReady ? '준비 해제 (CANCEL)' : '준비 완료 (READY)';
-        this.btnToggleReady.className = me.isReady ? 'btn btn-secondary' : 'btn btn-primary';
+      if (this.btnToggleReady) {
+        this.btnToggleReady.classList.remove('hidden');
+        if (me) {
+          this.btnToggleReady.textContent = me.isReady ? '준비 해제 (CANCEL)' : '준비 완료 (READY)';
+          this.btnToggleReady.className = me.isReady ? 'btn btn-secondary' : 'btn btn-primary';
+        }
       }
+      if (this.btnStartGame) this.btnStartGame.classList.add('hidden');
     }
   }
 
   // 방 만들기
   async handleCreateRoom() {
-    const nick = this.inputNickname.value.trim() || '탐험대장';
+    const nick = this.inputNickname ? (this.inputNickname.value.trim() || '탐험대장') : '탐험대장';
     this.mode = 'ONLINE';
     this.myPlayerId = 0;
     this.selectedCharId = 0;
@@ -492,11 +496,14 @@ class WorldGameApp {
     this.updateNetworkBadge('connecting', '방 생성 중...');
 
     try {
+      if (!this.network) {
+        this.initLobbyNetwork();
+      }
       const res = await this.network.createRoom(nick);
       if (this.dispRoomCode) this.dispRoomCode.textContent = res.roomCode;
       this.state.players = [{
         id: 0,
-        peerId: this.network.myId,
+        peerId: this.network ? this.network.myId : 'host_1',
         name: nick,
         charId: 0,
         isHost: true,
@@ -507,10 +514,11 @@ class WorldGameApp {
       }];
 
       this.setupLobbyView(true);
-      this.showToast(`방이 생성되었습니다! 방 목록에 공개되었습니다.`);
+      this.showToast(`방이 생성되었습니다! (방 코드: ${res.roomCode})`);
       sound.playItemGet();
     } catch (err) {
-      alert('방 생성에 실패했습니다. 다시 시도해주세요.');
+      console.error('방 생성 오류:', err);
+      alert('방 생성에 실패했습니다: ' + (err && err.message ? err.message : err));
       this.updateNetworkBadge('offline', '오류 발생');
     }
   }
@@ -1806,34 +1814,38 @@ class WorldGameApp {
     }
 
     const terrainGrid = document.getElementById('guide-terrain-grid');
-    terrainGrid.innerHTML = '';
-    TERRAIN_CARDS.forEach(card => {
-      const item = document.createElement('div');
-      item.className = 'card-guide-item';
-      item.innerHTML = `
-        <img src="${card.image}" alt="${card.name}" class="card-guide-img">
-        <div class="card-guide-info">
-          <h5>${card.name}</h5>
-          <p>${card.description}</p>
-        </div>
-      `;
-      terrainGrid.appendChild(item);
-    });
+    if (terrainGrid) {
+      terrainGrid.innerHTML = '';
+      TERRAIN_CARDS.forEach(card => {
+        const item = document.createElement('div');
+        item.className = 'card-guide-item';
+        item.innerHTML = `
+          <img src="${card.image}" alt="${card.name}" class="card-guide-img">
+          <div class="card-guide-info">
+            <h5>${card.name}</h5>
+            <p>${card.description}</p>
+          </div>
+        `;
+        terrainGrid.appendChild(item);
+      });
+    }
 
     const climateGrid = document.getElementById('guide-climate-grid');
-    climateGrid.innerHTML = '';
-    CLIMATE_CARDS.forEach(card => {
-      const item = document.createElement('div');
-      item.className = 'card-guide-item';
-      item.innerHTML = `
-        <img src="${card.image}" alt="${card.name}" class="card-guide-img">
-        <div class="card-guide-info">
-          <h5>${card.name}</h5>
-          <p>${card.description}</p>
-        </div>
-      `;
-      climateGrid.appendChild(item);
-    });
+    if (climateGrid) {
+      climateGrid.innerHTML = '';
+      CLIMATE_CARDS.forEach(card => {
+        const item = document.createElement('div');
+        item.className = 'card-guide-item';
+        item.innerHTML = `
+          <img src="${card.image}" alt="${card.name}" class="card-guide-img">
+          <div class="card-guide-info">
+            <h5>${card.name}</h5>
+            <p>${card.description}</p>
+          </div>
+        `;
+        climateGrid.appendChild(item);
+      });
+    }
   }
 }
 
