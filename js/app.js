@@ -207,6 +207,23 @@ class WorldGameApp {
         }
       });
     }
+
+    // 8. Modal Close Buttons (✕) & Backdrop Clicks
+    const btnQuizClose = document.getElementById('btn-quiz-modal-close');
+    if (btnQuizClose) btnQuizClose.addEventListener('click', () => this.closeModal(this.modalQuiz));
+    const btnCardClose = document.getElementById('btn-card-modal-close');
+    if (btnCardClose) btnCardClose.addEventListener('click', () => this.closeModal(this.modalCard));
+
+    if (this.modalQuiz) {
+      this.modalQuiz.addEventListener('click', (e) => {
+        if (e.target === this.modalQuiz) this.closeModal(this.modalQuiz);
+      });
+    }
+    if (this.modalCard) {
+      this.modalCard.addEventListener('click', (e) => {
+        if (e.target === this.modalCard) this.closeModal(this.modalCard);
+      });
+    }
   }
 
   // URL Query Parameter ?room=XXXXXX 처리
@@ -1322,6 +1339,8 @@ class WorldGameApp {
     const btnSubmit = document.getElementById('btn-quiz-submit');
     const feedbackBox = document.getElementById('quiz-feedback-box');
     if (feedbackBox) feedbackBox.classList.add('hidden');
+    const previewActions = document.getElementById('quiz-preview-actions');
+    if (previewActions) previewActions.classList.add('hidden');
 
     // 현재 플레이어가 직접 정답을 맞힐 수 있는 권한인지 확인
     const canAnswer = !isPreview && (
@@ -1356,20 +1375,14 @@ class WorldGameApp {
         };
       }
     } else if (isPreview) {
+      // 단순 문제 카드 확인(미리보기) 클릭 시: 점령/해설/정답 박스는 완전히 숨기고 문제만 노출!
       if (inputForm) inputForm.style.display = 'none';
-      if (feedbackBox) {
-        const icon = document.getElementById('feedback-icon');
-        const title = document.getElementById('feedback-title');
-        const desc = document.getElementById('feedback-desc');
-        const btnConfirm = document.getElementById('btn-quiz-confirm');
-        if (icon) icon.textContent = '📖';
-        if (title) title.textContent = cell.ownerId !== null ? `점령 완료 (${cell.answer})` : '교과서 탐험 퀴즈';
-        if (desc) desc.textContent = cell.explanation || '교과서에 수록된 지형/기후 문제 칸입니다.';
-        if (btnConfirm) {
-          btnConfirm.textContent = '확인 (닫기)';
-          btnConfirm.onclick = () => this.closeModal(this.modalQuiz);
-        }
-        feedbackBox.classList.remove('hidden');
+      if (feedbackBox) feedbackBox.classList.add('hidden');
+      const previewActions = document.getElementById('quiz-preview-actions');
+      if (previewActions) {
+        previewActions.classList.remove('hidden');
+        const btnClose = document.getElementById('btn-quiz-preview-close');
+        if (btnClose) btnClose.onclick = () => this.closeModal(this.modalQuiz);
       }
     } else {
       if (inputForm) inputForm.style.display = 'flex';
@@ -1517,6 +1530,8 @@ class WorldGameApp {
     const btnCardSubmit = document.getElementById('btn-card-submit');
     const feedbackBox = document.getElementById('card-feedback-box');
     if (feedbackBox) feedbackBox.classList.add('hidden');
+    const cardPreviewActions = document.getElementById('card-preview-actions');
+    if (cardPreviewActions) cardPreviewActions.classList.add('hidden');
 
     const canAnswer = !isPreview && (
       (this.mode === 'LOCAL') || 
@@ -1550,18 +1565,14 @@ class WorldGameApp {
         };
       }
     } else if (isPreview) {
+      // 단순 카드 확인(미리보기) 클릭 시: 해설/정답 박스는 완전히 숨기고 사진과 문제만 노출!
       if (cardInputForm) cardInputForm.style.display = 'none';
-      if (feedbackBox) {
-        const title = document.getElementById('card-feedback-title');
-        const desc = document.getElementById('card-feedback-desc');
-        const btnConfirm = document.getElementById('btn-card-confirm');
-        if (title) title.textContent = `카드: ${cardData.name}`;
-        if (desc) desc.textContent = cardData.description;
-        if (btnConfirm) {
-          btnConfirm.textContent = '확인 (닫기)';
-          btnConfirm.onclick = () => this.closeModal(this.modalCard);
-        }
-        feedbackBox.classList.remove('hidden');
+      if (feedbackBox) feedbackBox.classList.add('hidden');
+      const cardPreviewActions = document.getElementById('card-preview-actions');
+      if (cardPreviewActions) {
+        cardPreviewActions.classList.remove('hidden');
+        const btnClose = document.getElementById('btn-card-preview-close');
+        if (btnClose) btnClose.onclick = () => this.closeModal(this.modalCard);
       }
     } else {
       if (cardInputForm) cardInputForm.style.display = 'flex';
