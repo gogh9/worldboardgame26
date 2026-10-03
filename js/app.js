@@ -1480,19 +1480,20 @@ class WorldGameApp {
     const player = this.state.players[playerIdx];
 
     const typeBadge = document.getElementById('card-type-badge');
-    typeBadge.textContent = isClimate ? '☀️ 기후 카드 미션' : '🏔️ 지형 카드 미션';
-    typeBadge.style.background = isClimate ? 'rgba(245, 158, 11, 0.3)' : 'rgba(16, 185, 129, 0.3)';
+    if (typeBadge) {
+      typeBadge.textContent = isClimate ? '☀️ 기후 카드 미션' : '🏔️ 지형 카드 미션';
+      typeBadge.style.background = isClimate ? 'rgba(245, 158, 11, 0.3)' : 'rgba(16, 185, 129, 0.3)';
+    }
 
     const photoImg = document.getElementById('card-photo-img');
-    photoImg.src = cardData.image;
+    if (photoImg) {
+      photoImg.src = cardData.image;
+      photoImg.style.animation = 'none';
+      void photoImg.offsetWidth; // trigger reflow for smooth pop-in animation
+      photoImg.style.animation = 'cardPhotoReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+    }
 
-    const flipper = document.getElementById('card-inner');
-    flipper.classList.remove('flipped');
-
-    setTimeout(() => {
-      flipper.classList.add('flipped');
-      sound.playCardFlip();
-    }, 400);
+    sound.playCardFlip();
 
     const questionElem = document.getElementById('card-question-text');
     if (questionElem) {
@@ -1538,7 +1539,7 @@ class WorldGameApp {
 
     setTimeout(() => {
       if (cardInputAnswer) cardInputAnswer.focus();
-    }, 500);
+    }, 400);
   }
 
   submitCardAnswer(userText, cardData, playerIdx, cellIndex) {

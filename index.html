@@ -16,7 +16,7 @@
   <!-- Canvas Confetti for Victory Celebration -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20261003_v6">
 </head>
 <body>
   <div id="app" class="app-container">
@@ -217,26 +217,18 @@
     <div id="modal-card" class="modal-backdrop">
       <div class="modal-dialog glass-dialog card-dialog">
         <div class="modal-header">
-          <span class="modal-badge card-type-badge" id="card-type-badge">🏔️ 지형 카드</span>
-          <h3 id="card-modal-title">지형 카드를 뒤집었습니다!</h3>
+          <span class="modal-badge card-type-badge" id="card-type-badge">☀️ 기후 카드 미션</span>
+          <h3 id="card-modal-title">기후 카드를 뒤집었습니다!</h3>
         </div>
 
         <div class="modal-body">
-          <!-- 3D Flip 카드 영역 -->
-          <div class="card-3d-flipper" id="card-flipper">
-            <div class="card-inner" id="card-inner">
-              <div class="card-back-face">
-                <div class="card-pattern">🌍</div>
-                <div class="card-back-text">카드를 뒤집는 중...</div>
-              </div>
-              <div class="card-front-face">
-                <img id="card-photo-img" src="" alt="카드 사진" class="card-photo">
-              </div>
-            </div>
+          <!-- 카드 사진 영역 -->
+          <div class="card-display-container">
+            <img id="card-photo-img" src="" alt="카드 사진" class="card-photo-display" />
           </div>
 
           <div class="card-question-box">
-            <p id="card-question-text">위 사진이 나타내는 지형(또는 기후)은 무엇일까요?</p>
+            <p id="card-question-text">위 사진이 나타내는 기후(또는 지형)은 무엇일까요?</p>
           </div>
 
           <!-- 카드 단답형 입력 폼 -->
@@ -354,6 +346,6 @@
   </div>
 
   <!-- 메인 스크립트 모듈 로드 -->
-  <script type="module" src="js/app.js?v=20261003_v5"></script>
+  <script type="module" src="js/app.js?v=20261003_v6"></script>
 </body>
 </html>
