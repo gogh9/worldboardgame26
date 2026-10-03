@@ -1060,14 +1060,15 @@ class WorldGameApp {
       let offsetX = 0;
       let offsetY = 0;
       if (totalInCell > 1) {
-        const angles = [0, Math.PI, Math.PI / 2, (3 * Math.PI) / 2];
-        const radius = 24;
-        offsetX = Math.cos(angles[orderIndex % 4]) * radius;
-        offsetY = Math.sin(angles[orderIndex % 4]) * radius;
+        const spacing = 18;
+        const startX = -((totalInCell - 1) * spacing) / 2;
+        offsetX = startX + orderIndex * spacing;
+        offsetY = (orderIndex % 2 === 1) ? -4 : 4;
       }
 
+      // 카드 아래쪽에 말 배치 (문제 지문 가림 방지)
       const centerX = cellRect.left - layerRect.left + cellRect.width / 2 + offsetX;
-      const centerY = cellRect.top - layerRect.top + cellRect.height / 2 + offsetY;
+      const centerY = cellRect.top - layerRect.top + cellRect.height * 0.74 + offsetY;
 
       pawn.style.left = `${centerX}px`;
       pawn.style.top = `${centerY}px`;
