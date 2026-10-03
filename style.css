@@ -3444,3 +3444,15 @@ body {
   word-break: keep-all;
   overflow-wrap: break-word;
 }
+
+/* 로비 헤더 제목 가운데 정렬 */
+.lobby-header {
+  justify-content: center !important;
+  text-align: center !important;
+}
+.lobby-title-area {
+  justify-content: center !important;
+  width: 100% !important;
+  text-align: center !important;
+}
+
