@@ -853,7 +853,7 @@ html.is-class-mode #screen-class-student {
 }
 
 .box-title {
-  font-size: 0.9rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #cbd5e1;
 }
@@ -894,9 +894,9 @@ html.is-class-mode #screen-class-student {
 
 .lobby-actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
+  justify-content: center;
+  align-items: stretch;
+  gap: 14px;
   margin-top: 8px;
 }
 
@@ -3337,7 +3337,16 @@ body {
 #lobby-room-section .players-slot-grid { gap: 20px; }
 #lobby-room-section .player-slot { padding: 20px 22px; }
 #lobby-room-section .character-select-box { padding: 20px 22px; }
-#lobby-room-section .lobby-actions { margin-top: 4px; gap: 16px; }
+#lobby-room-section .lobby-actions { margin-top: 4px; gap: 14px; justify-content: center; }
+
+/* Uniform lobby action button height */
+.lobby-action-btn {
+  height: 52px;
+  min-width: 150px;
+  padding: 0 28px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
 
 /* 정답 입력창 + 제출 버튼: 크기 절반 / 한 줄 배치 */
 .quiz-input-form {

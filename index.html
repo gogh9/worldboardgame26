@@ -16,7 +16,7 @@
   <!-- Canvas Confetti for Victory Celebration -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=20261003_v38">
+  <link rel="stylesheet" href="style.css?v=20261003_v39">
   <script>
     (function() {
       try {
@@ -94,7 +94,7 @@
 
           <!-- 캐릭터/색상 선택 -->
           <div class="character-select-box">
-            <div class="box-title">내 캐릭터 & 색상 변경</div>
+            <div class="box-title">내 캐릭터 선택</div>
             <div class="character-chips" id="character-chips-container">
               <!-- JS 동적 렌더링 -->
             </div>
@@ -102,10 +102,10 @@
 
           <!-- 하단 액션 버튼 -->
           <div class="lobby-actions">
-            <button class="btn btn-danger" id="btn-leave-room">방 나가기</button>
+            <button class="btn btn-danger lobby-action-btn" id="btn-leave-room">방 나가기</button>
             <div class="ready-start-group">
-              <button class="btn btn-secondary" id="btn-toggle-ready">준비 완료 (READY)</button>
-              <button class="btn btn-primary btn-pulse hidden" id="btn-start-game">게임 시작! (START)</button>
+              <button class="btn btn-secondary lobby-action-btn" id="btn-toggle-ready">준비 완료 (READY)</button>
+              <button class="btn btn-primary btn-pulse hidden lobby-action-btn" id="btn-start-game">게임 시작! (START)</button>
             </div>
           </div>
         </div>
