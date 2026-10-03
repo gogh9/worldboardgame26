@@ -1899,8 +1899,8 @@ button, input {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(8px);
-  z-index: 100;
+  backdrop-filter: blur(10px);
+  z-index: 2000 !important;
   display: none;
   align-items: center;
   justify-content: center;
@@ -1909,7 +1909,8 @@ button, input {
 }
 
 .modal-backdrop.active {
-  display: flex;
+  display: flex !important;
+  pointer-events: auto;
 }
 
 @keyframes fadeIn {
