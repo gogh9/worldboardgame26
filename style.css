@@ -1071,18 +1071,18 @@ button, input {
   filter: contrast(1.04) saturate(1.08);
 }
 
-/* 상단 좌측: 탐험가 현황 패널 (좌측 영역을 채우는 대형 카드 리스트) */
+/* 하단: 탐험가 현황 패널 (남반구 바다 영역에 가로로 배치) */
 .map-floating-players {
   position: absolute;
-  top: 10px;
-  bottom: 10px;
-  left: 10px;
-  width: 175px;
+  bottom: 12px;
+  left: 14px;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+  flex-direction: row;
+  align-items: center;
   gap: 8px;
   z-index: 20;
+  max-width: 55%;
+  flex-wrap: nowrap;
   pointer-events: auto;
 }
 
@@ -1112,18 +1112,18 @@ button, input {
   background: rgba(15, 23, 42, 0.90);
   backdrop-filter: blur(14px);
   border: 1.5px solid rgba(255, 255, 255, 0.18);
-  border-left: 4px solid var(--card-color, #ef4444);
+  border-left: 3.5px solid var(--card-color, #ef4444);
   border-radius: 8px;
-  padding: 7px 10px;
-  display: flex;
+  padding: 5px 9px;
+  display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   position: relative;
   transition: all 0.22s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.65);
   box-sizing: border-box;
-  width: 100%;
+  white-space: nowrap;
 }
 
 .player-card:hover {
@@ -1700,52 +1700,53 @@ button, input {
    ========================================================================== */
 .dice-widget {
   position: absolute;
-  bottom: 16px;
-  left: calc(50% + 45px);
-  transform: translateX(-50%);
-  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  top: 48%;
+  left: 68%;
+  transform: translate(-50%, -50%);
+  background: rgba(211, 239, 251, 0.92);
+  border: 2px solid rgba(56, 189, 248, 0.6);
   border-radius: 14px;
   padding: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, border-color 0.25s ease;
   user-select: none;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.65);
+  box-shadow: 0 4px 14px rgba(14, 116, 144, 0.28), 0 0 16px rgba(56, 189, 248, 0.3);
+  backdrop-filter: blur(8px);
   z-index: 30;
 }
 
 .dice-widget.my-turn-active {
-  border-color: #fbbf24;
-  background: radial-gradient(circle at center, rgba(45, 55, 72, 0.98) 0%, rgba(20, 28, 44, 1) 100%);
-  box-shadow: 0 0 25px rgba(251, 191, 36, 0.65), inset 0 0 15px rgba(251, 191, 36, 0.25);
+  border-color: #f59e0b;
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.96), rgba(211, 239, 251, 0.96));
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.75), 0 4px 15px rgba(0, 0, 0, 0.25);
   animation: diceTurnPulse 1.4s infinite ease-in-out;
   cursor: pointer;
 }
 
 .dice-widget.my-turn-active:hover {
-  transform: translateX(-50%) scale(1.08);
-  box-shadow: 0 0 35px rgba(251, 191, 36, 0.9), inset 0 0 20px rgba(251, 191, 36, 0.4);
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 0 35px rgba(245, 158, 11, 0.95), 0 6px 18px rgba(0, 0, 0, 0.3);
 }
 
 .dice-widget:not(.my-turn-active) {
-  opacity: 0.55;
+  opacity: 0.85;
   cursor: not-allowed;
-  filter: grayscale(0.2);
+  filter: contrast(0.95);
 }
 
 @keyframes diceTurnPulse {
   0%, 100% {
-    box-shadow: 0 0 18px rgba(251, 191, 36, 0.5), inset 0 0 10px rgba(251, 191, 36, 0.15);
-    border-color: rgba(251, 191, 36, 0.6);
-    transform: translateX(-50%) scale(1);
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.5), inset 0 0 8px rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.7);
+    transform: translate(-50%, -50%) scale(1);
   }
   50% {
-    box-shadow: 0 0 30px rgba(251, 191, 36, 0.9), inset 0 0 18px rgba(251, 191, 36, 0.35);
+    box-shadow: 0 0 28px rgba(245, 158, 11, 0.9), inset 0 0 14px rgba(245, 158, 11, 0.3);
     border-color: #f59e0b;
-    transform: translateX(-50%) scale(1.05);
+    transform: translate(-50%, -50%) scale(1.06);
   }
 }
 
