@@ -49,12 +49,12 @@ class WorldGameApp {
   // 이름 로컬스토리지 영구 저장 및 자동 로드
   initNickname() {
     const savedNick = localStorage.getItem('worldgame_nickname');
-    if (savedNick) {
+    // 예전에 자동 생성된 이름(탐험가NN)은 무시하고, 직접 입력한 이름만 불러옵니다.
+    if (savedNick && !/^탐험가\d+$/.test(savedNick)) {
       this.inputNickname.value = savedNick;
     } else {
-      const randNum = Math.floor(Math.random() * 89 + 10);
-      this.inputNickname.value = `탐험가${randNum}`;
-      localStorage.setItem('worldgame_nickname', this.inputNickname.value);
+      this.inputNickname.value = '';
+      localStorage.removeItem('worldgame_nickname');
     }
 
     this.inputNickname.addEventListener('input', (e) => {

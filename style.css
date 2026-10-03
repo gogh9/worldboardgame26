@@ -3391,3 +3391,17 @@ body {
   box-sizing: border-box;
 }
 .lobby-top-controls .nickname-box input { letter-spacing: 0; }
+
+/* 이름 입력: 한 줄로 길게 + 가운데 정렬, 버튼은 아래 줄 */
+.lobby-top-controls { flex-wrap: wrap; }
+.lobby-top-controls .nickname-box {
+  flex: 1 1 100%;
+  max-width: 100%;
+}
+.lobby-top-controls .nickname-box label { white-space: nowrap; }
+.lobby-top-controls .nickname-box input {
+  width: 100%;
+  text-align: center;
+}
+.lobby-top-controls .nickname-box input::placeholder { text-align: center; }
+.lobby-top-controls .lobby-action-buttons { flex: 1 1 100%; }
