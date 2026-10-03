@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>세계여행 말판놀이 | 세계의 자연환경</title>
-  <meta name="description" content="2~4명이 함께 즐기는 실시간 온라인 세계여행 지리 말판놀이 보드게임입니다.">
+  <title>?멸퀎?ы뻾 留먰뙋???| ?멸퀎???먯뿰?섍꼍</title>
+  <meta name="description" content="2~4紐낆씠 ?④퍡 利먭린???ㅼ떆媛??⑤씪???멸퀎?ы뻾 吏由?留먰뙋???蹂대뱶寃뚯엫?낅땲??">
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,139 +16,139 @@
   <!-- Canvas Confetti for Victory Celebration -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=20261003_v8">
+  <link rel="stylesheet" href="style.css?v=20261003_v9">
 </head>
 <body>
   <div id="app" class="app-container">
 
-    <!-- 온라인 대기실 및 방 선택 화면 (기본 메인 화면) -->
+    <!-- ?⑤씪???湲곗떎 諛?諛??좏깮 ?붾㈃ (湲곕낯 硫붿씤 ?붾㈃) -->
     <section id="screen-lobby" class="screen active">
       <div class="lobby-container glass-panel">
         <div class="lobby-header">
           <div class="lobby-title-area">
-            <span class="lobby-logo-icon">🌍</span>
-            <h2>세계여행 말판놀이 - 탐험 방 선택</h2>
+            <span class="lobby-logo-icon">?뙇</span>
+            <h2>?멸퀎?ы뻾 留먰뙋???- ?먰뿕 諛??좏깮</h2>
           </div>
           <div class="lobby-header-actions">
-            <button class="btn btn-sm btn-outline" id="btn-sound-toggle" title="사운드 켜기/끄기">🔊</button>
-            <button class="btn btn-sm btn-outline" id="btn-open-guide-lobby" title="도감 & 규칙">📜 도감</button>
+            <button class="btn btn-sm btn-outline" id="btn-sound-toggle" title="?ъ슫??耳쒓린/?꾧린">?뵄</button>
+            <button class="btn btn-sm btn-outline" id="btn-open-guide-lobby" title="?꾧컧 & 洹쒖튃">?뱶 ?꾧컧</button>
           </div>
         </div>
 
-        <!-- 1) 로비 메인: 방 목록 & 방 만들기 상단 바 -->
+        <!-- 1) 濡쒕퉬 硫붿씤: 諛?紐⑸줉 & 諛?留뚮뱾湲??곷떒 諛?-->
         <div id="lobby-join-section" class="lobby-subview">
           <div class="lobby-top-controls">
             <div class="nickname-box">
-              <label for="input-nickname">내 닉네임 (재접속 시 같은 닉네임 입력)</label>
-              <input type="text" id="input-nickname" maxlength="8" value="탐험가" placeholder="닉네임 입력 (최대 8자)">
+              <label for="input-nickname">???됰꽕??(?ъ젒????媛숈? ?됰꽕???낅젰)</label>
+              <input type="text" id="input-nickname" maxlength="8" value="?먰뿕媛" placeholder="?됰꽕???낅젰 (理쒕? 8??">
             </div>
             <button class="btn btn-primary btn-create-action" id="btn-create-room">
-              <span>➕ 새로운 방 만들기</span>
+              <span>???덈줈??諛?留뚮뱾湲?/span>
             </button>
           </div>
 
-          <!-- 실시간 열려있는 방 목록 섹션 -->
+          <!-- ?ㅼ떆媛??대젮?덈뒗 諛?紐⑸줉 ?뱀뀡 -->
           <div class="rooms-list-header">
             <div class="list-title-wrap">
-              <h3>🔍 현재 열려있는 탐험 방 목록</h3>
-              <span class="rooms-live-indicator"><span class="pulse-dot"></span> 실시간 동기화</span>
+              <h3>?뵇 ?꾩옱 ?대젮?덈뒗 ?먰뿕 諛?紐⑸줉</h3>
+              <span class="rooms-live-indicator"><span class="pulse-dot"></span> ?ㅼ떆媛??숆린??/span>
             </div>
-            <button class="btn btn-sm btn-outline" id="btn-refresh-rooms" title="방 목록 새로고침">🔄 새로고침</button>
+            <button class="btn btn-sm btn-outline" id="btn-refresh-rooms" title="諛?紐⑸줉 ?덈줈怨좎묠">?봽 ?덈줈怨좎묠</button>
           </div>
 
           <div class="rooms-list-container" id="rooms-list-container">
-            <!-- 방이 없을 때 기본 뷰 -->
+            <!-- 諛⑹씠 ?놁쓣 ??湲곕낯 酉?-->
             <div class="no-rooms-placeholder" id="no-rooms-placeholder">
-              <div class="placeholder-icon">🏝️</div>
-              <p>현재 열려있는 방이 없습니다.</p>
-              <span>위의 <strong>[➕ 새로운 방 만들기]</strong> 버튼을 눌러 첫 번째 탐험 방을 열어보세요!</span>
+              <div class="placeholder-icon">?룤截?/div>
+              <p>?꾩옱 ?대젮?덈뒗 諛⑹씠 ?놁뒿?덈떎.</p>
+              <span>?꾩쓽 <strong>[???덈줈??諛?留뚮뱾湲?</strong> 踰꾪듉???뚮윭 泥?踰덉㎏ ?먰뿕 諛⑹쓣 ?댁뼱蹂댁꽭??</span>
             </div>
-            <!-- JS 동적으로 방 카드 렌더링 -->
+            <!-- JS ?숈쟻?쇰줈 諛?移대뱶 ?뚮뜑留?-->
           </div>
 
-          <!-- 접을 수 있는 방 코드 직접 입력 서브 옵션 -->
+          <!-- ?묒쓣 ???덈뒗 諛?肄붾뱶 吏곸젒 ?낅젰 ?쒕툕 ?듭뀡 -->
           <div class="manual-join-accordion">
             <details>
-              <summary>🔒 방 코드로 직접 입장하기</summary>
+              <summary>?뵏 諛?肄붾뱶濡?吏곸젒 ?낆옣?섍린</summary>
               <div class="manual-join-body">
-                <input type="text" id="input-room-code" placeholder="예: 7K9X2" maxlength="10" style="text-transform: uppercase;">
-                <button class="btn btn-secondary" id="btn-join-room">코드 입장</button>
+                <input type="text" id="input-room-code" placeholder="?? 7K9X2" maxlength="10" style="text-transform: uppercase;">
+                <button class="btn btn-secondary" id="btn-join-room">肄붾뱶 ?낆옣</button>
               </div>
             </details>
           </div>
         </div>
 
-        <!-- 방 생성/입장 후: 플레이어 목록 & 준비 방 -->
+        <!-- 諛??앹꽦/?낆옣 ?? ?뚮젅?댁뼱 紐⑸줉 & 以鍮?諛?-->
         <div id="lobby-room-section" class="lobby-subview hidden">
           <div class="lobby-room-header-bar">
             <div class="room-code-tag-wrap">
-              <span class="room-code-lbl">방 코드:</span>
+              <span class="room-code-lbl">諛?肄붾뱶:</span>
               <span class="room-code-val" id="disp-room-code">------</span>
             </div>
             <div class="room-header-btns">
-              <button class="btn btn-sm btn-outline" id="btn-copy-code" title="방 코드 복사">📋 코드 복사</button>
-              <button class="btn btn-sm btn-outline" id="btn-copy-link" title="초대 링크 복사">🔗 초대 링크</button>
+              <button class="btn btn-sm btn-outline" id="btn-copy-code" title="諛?肄붾뱶 蹂듭궗">?뱥 肄붾뱶 蹂듭궗</button>
+              <button class="btn btn-sm btn-outline" id="btn-copy-link" title="珥덈? 留곹겕 蹂듭궗">?뵕 珥덈? 留곹겕</button>
             </div>
           </div>
 
-          <!-- 플레이어 슬롯 4개 -->
+          <!-- ?뚮젅?댁뼱 ?щ’ 4媛?-->
           <div class="players-slot-grid" id="lobby-player-slots">
-            <!-- JS 동적 렌더링 -->
+            <!-- JS ?숈쟻 ?뚮뜑留?-->
           </div>
 
-          <!-- 캐릭터/색상 선택 -->
+          <!-- 罹먮┃???됱긽 ?좏깮 -->
           <div class="character-select-box">
-            <div class="box-title">내 캐릭터 & 색상 변경</div>
+            <div class="box-title">??罹먮┃??& ?됱긽 蹂寃?/div>
             <div class="character-chips" id="character-chips-container">
-              <!-- JS 동적 렌더링 -->
+              <!-- JS ?숈쟻 ?뚮뜑留?-->
             </div>
           </div>
 
-          <!-- 하단 액션 버튼 -->
+          <!-- ?섎떒 ?≪뀡 踰꾪듉 -->
           <div class="lobby-actions">
-            <button class="btn btn-danger" id="btn-leave-room">방 나가기</button>
+            <button class="btn btn-danger" id="btn-leave-room">諛??섍?湲?/button>
             <div class="ready-start-group">
-              <button class="btn btn-secondary" id="btn-toggle-ready">준비 완료 (READY)</button>
-              <button class="btn btn-primary btn-pulse hidden" id="btn-start-game">게임 시작! (START)</button>
+              <button class="btn btn-secondary" id="btn-toggle-ready">以鍮??꾨즺 (READY)</button>
+              <button class="btn btn-primary btn-pulse hidden" id="btn-start-game">寃뚯엫 ?쒖옉! (START)</button>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 4. 메인 보드게임 플레이 화면 -->
+    <!-- 4. 硫붿씤 蹂대뱶寃뚯엫 ?뚮젅???붾㈃ -->
     <section id="screen-game" class="screen">
-      <!-- 게임 메인 컨텐츠 영역 (화면 전체 확장) -->
+      <!-- 寃뚯엫 硫붿씤 而⑦뀗痢??곸뿭 (?붾㈃ ?꾩껜 ?뺤옣) -->
       <main class="game-layout">
         
-        <!-- 중앙 보드판 영역 -->
+        <!-- 以묒븰 蹂대뱶???곸뿭 -->
         <div class="board-wrapper">
           <div class="board-container" id="board-container">
             
-            <!-- 중앙 영역: 전체를 꽉 채우는 대형 고화질 세계지도 말판 + 플로팅 주사위 & 탐험가 현황 -->
+            <!-- 以묒븰 ?곸뿭: ?꾩껜瑜?苑?梨꾩슦?????怨좏솕吏??멸퀎吏??留먰뙋 + ?뚮줈??二쇱궗??& ?먰뿕媛 ?꾪솴 -->
             <div class="board-center-area">
               
-              <!-- 대형 고화질 세계지도 뷰 & 실시간 말 레이어 (전체 화면 꽉 찬 뷰) -->
+              <!-- ???怨좏솕吏??멸퀎吏??酉?& ?ㅼ떆媛?留??덉씠??(?꾩껜 ?붾㈃ 苑?李?酉? -->
               <div class="center-map-container" id="center-map-container">
                 <div class="center-map-inner" id="center-map-inner">
-                  <img src="assets/board/world_map_hd.jpg" class="world-map-img" alt="세계지도 말판" id="world-map-img" />
+                  <img src="assets/board/world_map_hd.jpg" class="world-map-img" alt="?멸퀎吏??留먰뙋" id="world-map-img" />
                   <div class="map-pawns-layer" id="map-pawns-layer"></div>
                 </div>
 
-                <!-- 상단 좌측: 탐험가 현황 플로팅 바 -->
+                <!-- ?곷떒 醫뚯륫: ?먰뿕媛 ?꾪솴 ?뚮줈??諛?-->
                 <div class="map-floating-players" id="players-status-panel">
-                  <!-- JS 동적 렌더링 -->
+                  <!-- JS ?숈쟻 ?뚮뜑留?-->
                 </div>
 
-                <!-- 상단 우측: 퀵 액션 플로팅 버튼 바 -->
+                <!-- ?곷떒 ?곗륫: ???≪뀡 ?뚮줈??踰꾪듉 諛?-->
                 <div class="map-floating-actions">
-                  <button class="btn btn-sm btn-outline btn-textbook-view" id="btn-quick-textbook" title="교과서 원본 말판 보기">📖 교과서</button>
-                  <button class="btn btn-sm btn-outline" id="btn-game-guide" title="도감 & 규칙">📜 도감</button>
-                  <button class="btn btn-sm btn-outline btn-exit" id="btn-game-exit" title="게임 나가기">🚪</button>
+                  <button class="btn btn-sm btn-outline btn-textbook-view" id="btn-quick-textbook" title="援먭낵???먮낯 留먰뙋 蹂닿린">?뱰 援먭낵??/button>
+                  <button class="btn btn-sm btn-outline" id="btn-game-guide" title="?꾧컧 & 洹쒖튃">?뱶 ?꾧컧</button>
+                  <button class="btn btn-sm btn-outline btn-exit" id="btn-game-exit" title="寃뚯엫 ?섍?湲?>?슞</button>
                 </div>
 
-                <!-- 하단 좌측: 3D 인터랙티브 발광 주사위 (직접 클릭 굴리기) -->
-                <div class="dice-widget glass-card" id="dice-widget" title="주사위를 클릭하여 굴리세요!">
+                <!-- ?섎떒 醫뚯륫: 3D ?명꽣?숉떚釉?諛쒓킅 二쇱궗??(吏곸젒 ?대┃ 援대━湲? -->
+                <div class="dice-widget glass-card" id="dice-widget" title="二쇱궗?꾨? ?대┃?섏뿬 援대━?몄슂!">
                   <div class="dice-3d-scene" id="dice-scene">
                     <div class="dice-cube" id="dice-cube">
                       <div class="dice-face face-1"><span></span></div>
@@ -164,10 +164,10 @@
 
             </div>
 
-            <!-- 20개의 칸 그리드 요소들 (JS 동적 렌더링) -->
+            <!-- 20媛쒖쓽 移?洹몃━???붿냼??(JS ?숈쟻 ?뚮뜑留? -->
             <div class="cells-grid" id="board-cells-grid"></div>
 
-            <!-- 플레이어 말(Pawn) 레이어 -->
+            <!-- ?뚮젅?댁뼱 留?Pawn) ?덉씠??-->
             <div class="pawns-layer" id="pawns-layer"></div>
           </div>
         </div>
@@ -175,156 +175,156 @@
       </main>
     </section>
 
-    <!-- 5. 팝업 모달들 -->
+    <!-- 5. ?앹뾽 紐⑤떖??-->
 
-    <!-- A. 퀴즈 팝업 모달 (1~12번 일반 문제 칸: 단답형 주관식) -->
+    <!-- A. ?댁쫰 ?앹뾽 紐⑤떖 (1~12踰??쇰컲 臾몄젣 移? ?⑤떟??二쇨??? -->
     <div id="modal-quiz" class="modal-backdrop">
       <div class="modal-dialog glass-dialog">
         <div class="modal-header">
           <div class="quiz-badge-wrap">
-            <span class="modal-badge" id="quiz-cell-badge">문제 1</span>
-            <span class="modal-region" id="quiz-cell-region">북유럽 노르웨이</span>
+            <span class="modal-badge" id="quiz-cell-badge">臾몄젣 1</span>
+            <span class="modal-region" id="quiz-cell-region">遺곸쑀???몃Ⅴ?⑥씠</span>
           </div>
-          <h3 id="quiz-cell-title">피오르 해안</h3>
+          <h3 id="quiz-cell-title">?쇱삤瑜??댁븞</h3>
         </div>
         
         <div class="modal-body">
           <div class="quiz-question-box">
-            <p id="quiz-question-text">빙하의 침식으로 만들어진 골짜기에...</p>
+            <p id="quiz-question-text">鍮숉븯??移⑥떇?쇰줈 留뚮뱾?댁쭊 怨⑥쭨湲곗뿉...</p>
           </div>
 
-          <!-- 단답형 정답 입력 폼 -->
+          <!-- ?⑤떟???뺣떟 ?낅젰 ??-->
           <form id="quiz-input-form" class="quiz-input-form" onsubmit="return false;">
             <div class="quiz-input-wrap">
-              <span class="quiz-input-icon">✏️</span>
-              <input type="text" id="quiz-input-answer" class="quiz-text-input" placeholder="정답을 입력하세요" autocomplete="off" />
+              <span class="quiz-input-icon">?륅툘</span>
+              <input type="text" id="quiz-input-answer" class="quiz-text-input" placeholder="?뺣떟???낅젰?섏꽭?? autocomplete="off" />
             </div>
-            <button type="submit" class="btn btn-primary btn-submit-quiz" id="btn-quiz-submit">정답 제출 ➔</button>
+            <button type="submit" class="btn btn-primary btn-submit-quiz" id="btn-quiz-submit">?뺣떟 ?쒖텧 ??/button>
           </form>
 
-          <!-- 정답/오답 결과 해설창 (답안 제출 후 표시) -->
+          <!-- ?뺣떟/?ㅻ떟 寃곌낵 ?댁꽕李?(?듭븞 ?쒖텧 ???쒖떆) -->
           <div class="quiz-feedback-box hidden" id="quiz-feedback-box">
-            <div class="feedback-icon" id="feedback-icon">🎉</div>
-            <div class="feedback-title" id="feedback-title">정답입니다!</div>
-            <p class="feedback-desc" id="feedback-desc">상세 해설 내용...</p>
-            <button class="btn btn-primary mt-3" id="btn-quiz-confirm">다음으로 진행 ➔</button>
+            <div class="feedback-icon" id="feedback-icon">?럦</div>
+            <div class="feedback-title" id="feedback-title">?뺣떟?낅땲??</div>
+            <p class="feedback-desc" id="feedback-desc">?곸꽭 ?댁꽕 ?댁슜...</p>
+            <button class="btn btn-primary mt-3" id="btn-quiz-confirm">?ㅼ쓬?쇰줈 吏꾪뻾 ??/button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- B. 카드 뽑기 팝업 모달 (지형 카드 / 기후 카드: 단답형 주관식) -->
+    <!-- B. 移대뱶 戮묎린 ?앹뾽 紐⑤떖 (吏??移대뱶 / 湲고썑 移대뱶: ?⑤떟??二쇨??? -->
     <div id="modal-card" class="modal-backdrop">
       <div class="modal-dialog glass-dialog card-dialog">
         <div class="modal-header">
-          <span class="modal-badge card-type-badge" id="card-type-badge">☀️ 기후 카드 미션</span>
-          <h3 id="card-modal-title">기후 카드를 뒤집었습니다!</h3>
+          <span class="modal-badge card-type-badge" id="card-type-badge">?截?湲고썑 移대뱶 誘몄뀡</span>
+          <h3 id="card-modal-title">湲고썑 移대뱶瑜??ㅼ쭛?덉뒿?덈떎!</h3>
         </div>
 
         <div class="modal-body">
-          <!-- 카드 사진 영역 -->
+          <!-- 移대뱶 ?ъ쭊 ?곸뿭 -->
           <div class="card-display-container">
-            <img id="card-photo-img" src="" alt="카드 사진" class="card-photo-display" />
+            <img id="card-photo-img" src="" alt="移대뱶 ?ъ쭊" class="card-photo-display" />
           </div>
 
           <div class="card-question-box">
-            <p id="card-question-text">위 사진이 나타내는 기후(또는 지형)은 무엇일까요?</p>
+            <p id="card-question-text">???ъ쭊???섑??대뒗 湲고썑(?먮뒗 吏??? 臾댁뾿?쇨퉴??</p>
           </div>
 
-          <!-- 카드 단답형 입력 폼 -->
+          <!-- 移대뱶 ?⑤떟???낅젰 ??-->
           <form id="card-input-form" class="quiz-input-form" onsubmit="return false;">
             <div class="quiz-input-wrap">
-              <span class="quiz-input-icon">📷</span>
-              <input type="text" id="card-input-answer" class="quiz-text-input" placeholder="정답을 입력하세요" autocomplete="off" />
+              <span class="quiz-input-icon">?벜</span>
+              <input type="text" id="card-input-answer" class="quiz-text-input" placeholder="?뺣떟???낅젰?섏꽭?? autocomplete="off" />
             </div>
-            <button type="submit" class="btn btn-primary btn-submit-quiz" id="btn-card-submit">정답 제출 ➔</button>
+            <button type="submit" class="btn btn-primary btn-submit-quiz" id="btn-card-submit">?뺣떟 ?쒖텧 ??/button>
           </form>
 
-          <!-- 카드 해설 및 확인 -->
+          <!-- 移대뱶 ?댁꽕 諛??뺤씤 -->
           <div class="quiz-feedback-box hidden" id="card-feedback-box">
-            <div class="feedback-icon" id="card-feedback-icon">🌟</div>
-            <div class="feedback-title" id="card-feedback-title">정답입니다!</div>
-            <p class="feedback-desc" id="card-feedback-desc">카드 상세 설명</p>
-            <button class="btn btn-primary mt-3" id="btn-card-confirm">다음으로 진행 ➔</button>
+            <div class="feedback-icon" id="card-feedback-icon">?뙚</div>
+            <div class="feedback-title" id="card-feedback-title">?뺣떟?낅땲??</div>
+            <p class="feedback-desc" id="card-feedback-desc">移대뱶 ?곸꽭 ?ㅻ챸</p>
+            <button class="btn btn-primary mt-3" id="btn-card-confirm">?ㅼ쓬?쇰줈 吏꾪뻾 ??/button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- C. 특수 칸 알림 모달 (세계여행, 무인도, 힌트 열쇠) -->
+    <!-- C. ?뱀닔 移??뚮┝ 紐⑤떖 (?멸퀎?ы뻾, 臾댁씤?? ?뚰듃 ?댁뇿) -->
     <div id="modal-special" class="modal-backdrop">
       <div class="modal-dialog glass-dialog text-center">
-        <div class="special-icon" id="special-icon">✈️</div>
-        <h2 id="special-title">세계여행 찬스!</h2>
-        <p id="special-desc">다음 차례에 원하는 칸 어디든 자유롭게 날아갈 수 있습니다.</p>
-        <button class="btn btn-primary mt-4" id="btn-special-confirm">확인</button>
+        <div class="special-icon" id="special-icon">?덌툘</div>
+        <h2 id="special-title">?멸퀎?ы뻾 李ъ뒪!</h2>
+        <p id="special-desc">?ㅼ쓬 李⑤????먰븯??移??대뵒???먯쑀濡?쾶 ?좎븘媛????덉뒿?덈떎.</p>
+        <button class="btn btn-primary mt-4" id="btn-special-confirm">?뺤씤</button>
       </div>
     </div>
 
-    <!-- D. 최종 승리 결과 발표 모달 -->
+    <!-- D. 理쒖쥌 ?밸━ 寃곌낵 諛쒗몴 紐⑤떖 -->
     <div id="modal-victory" class="modal-backdrop">
       <div class="modal-dialog glass-dialog victory-dialog">
         <div class="victory-header">
-          <div class="trophy-icon">🏆</div>
-          <h2>세계 탐험 원정 완료!</h2>
-          <p>모든 칸의 탐험이 끝났습니다. 영광의 승자를 발표합니다!</p>
+          <div class="trophy-icon">?룇</div>
+          <h2>?멸퀎 ?먰뿕 ?먯젙 ?꾨즺!</h2>
+          <p>紐⑤뱺 移몄쓽 ?먰뿕???앸궗?듬땲?? ?곴킅???뱀옄瑜?諛쒗몴?⑸땲??</p>
         </div>
 
         <div class="podium-section" id="victory-podium">
-          <!-- 1위, 2위, 3위 시상대 JS 렌더링 -->
+          <!-- 1?? 2?? 3???쒖긽? JS ?뚮뜑留?-->
         </div>
 
         <div class="victory-stats-table" id="victory-stats-table">
-          <!-- 플레이어별 점령 칸 수, 카드 획득 수 -->
+          <!-- ?뚮젅?댁뼱蹂??먮졊 移??? 移대뱶 ?띾뱷 ??-->
         </div>
 
         <div class="modal-footer-actions">
-          <button class="btn btn-primary btn-large" id="btn-victory-restart">새로운 게임 시작 🚀</button>
-          <button class="btn btn-outline" id="btn-victory-lobby">로비로 이동</button>
+          <button class="btn btn-primary btn-large" id="btn-victory-restart">?덈줈??寃뚯엫 ?쒖옉 ??</button>
+          <button class="btn btn-outline" id="btn-victory-lobby">濡쒕퉬濡??대룞</button>
         </div>
       </div>
     </div>
 
-    <!-- E. 도감 & 룰북 전체 모달 -->
+    <!-- E. ?꾧컧 & 猷곕턿 ?꾩껜 紐⑤떖 -->
     <div id="modal-guide" class="modal-backdrop">
       <div class="modal-dialog glass-dialog guide-dialog">
         <div class="modal-header">
-          <h3>📖 세계여행 말판놀이 가이드 & 카드 도감</h3>
-          <button class="btn-close" id="btn-close-guide">✕</button>
+          <h3>?뱰 ?멸퀎?ы뻾 留먰뙋???媛?대뱶 & 移대뱶 ?꾧컧</h3>
+          <button class="btn-close" id="btn-close-guide">??/button>
         </div>
         <div class="modal-body guide-body">
           <div class="guide-tabs">
-            <button class="tab-btn active" id="guide-tab-rule">놀이 규칙</button>
-            <button class="tab-btn" id="guide-tab-board">🗺️ 교과서 보드판 원본</button>
-            <button class="tab-btn" id="guide-tab-terrain">지형 카드 8종</button>
-            <button class="tab-btn" id="guide-tab-climate">기후 카드 8종</button>
+            <button class="tab-btn active" id="guide-tab-rule">???洹쒖튃</button>
+            <button class="tab-btn" id="guide-tab-board">?뿺截?援먭낵??蹂대뱶???먮낯</button>
+            <button class="tab-btn" id="guide-tab-terrain">吏??移대뱶 8醫?/button>
+            <button class="tab-btn" id="guide-tab-climate">湲고썑 移대뱶 8醫?/button>
           </div>
 
           <div id="guide-content-rule" class="guide-tab-pane active">
-            <h4>🎯 놀이 방법</h4>
+            <h4>?렞 ???諛⑸쾿</h4>
             <ol class="rule-list">
-              <li><strong>인원:</strong> 2~4명의 친구가 함께 플레이합니다.</li>
-              <li><strong>진행:</strong> 차례대로 주사위를 굴려 나온 숫자만큼 자신의 말을 이동합니다.</li>
-              <li><strong>문제 칸:</strong> 도착한 칸의 <strong>단답형 문제</strong>를 맞히면 해당 칸을 <strong>자신의 색상으로 점령(색칠)</strong>합니다.</li>
-              <li><strong>카드 칸:</strong> 지형/기후 카드가 뽑히면 사진을 보고 알맞은 정답을 입력하여 칸을 점령합니다.</li>
-              <li><strong>특수 칸:</strong>
+              <li><strong>?몄썝:</strong> 2~4紐낆쓽 移쒓뎄媛 ?④퍡 ?뚮젅?댄빀?덈떎.</li>
+              <li><strong>吏꾪뻾:</strong> 李⑤??濡?二쇱궗?꾨? 援대젮 ?섏삩 ?レ옄留뚰겮 ?먯떊??留먯쓣 ?대룞?⑸땲??</li>
+              <li><strong>臾몄젣 移?</strong> ?꾩갑??移몄쓽 <strong>?⑤떟??臾몄젣</strong>瑜?留욏엳硫??대떦 移몄쓣 <strong>?먯떊???됱긽?쇰줈 ?먮졊(?됱튌)</strong>?⑸땲??</li>
+              <li><strong>移대뱶 移?</strong> 吏??湲고썑 移대뱶媛 戮묓엳硫??ъ쭊??蹂닿퀬 ?뚮쭪? ?뺣떟???낅젰?섏뿬 移몄쓣 ?먮졊?⑸땲??</li>
+              <li><strong>?뱀닔 移?</strong>
                 <ul>
-                  <li>✈️ <strong>세계여행:</strong> 다음 차례에 원하는 칸으로 즉시 이동!</li>
-                  <li>🏝️ <strong>무인도:</strong> 1턴 동안 쉬고 다음 차례에 이동합니다.</li>
+                  <li>?덌툘 <strong>?멸퀎?ы뻾:</strong> ?ㅼ쓬 李⑤????먰븯??移몄쑝濡?利됱떆 ?대룞!</li>
+                  <li>?룤截?<strong>臾댁씤??</strong> 1???숈븞 ?ш퀬 ?ㅼ쓬 李⑤????대룞?⑸땲??</li>
                 </ul>
               </li>
-              <li><strong>승리 조건:</strong> 모든 문제 칸이 점령되거나 정해진 턴이 끝났을 때 <strong>가장 많은 칸을 점령한 탐험가</strong>가 승리합니다!</li>
+              <li><strong>?밸━ 議곌굔:</strong> 紐⑤뱺 臾몄젣 移몄씠 ?먮졊?섍굅???뺥빐吏??댁씠 ?앸궗????<strong>媛??留롮? 移몄쓣 ?먮졊???먰뿕媛</strong>媛 ?밸━?⑸땲??</li>
             </ol>
           </div>
 
           <div id="guide-content-board" class="guide-tab-pane">
             <div class="textbook-board-wrapper">
               <div class="textbook-board-header">
-                <h4>🗺️ 6학년 2학기 세계의 자연환경 말판놀이 원본 (52~53쪽)</h4>
-                <a href="assets/board/full_textbook_board.jpg" target="_blank" class="btn btn-sm btn-secondary">🔍 새 탭에서 고화질 확대</a>
+                <h4>?뿺截?6?숇뀈 2?숆린 ?멸퀎???먯뿰?섍꼍 留먰뙋????먮낯 (52~53履?</h4>
+                <a href="assets/board/full_textbook_board.jpg" target="_blank" class="btn btn-sm btn-secondary">?뵇 ????뿉??怨좏솕吏??뺣?</a>
               </div>
               <div class="textbook-board-scroll">
-                <img src="assets/board/full_textbook_board.jpg" alt="교과서 보드판 원본" class="textbook-board-img" />
+                <img src="assets/board/full_textbook_board.jpg" alt="援먭낵??蹂대뱶???먮낯" class="textbook-board-img" />
               </div>
             </div>
           </div>
@@ -340,12 +340,12 @@
       </div>
     </div>
 
-    <!-- 알림 토스트 메시지 -->
+    <!-- ?뚮┝ ?좎뒪??硫붿떆吏 -->
     <div id="toast-container" class="toast-container"></div>
 
   </div>
 
-  <!-- 메인 스크립트 모듈 로드 -->
-  <script type="module" src="js/app.js?v=20261003_v8"></script>
+  <!-- 硫붿씤 ?ㅽ겕由쏀듃 紐⑤뱢 濡쒕뱶 -->
+  <script type="module" src="js/app.js?v=20261003_v9"></script>
 </body>
 </html>

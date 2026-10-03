@@ -298,6 +298,9 @@ class WorldGameApp {
   }
 
   addLog(text, type = 'normal') {
+    console.log(`[Game] ${text}`);
+    if (!this.gameLogList) this.gameLogList = document.getElementById('game-log-list');
+    if (!this.gameLogList) return; // 로그 패널이 없는 레이아웃에서는 콘솔에만 기록
     const item = document.createElement('div');
     item.className = `log-item ${type}`;
     item.textContent = text;
