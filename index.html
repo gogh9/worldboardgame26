@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>?멸퀎?ы뻾 留먰뙋???| ?멸퀎???먯뿰?섍꼍</title>
-  <meta name="description" content="2~4紐낆씠 ?④퍡 利먭린???ㅼ떆媛??⑤씪???멸퀎?ы뻾 吏由?留먰뙋???蹂대뱶寃뚯엫?낅땲??">
+  <title>세계여행 말판놀이 | 세계의 자연환경</title>
+  <meta name="description" content="2~4명이 함께 즐기는 실시간 온라인 세계여행 지리 말판놀이 보드게임입니다.">
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,173 +31,173 @@
 <body>
   <div id="app" class="app-container">
 
-    <!-- ?⑤씪???湲곗떎 諛?諛??좏깮 ?붾㈃ (湲곕낯 硫붿씤 ?붾㈃) -->
+    <!-- 온라인 대기실 및 방 선택 화면 (기본 메인 화면) -->
     <section id="screen-lobby" class="screen active">
       <div class="lobby-container glass-panel">
         <div class="lobby-header">
           <div class="lobby-title-area">
-            <span class="lobby-logo-icon">?뙇</span>
-            <h2>?멸퀎?ы뻾 留먰뙋???- ?먰뿕 諛??좏깮</h2>
+            <span class="lobby-logo-icon">🌍</span>
+            <h2>세계여행 말판놀이 - 탐험 방 선택</h2>
           </div>
         </div>
 
-        <!-- 1) 濡쒕퉬 硫붿씤: 諛?紐⑸줉 & 諛?留뚮뱾湲??곷떒 諛?-->
+        <!-- 1) 로비 메인: 방 목록 & 방 만들기 상단 바 -->
         <div id="lobby-join-section" class="lobby-subview">
           <div class="lobby-top-controls">
             <div class="nickname-box">
-              <label for="input-nickname">???됰꽕??(?ъ젒????媛숈? ?됰꽕???낅젰)</label>
-              <input type="text" id="input-nickname" maxlength="8" value="?먰뿕媛" placeholder="?됰꽕???낅젰 (理쒕? 8??">
+              <label for="input-nickname">내 닉네임 (재접속 시 같은 닉네임 입력)</label>
+              <input type="text" id="input-nickname" maxlength="8" value="탐험가" placeholder="닉네임 입력 (최대 8자)">
             </div>
             <div class="lobby-action-buttons">
               <button class="btn btn-primary btn-create-action" id="btn-create-room">
-                <span>???덈줈??諛?留뚮뱾湲?/span>
+                <span>➕ 새로운 방 만들기</span>
               </button>
-              <button class="btn btn-class-mode" id="btn-open-class-mode" title="援먯궗???숆툒 ?꾩껜 ?湲곗떎 & 紐⑤몺 ?몄꽦">
-                <span>?룶 ?곕━諛??④퍡 寃뚯엫?섍린</span>
+              <button class="btn btn-class-mode" id="btn-open-class-mode" title="교사용 학급 전체 대기실 & 모둠 편성">
+                <span>🏫 우리반 함께 게임하기</span>
               </button>
             </div>
           </div>
 
-          <!-- ?ㅼ떆媛??대젮?덈뒗 諛?紐⑸줉 ?뱀뀡 -->
+          <!-- 실시간 열려있는 방 목록 섹션 -->
           <div class="rooms-list-header">
             <div class="list-title-wrap">
-              <h3>?뵇 ?꾩옱 ?대젮?덈뒗 ?먰뿕 諛?紐⑸줉</h3>
-              <span class="rooms-live-indicator"><span class="pulse-dot"></span> ?ㅼ떆媛??숆린??/span>
+              <h3>🔍 현재 열려있는 탐험 방 목록</h3>
+              <span class="rooms-live-indicator"><span class="pulse-dot"></span> 실시간 동기화</span>
             </div>
-            <button class="btn btn-sm btn-outline" id="btn-refresh-rooms" title="諛?紐⑸줉 ?덈줈怨좎묠">?봽 ?덈줈怨좎묠</button>
+            <button class="btn btn-sm btn-outline" id="btn-refresh-rooms" title="방 목록 새로고침">🔄 새로고침</button>
           </div>
 
           <div class="rooms-list-container" id="rooms-list-container">
-            <!-- 諛⑹씠 ?놁쓣 ??湲곕낯 酉?-->
+            <!-- 방이 없을 때 기본 뷰 -->
             <div class="no-rooms-placeholder" id="no-rooms-placeholder">
-              <div class="placeholder-icon">?룤截?/div>
-              <p>?꾩옱 ?대젮?덈뒗 諛⑹씠 ?놁뒿?덈떎.</p>
-              <span>?꾩쓽 <strong>[???덈줈??諛?留뚮뱾湲?</strong> 踰꾪듉???뚮윭 泥?踰덉㎏ ?먰뿕 諛⑹쓣 ?댁뼱蹂댁꽭??</span>
+              <div class="placeholder-icon">🏝️</div>
+              <p>현재 열려있는 방이 없습니다.</p>
+              <span>위의 <strong>[➕ 새로운 방 만들기]</strong> 버튼을 눌러 첫 번째 탐험 방을 열어보세요!</span>
             </div>
-            <!-- JS ?숈쟻?쇰줈 諛?移대뱶 ?뚮뜑留?-->
+            <!-- JS 동적으로 방 카드 렌더링 -->
           </div>
         </div>
 
-        <!-- 諛??앹꽦/?낆옣 ?? ?뚮젅?댁뼱 紐⑸줉 & 以鍮?諛?-->
+        <!-- 방 생성/입장 후: 플레이어 목록 & 준비 방 -->
         <div id="lobby-room-section" class="lobby-subview hidden">
           <div class="lobby-room-header-bar">
             <div class="room-title-tag-wrap">
               <span class="room-status-dot"></span>
-              <span class="room-title-lbl">?먰뿕 ?湲곗떎 (李멸???以鍮?以?</span>
+              <span class="room-title-lbl">탐험 대기실 (참가자 준비 중)</span>
             </div>
           </div>
 
-          <!-- ?뚮젅?댁뼱 ?щ’ 4媛?-->
+          <!-- 플레이어 슬롯 4개 -->
           <div class="players-slot-grid" id="lobby-player-slots">
-            <!-- JS ?숈쟻 ?뚮뜑留?-->
+            <!-- JS 동적 렌더링 -->
           </div>
 
-          <!-- 罹먮┃???됱긽 ?좏깮 -->
+          <!-- 캐릭터/색상 선택 -->
           <div class="character-select-box">
-            <div class="box-title">??罹먮┃??& ?됱긽 蹂寃?/div>
+            <div class="box-title">내 캐릭터 & 색상 변경</div>
             <div class="character-chips" id="character-chips-container">
-              <!-- JS ?숈쟻 ?뚮뜑留?-->
+              <!-- JS 동적 렌더링 -->
             </div>
           </div>
 
-          <!-- ?섎떒 ?≪뀡 踰꾪듉 -->
+          <!-- 하단 액션 버튼 -->
           <div class="lobby-actions">
-            <button class="btn btn-danger" id="btn-leave-room">諛??섍?湲?/button>
+            <button class="btn btn-danger" id="btn-leave-room">방 나가기</button>
             <div class="ready-start-group">
-              <button class="btn btn-secondary" id="btn-toggle-ready">以鍮??꾨즺 (READY)</button>
-              <button class="btn btn-primary btn-pulse hidden" id="btn-start-game">寃뚯엫 ?쒖옉! (START)</button>
+              <button class="btn btn-secondary" id="btn-toggle-ready">준비 완료 (READY)</button>
+              <button class="btn btn-primary btn-pulse hidden" id="btn-start-game">게임 시작! (START)</button>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 2. ?곕━諛??④퍡 寃뚯엫?섍린 (援먯궗 紐⑤뱶) -->
+    <!-- 2. 우리반 함께 게임하기 (교사 모드) -->
     <section id="screen-class-teacher" class="screen">
       <div class="class-container glass-panel">
         
-        <!-- 2-A. 援먯궗 ?숆툒 ?湲곗떎 ?앹꽦 ??-->
+        <!-- 2-A. 교사 학급 대기실 생성 폼 -->
         <div id="class-teacher-setup-view" class="class-subview">
           <div class="class-setup-card glass-card">
-            <div class="class-badge-icon">?룶</div>
-            <h2>?곕━諛??④퍡 寃뚯엫?섍린 (?좎깮??紐⑤뱶)</h2>
-            <p class="setup-sub-desc">諛??꾩껜 ?숈깮?ㅼ씠 ?섎굹???湲곗떎???묒냽???? 援먯궗媛 紐⑤몺(?)??援ъ꽦?섏뿬 ?숈떆??寃뚯엫???쒖옉?⑸땲??</p>
+            <div class="class-badge-icon">🏫</div>
+            <h2>우리반 함께 게임하기 (선생님 모드)</h2>
+            <p class="setup-sub-desc">반 전체 학생들이 하나의 대기실에 접속한 후, 교사가 모둠(팀)을 구성하여 동시에 게임을 시작합니다.</p>
             
             <form id="form-teacher-setup" class="class-setup-form">
               <div class="form-group">
-                <label for="input-class-name">?숆툒 ?대쫫</label>
-                <input type="text" id="input-class-name" value="6?숇뀈 2諛??먰뿕?" maxlength="15" placeholder="?? 6?숇뀈 2諛??먰뿕?" required>
+                <label for="input-class-name">학급 이름</label>
+                <input type="text" id="input-class-name" value="6학년 2반 탐험대" maxlength="15" placeholder="예: 6학년 2반 탐험대" required>
               </div>
               <div class="form-group">
-                <label for="input-teacher-name">?좎깮???대쫫 / ?됰꽕??/label>
-                <input type="text" id="input-teacher-name" value="?좎깮?? maxlength="10" placeholder="?? 源?좎깮?? required>
+                <label for="input-teacher-name">선생님 이름 / 닉네임</label>
+                <input type="text" id="input-teacher-name" value="선생님" maxlength="10" placeholder="예: 김선생님" required>
               </div>
               <div class="setup-form-actions">
-                <button type="button" class="btn btn-outline" id="btn-class-teacher-back">??硫붿씤 濡쒕퉬</button>
-                <button type="submit" class="btn btn-primary btn-large">?? ?곕━諛??湲곗떎 ?앹꽦?섍린</button>
+                <button type="button" class="btn btn-outline" id="btn-class-teacher-back">← 메인 로비</button>
+                <button type="submit" class="btn btn-primary btn-large">🚀 우리반 대기실 생성하기</button>
               </div>
             </form>
           </div>
         </div>
 
-        <!-- 2-B. 援먯궗 ?숆툒 ??쒕낫??(?숈깮 ?湲??꾪솴 & 紐⑤몺 ?몄꽦) -->
+        <!-- 2-B. 교사 학급 대시보드 (학생 대기 현황 & 모둠 편성) -->
         <div id="class-teacher-dashboard-view" class="class-subview hidden">
-          <!-- ?곷떒 ?ㅻ뜑 諛곕꼫 -->
+          <!-- 상단 헤더 배너 -->
           <div class="class-header-bar">
             <div class="class-title-tag">
-              <span class="class-icon">?룶</span>
+              <span class="class-icon">🏫</span>
               <div>
-                <h3 id="teacher-disp-class-name">?곕━諛??먰뿕?</h3>
-                <span class="class-status-live"><span class="pulse-dot"></span> ?숆툒 ?湲곗떎 ?ㅼ떆媛??댁쁺 以?/span>
+                <h3 id="teacher-disp-class-name">우리반 탐험대</h3>
+                <span class="class-status-live"><span class="pulse-dot"></span> 학급 대기실 실시간 운영 중</span>
               </div>
             </div>
             
             <div class="class-link-copy-wrap">
-              <div class="link-label">?숈깮 珥덈? 留곹겕</div>
+              <div class="link-label">학생 초대 링크</div>
               <div class="link-url-text" id="teacher-disp-class-link">https://...</div>
-              <button class="btn btn-sm btn-secondary" id="btn-copy-class-link">?뱥 ?숈깮 珥덈? 留곹겕 蹂듭궗</button>
+              <button class="btn btn-sm btn-secondary" id="btn-copy-class-link">📋 학생 초대 링크 복사</button>
             </div>
           </div>
 
-          <!-- ?묒냽 ?숈깮 紐낅떒 諛?-->
+          <!-- 접속 학생 명단 바 -->
           <div class="class-students-section glass-card">
             <div class="students-section-header">
-              <h4>?럲 ?묒냽???숈깮 紐⑸줉 (<span id="teacher-student-count">0紐?/span>)</h4>
-              <span class="students-hint">?숈깮?ㅼ씠 ?ㅻ쭏?명룿, ?쒕툝由? PC濡??묒냽?섎㈃ ?ㅼ떆媛꾩쑝濡??섑??⑸땲??</span>
+              <h4>🎒 접속한 학생 목록 (<span id="teacher-student-count">0명</span>)</h4>
+              <span class="students-hint">학생들이 스마트폰, 태블릿, PC로 접속하면 실시간으로 나타납니다.</span>
             </div>
             <div class="unassigned-students-container" id="teacher-unassigned-students">
-              <!-- ?숈깮 移??숈쟻 ?뚮뜑留?-->
+              <!-- 학생 칩 동적 렌더링 -->
             </div>
           </div>
 
-          <!-- 紐⑤몺 ?몄꽦 ?대컮 -->
+          <!-- 모둠 편성 툴바 -->
           <div class="team-management-toolbar">
             <div class="toolbar-title-wrap">
-              <h4>?슜 紐⑤몺(?) ?몄꽦</h4>
-              <span class="toolbar-hint">媛?紐⑤몺??2~4紐낆쓽 ?숈깮??諛곗젙?⑸땲??</span>
+              <h4>🚩 모둠(팀) 편성</h4>
+              <span class="toolbar-hint">각 모둠당 2~4명의 학생이 배정됩니다.</span>
             </div>
             <div class="toolbar-actions">
-              <button class="btn btn-sm btn-outline" id="btn-random-teams-3">?렡 3紐낆뵫 ?쒕뜡 諛곗젙</button>
-              <button class="btn btn-sm btn-outline" id="btn-random-teams-4">?렡 4紐낆뵫 ?쒕뜡 諛곗젙</button>
-              <button class="btn btn-sm btn-outline" id="btn-add-team">??紐⑤몺 異붽?</button>
-              <button class="btn btn-sm btn-outline" id="btn-reset-teams">?봽 諛곗젙 珥덇린??/button>
+              <button class="btn btn-sm btn-outline" id="btn-random-teams-3">🎲 3명씩 랜덤 배정</button>
+              <button class="btn btn-sm btn-outline" id="btn-random-teams-4">🎲 4명씩 랜덤 배정</button>
+              <button class="btn btn-sm btn-outline" id="btn-add-team">➕ 모둠 추가</button>
+              <button class="btn btn-sm btn-outline" id="btn-reset-teams">🔄 배정 초기화</button>
             </div>
           </div>
 
-          <!-- 紐⑤몺 洹몃━??-->
+          <!-- 모둠 그리드 -->
           <div class="teams-manage-grid" id="teacher-teams-grid">
-            <!-- 紐⑤몺 移대뱶 ?숈쟻 ?뚮뜑留?-->
+            <!-- 모둠 카드 동적 렌더링 -->
           </div>
 
-          <!-- ?섎떒 寃뚯엫 ?쒖옉 / ?뚰솚 諛?-->
+          <!-- 하단 게임 시작 / 소환 바 -->
           <div class="class-bottom-control-bar glass-card">
             <div class="control-status-text" id="teacher-control-status">
-              ?숈깮?ㅼ씠 ?묒냽?섎㈃ 紐⑤몺??諛곗젙????寃뚯엫???쒖옉?섏꽭??
+              학생들이 접속하면 모둠을 배정한 후 게임을 시작하세요.
             </div>
             <div class="control-buttons-wrap">
-              <button class="btn btn-danger hidden" id="btn-recall-students">?뱼 ?꾩껜 ?숈깮 ?湲곗떎濡??뚰솚</button>
+              <button class="btn btn-danger hidden" id="btn-recall-students">📢 전체 학생 대기실로 소환</button>
               <button class="btn btn-primary btn-large btn-pulse" id="btn-start-all-games" disabled>
-                ?? ?꾩껜 紐⑤몺 寃뚯엫 ?숈떆 ?쒖옉
+                🚀 전체 모둠 게임 동시 시작
               </button>
             </div>
           </div>
@@ -207,75 +207,75 @@
       </div>
     </section>
 
-    <!-- 3. ?곕━諛??④퍡 寃뚯엫?섍린 (?숈깮 ?湲곗떎 ?붾㈃) -->
+    <!-- 3. 우리반 함께 게임하기 (학생 대기실 화면) -->
     <section id="screen-class-student" class="screen">
       <div class="class-container glass-panel">
         
-        <!-- 3-A. ?숈깮 ?낆옣 ??-->
+        <!-- 3-A. 학생 입장 폼 -->
         <div id="class-student-join-view" class="class-subview">
           <div class="class-setup-card glass-card">
-            <div class="class-badge-icon">?럲</div>
-            <h2>?곕━諛??멸퀎?ы뻾 ?湲곗떎 ?낆옣</h2>
-            <p class="setup-sub-desc">?좎깮?섏씠 媛쒖꽕???숆툒 ?湲곗떎???낆옣?섏뿬 紐⑤몺 諛곗젙??湲곕떎由쎈땲??</p>
+            <div class="class-badge-icon">🎒</div>
+            <h2>우리반 세계여행 대기실 입장</h2>
+            <p class="setup-sub-desc">선생님이 개설한 학급 대기실에 입장하여 모둠 배정을 기다립니다.</p>
             
             <form id="form-student-join" class="class-setup-form">
               <div class="form-group">
-                <label for="input-student-name">???대쫫 / 踰덊샇</label>
-                <input type="text" id="input-student-name" maxlength="10" placeholder="?? 3踰?源誘쇱?" required autofocus>
+                <label for="input-student-name">내 이름 / 번호</label>
+                <input type="text" id="input-student-name" maxlength="10" placeholder="예: 3번 김민준" required autofocus>
               </div>
               <div class="setup-form-actions">
-                <button type="submit" class="btn btn-primary btn-large">?낆옣?섍린 ??</button>
+                <button type="submit" class="btn btn-primary btn-large">입장하기 🚀</button>
               </div>
             </form>
           </div>
         </div>
 
-        <!-- 3-B. ?숈깮 ?湲?以??붾㈃ -->
+        <!-- 3-B. 학생 대기 중 화면 -->
         <div id="class-student-waiting-view" class="class-subview hidden">
           <div class="student-waiting-card glass-card">
             <div class="waiting-header">
               <div class="waiting-title-wrap">
-                <span class="class-badge-emoji">?룶</span>
+                <span class="class-badge-emoji">🏫</span>
                 <div>
-                  <h3 id="student-disp-class-title">?곕━諛??먰뿕?</h3>
-                  <span class="waiting-teacher-tag" id="student-disp-teacher-name">?좎깮?섏쓽 ?湲곗떎</span>
+                  <h3 id="student-disp-class-title">우리반 탐험대</h3>
+                  <span class="waiting-teacher-tag" id="student-disp-teacher-name">선생님의 대기실</span>
                 </div>
               </div>
               <div class="waiting-header-actions">
-                <button class="btn btn-sm btn-outline" id="btn-class-student-rename">?륅툘 ?대쫫 蹂寃?/button>
-                <button class="btn btn-sm btn-outline" id="btn-class-student-leave">?섍?湲?/button>
+                <button class="btn btn-sm btn-outline" id="btn-class-student-rename">✏️ 이름 변경</button>
+                <button class="btn btn-sm btn-outline" id="btn-class-student-leave">나가기</button>
               </div>
             </div>
 
-            <!-- ???섏쁺 諛곕꼫 -->
+            <!-- 내 환영 배너 -->
             <div class="student-welcome-banner">
-              <div class="student-avatar-big">?럲</div>
+              <div class="student-avatar-big">🎒</div>
               <div class="student-welcome-info">
-                <h4><strong id="student-disp-my-name">?숈깮</strong>???섏쁺?⑸땲??</h4>
-                <p>?좎깮?섏씠 紐⑤몺???몄꽦?섍퀬 寃뚯엫???쒖옉???뚭퉴吏 ?좎떆 湲곕떎?ㅼ＜?몄슂.</p>
+                <h4><strong id="student-disp-my-name">학생</strong>님 환영합니다!</h4>
+                <p>선생님이 모둠을 편성하고 게임을 시작할 때까지 잠시 기다려주세요.</p>
               </div>
             </div>
 
-            <!-- ??紐⑤몺 ?곹깭 -->
+            <!-- 내 모둠 상태 -->
             <div class="student-team-status-box" id="student-my-team-status">
               <div class="team-unassigned-box">
-                <span class="pulse-dot"></span> ?좎깮?섏씠 紐⑤몺???몄꽦?섎뒗 以묒엯?덈떎...
+                <span class="pulse-dot"></span> 선생님이 모둠을 편성하는 중입니다...
               </div>
             </div>
 
-            <!-- ?묒냽 以묒씤 移쒓뎄??紐⑸줉 -->
+            <!-- 접속 중인 친구들 목록 -->
             <div class="student-friends-section">
               <div class="friends-header">
-                <h5>?곕━諛?移쒓뎄???묒냽 ?꾪솴 (<span id="student-friends-count">0紐?/span>)</h5>
+                <h5>우리반 친구들 접속 현황 (<span id="student-friends-count">0명</span>)</h5>
               </div>
               <div class="student-friends-grid" id="student-friends-grid">
-                <!-- 移쒓뎄??移??숈쟻 ?뚮뜑留?-->
+                <!-- 친구들 칩 동적 렌더링 -->
               </div>
             </div>
 
             <div class="waiting-pulse-footer">
               <div class="loading-spinner"></div>
-              <span>?좎깮?섏씠 寃뚯엫???쒖옉?섎㈃ ?먮룞?쇰줈 紐⑤몺 寃뚯엫 ?붾㈃?쇰줈 ?대룞?⑸땲??.. ??</span>
+              <span>선생님이 게임을 시작하면 자동으로 모둠 게임 화면으로 이동합니다... 🚀</span>
             </div>
           </div>
         </div>
@@ -283,33 +283,33 @@
       </div>
     </section>
 
-    <!-- 4. 硫붿씤 蹂대뱶寃뚯엫 ?뚮젅???붾㈃ -->
+    <!-- 4. 메인 보드게임 플레이 화면 -->
     <section id="screen-game" class="screen">
-      <!-- 寃뚯엫 硫붿씤 而⑦뀗痢??곸뿭 (?붾㈃ ?꾩껜 ?뺤옣) -->
+      <!-- 게임 메인 컨텐츠 영역 (화면 전체 확장) -->
       <main class="game-layout">
         
-        <!-- 以묒븰 蹂대뱶???곸뿭 -->
+        <!-- 중앙 보드판 영역 -->
         <div class="board-wrapper">
           <div class="board-container" id="board-container">
             
-            <!-- 以묒븰 ?곸뿭: ?꾩껜瑜?苑?梨꾩슦?????怨좏솕吏??멸퀎吏??留먰뙋 + ?뚮줈??二쇱궗??& ?먰뿕媛 ?꾪솴 -->
+            <!-- 중앙 영역: 전체를 꽉 채우는 대형 고화질 세계지도 말판 + 플로팅 주사위 & 탐험가 현황 -->
             <div class="board-center-area">
               
-              <!-- ???怨좏솕吏??멸퀎吏??酉?& ?ㅼ떆媛?留??덉씠??(?꾩껜 ?붾㈃ 苑?李?酉? -->
+              <!-- 대형 고화질 세계지도 뷰 & 실시간 말 레이어 (전체 화면 꽉 찬 뷰) -->
               <div class="center-map-container" id="center-map-container">
                 <div class="center-map-inner" id="center-map-inner">
-                  <img src="assets/board/world_map_hd.jpg" class="world-map-img" alt="?멸퀎吏??留먰뙋" id="world-map-img" />
+                  <img src="assets/board/world_map_hd.jpg" class="world-map-img" alt="세계지도 말판" id="world-map-img" />
                   <div class="map-pawns-layer" id="map-pawns-layer"></div>
                 </div>
 
-                <!-- ?곷떒 醫뚯륫: ?먰뿕媛 ?꾪솴 ?뚮줈??諛?-->
+                <!-- 상단 좌측: 탐험가 현황 플로팅 바 -->
                 <div class="map-floating-players" id="players-status-panel">
-                  <!-- JS ?숈쟻 ?뚮뜑留?-->
+                  <!-- JS 동적 렌더링 -->
                 </div>
 
 
-                <!-- ?섎떒 醫뚯륫: 3D ?명꽣?숉떚釉?諛쒓킅 二쇱궗??(吏곸젒 ?대┃ 援대━湲? -->
-                <div class="dice-widget glass-card" id="dice-widget" title="二쇱궗?꾨? ?대┃?섏뿬 援대━?몄슂!">
+                <!-- 하단 좌측: 3D 인터랙티브 발광 주사위 (직접 클릭 굴리기) -->
+                <div class="dice-widget glass-card" id="dice-widget" title="주사위를 클릭하여 굴리세요!">
                   <div class="dice-3d-scene" id="dice-scene">
                     <div class="dice-cube" id="dice-cube">
                       <div class="dice-face face-1"><span></span></div>
@@ -325,10 +325,10 @@
 
             </div>
 
-            <!-- 20媛쒖쓽 移?洹몃━???붿냼??(JS ?숈쟻 ?뚮뜑留? -->
+            <!-- 20개의 칸 그리드 요소들 (JS 동적 렌더링) -->
             <div class="cells-grid" id="board-cells-grid"></div>
 
-            <!-- ?뚮젅?댁뼱 留?Pawn) ?덉씠??-->
+            <!-- 플레이어 말(Pawn) 레이어 -->
             <div class="pawns-layer" id="pawns-layer"></div>
           </div>
         </div>
@@ -336,132 +336,132 @@
       </main>
     </section>
 
-    <!-- 5. ?앹뾽 紐⑤떖??-->
+    <!-- 5. 팝업 모달들 -->
 
-    <!-- A. ?댁쫰 ?앹뾽 紐⑤떖 (1~12踰??쇰컲 臾몄젣 移? ?⑤떟??二쇨??? -->
+    <!-- A. 퀴즈 팝업 모달 (1~12번 일반 문제 칸: 단답형 주관식) -->
     <div id="modal-quiz" class="modal-backdrop">
       <div class="modal-dialog glass-dialog">
         <div class="modal-header">
           <div class="quiz-badge-wrap">
-            <span class="modal-badge" id="quiz-cell-badge">臾몄젣 1</span>
-            <span class="modal-region" id="quiz-cell-region">遺곸쑀???몃Ⅴ?⑥씠</span>
+            <span class="modal-badge" id="quiz-cell-badge">문제 1</span>
+            <span class="modal-region" id="quiz-cell-region">북유럽 노르웨이</span>
           </div>
-          <button class="modal-close-btn" id="btn-quiz-modal-close" title="?リ린">??/button>
+          <button class="modal-close-btn" id="btn-quiz-modal-close" title="닫기">✕</button>
         </div>
         
         <div class="modal-body">
           <div class="quiz-question-box">
-            <p id="quiz-question-text">鍮숉븯??移⑥떇?쇰줈 留뚮뱾?댁쭊 怨⑥쭨湲곗뿉...</p>
+            <p id="quiz-question-text">빙하의 침식으로 만들어진 골짜기에...</p>
           </div>
 
-          <!-- 臾몄젣 ?뺤씤(誘몃━蹂닿린) 紐⑤뱶 ???リ린 踰꾪듉 -->
+          <!-- 문제 확인(미리보기) 모드 시 닫기 버튼 -->
           <div class="quiz-preview-actions hidden" id="quiz-preview-actions">
-            <button class="btn btn-secondary btn-large" id="btn-quiz-preview-close">?뺤씤 (?リ린)</button>
+            <button class="btn btn-secondary btn-large" id="btn-quiz-preview-close">확인 (닫기)</button>
           </div>
 
-          <!-- ?⑤떟???뺣떟 ?낅젰 ??-->
+          <!-- 단답형 정답 입력 폼 -->
           <form id="quiz-input-form" class="quiz-input-form" onsubmit="return false;">
             <div class="quiz-input-wrap">
-              <span class="quiz-input-icon">?륅툘</span>
-              <input type="text" id="quiz-input-answer" class="quiz-text-input" placeholder="?뺣떟???낅젰?섏꽭?? autocomplete="off" />
+              <span class="quiz-input-icon">✏️</span>
+              <input type="text" id="quiz-input-answer" class="quiz-text-input" placeholder="정답을 입력하세요" autocomplete="off" />
             </div>
-            <button type="submit" class="btn btn-primary btn-submit-quiz" id="btn-quiz-submit">?뺣떟 ?쒖텧 ??/button>
+            <button type="submit" class="btn btn-primary btn-submit-quiz" id="btn-quiz-submit">정답 제출 ➔</button>
           </form>
 
-          <!-- ?뺣떟/?ㅻ떟 寃곌낵 ?댁꽕李?(?듭븞 ?쒖텧 ???쒖떆) -->
+          <!-- 정답/오답 결과 해설창 (답안 제출 후 표시) -->
           <div class="quiz-feedback-box hidden" id="quiz-feedback-box">
-            <div class="feedback-icon" id="feedback-icon">?럦</div>
-            <div class="feedback-title" id="feedback-title">?뺣떟?낅땲??</div>
-            <p class="feedback-desc" id="feedback-desc">?곸꽭 ?댁꽕 ?댁슜...</p>
-            <button class="btn btn-primary mt-3" id="btn-quiz-confirm">?ㅼ쓬?쇰줈 吏꾪뻾 ??/button>
+            <div class="feedback-icon" id="feedback-icon">🎉</div>
+            <div class="feedback-title" id="feedback-title">정답입니다!</div>
+            <p class="feedback-desc" id="feedback-desc">상세 해설 내용...</p>
+            <button class="btn btn-primary mt-3" id="btn-quiz-confirm">다음으로 진행 ➔</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- B. 移대뱶 戮묎린 ?앹뾽 紐⑤떖 (吏??移대뱶 / 湲고썑 移대뱶: ?⑤떟??二쇨??? -->
+    <!-- B. 카드 뽑기 팝업 모달 (지형 카드 / 기후 카드: 단답형 주관식) -->
     <div id="modal-card" class="modal-backdrop">
       <div class="modal-dialog glass-dialog card-dialog">
         <div class="modal-header">
-          <span class="modal-badge card-type-badge" id="card-type-badge">?截?湲고썑 移대뱶 誘몄뀡</span>
-          <button class="modal-close-btn" id="btn-card-modal-close" title="?リ린">??/button>
+          <span class="modal-badge card-type-badge" id="card-type-badge">☀️ 기후 카드 미션</span>
+          <button class="modal-close-btn" id="btn-card-modal-close" title="닫기">✕</button>
         </div>
 
         <div class="modal-body">
-          <!-- 移대뱶 ?ъ쭊 ?곸뿭 -->
+          <!-- 카드 사진 영역 -->
           <div class="card-display-container">
-            <img id="card-photo-img" src="" alt="移대뱶 ?ъ쭊" class="card-photo-display" />
+            <img id="card-photo-img" src="" alt="카드 사진" class="card-photo-display" />
           </div>
 
           <div class="card-question-box">
-            <p id="card-question-text">???ъ쭊???섑??대뒗 湲고썑(?먮뒗 吏??? 臾댁뾿?쇨퉴??</p>
+            <p id="card-question-text">위 사진이 나타내는 기후(또는 지형)은 무엇일까요?</p>
           </div>
 
-          <!-- 移대뱶 ?뺤씤(誘몃━蹂닿린) 紐⑤뱶 ???リ린 踰꾪듉 -->
+          <!-- 카드 확인(미리보기) 모드 시 닫기 버튼 -->
           <div class="card-preview-actions hidden" id="card-preview-actions">
-            <button class="btn btn-secondary btn-large" id="btn-card-preview-close">?뺤씤 (?リ린)</button>
+            <button class="btn btn-secondary btn-large" id="btn-card-preview-close">확인 (닫기)</button>
           </div>
 
-          <!-- 移대뱶 ?⑤떟???낅젰 ??-->
+          <!-- 카드 단답형 입력 폼 -->
           <form id="card-input-form" class="quiz-input-form" onsubmit="return false;">
             <div class="quiz-input-wrap">
-              <span class="quiz-input-icon">?벜</span>
-              <input type="text" id="card-input-answer" class="quiz-text-input" placeholder="?뺣떟???낅젰?섏꽭?? autocomplete="off" />
+              <span class="quiz-input-icon">📷</span>
+              <input type="text" id="card-input-answer" class="quiz-text-input" placeholder="정답을 입력하세요" autocomplete="off" />
             </div>
-            <button type="submit" class="btn btn-primary btn-submit-quiz" id="btn-card-submit">?뺣떟 ?쒖텧 ??/button>
+            <button type="submit" class="btn btn-primary btn-submit-quiz" id="btn-card-submit">정답 제출 ➔</button>
           </form>
 
-          <!-- 移대뱶 ?댁꽕 諛??뺤씤 -->
+          <!-- 카드 해설 및 확인 -->
           <div class="quiz-feedback-box hidden" id="card-feedback-box">
-            <div class="feedback-icon" id="card-feedback-icon">?뙚</div>
-            <div class="feedback-title" id="card-feedback-title">?뺣떟?낅땲??</div>
-            <p class="feedback-desc" id="card-feedback-desc">移대뱶 ?곸꽭 ?ㅻ챸</p>
-            <button class="btn btn-primary mt-3" id="btn-card-confirm">?ㅼ쓬?쇰줈 吏꾪뻾 ??/button>
+            <div class="feedback-icon" id="card-feedback-icon">🌟</div>
+            <div class="feedback-title" id="card-feedback-title">정답입니다!</div>
+            <p class="feedback-desc" id="card-feedback-desc">카드 상세 설명</p>
+            <button class="btn btn-primary mt-3" id="btn-card-confirm">다음으로 진행 ➔</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- C. ?뱀닔 移??뚮┝ 紐⑤떖 (?멸퀎?ы뻾, 臾댁씤?? ?뚰듃 ?댁뇿) -->
+    <!-- C. 특수 칸 알림 모달 (세계여행, 무인도, 힌트 열쇠) -->
     <div id="modal-special" class="modal-backdrop">
       <div class="modal-dialog glass-dialog text-center">
-        <div class="special-icon" id="special-icon">?덌툘</div>
-        <h2 id="special-title">?멸퀎?ы뻾 李ъ뒪!</h2>
-        <p id="special-desc">?ㅼ쓬 李⑤????먰븯??移??대뵒???먯쑀濡?쾶 ?좎븘媛????덉뒿?덈떎.</p>
-        <button class="btn btn-primary mt-4" id="btn-special-confirm">?뺤씤</button>
+        <div class="special-icon" id="special-icon">✈️</div>
+        <h2 id="special-title">세계여행 찬스!</h2>
+        <p id="special-desc">다음 차례에 원하는 칸 어디든 자유롭게 날아갈 수 있습니다.</p>
+        <button class="btn btn-primary mt-4" id="btn-special-confirm">확인</button>
       </div>
     </div>
 
-    <!-- D. 理쒖쥌 ?밸━ 寃곌낵 諛쒗몴 紐⑤떖 -->
+    <!-- D. 최종 승리 결과 발표 모달 -->
     <div id="modal-victory" class="modal-backdrop">
       <div class="modal-dialog glass-dialog victory-dialog">
         <div class="victory-header">
-          <div class="trophy-icon">?룇</div>
-          <h2>?멸퀎 ?먰뿕 ?먯젙 ?꾨즺!</h2>
-          <p>紐⑤뱺 移몄쓽 ?먰뿕???앸궗?듬땲?? ?곴킅???뱀옄瑜?諛쒗몴?⑸땲??</p>
+          <div class="trophy-icon">🏆</div>
+          <h2>세계 탐험 원정 완료!</h2>
+          <p>모든 칸의 탐험이 끝났습니다. 영광의 승자를 발표합니다!</p>
         </div>
 
         <div class="podium-section" id="victory-podium">
-          <!-- 1?? 2?? 3???쒖긽? JS ?뚮뜑留?-->
+          <!-- 1위, 2위, 3위 시상대 JS 렌더링 -->
         </div>
 
         <div class="victory-stats-table" id="victory-stats-table">
-          <!-- ?뚮젅?댁뼱蹂??먮졊 移??? 移대뱶 ?띾뱷 ??-->
+          <!-- 플레이어별 점령 칸 수, 카드 획득 수 -->
         </div>
 
         <div class="modal-footer-actions">
-          <button class="btn btn-primary btn-large" id="btn-victory-restart">?덈줈??寃뚯엫 ?쒖옉 ??</button>
-          <button class="btn btn-secondary btn-large hidden" id="btn-victory-class-return">?룶 ?숆툒 ?湲곗떎濡??뚯븘媛湲?/button>
+          <button class="btn btn-primary btn-large" id="btn-victory-restart">새로운 게임 시작 🚀</button>
+          <button class="btn btn-secondary btn-large hidden" id="btn-victory-class-return">🏫 학급 대기실로 돌아가기</button>
         </div>
       </div>
     </div>
 
-    <!-- ?뚮┝ ?좎뒪??硫붿떆吏 -->
+    <!-- 알림 토스트 메시지 -->
     <div id="toast-container" class="toast-container"></div>
 
   </div>
 
-  <!-- 硫붿씤 ?ㅽ겕由쏀듃 紐⑤뱢 濡쒕뱶 -->
+  <!-- 메인 스크립트 모듈 로드 -->
   <script type="module" src="js/app.js?v=20261003_v31"></script>
 </body>
 </html>
