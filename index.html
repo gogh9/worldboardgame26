@@ -29,6 +29,10 @@
             <span class="lobby-logo-icon">🌍</span>
             <h2>세계여행 말판놀이 - 탐험 방 선택</h2>
           </div>
+          <div class="lobby-header-actions">
+            <button class="btn btn-sm btn-outline" id="btn-sound-toggle" title="사운드 켜기/끄기">🔊</button>
+            <button class="btn btn-sm btn-outline" id="btn-open-guide-lobby" title="도감 & 규칙">📜 도감</button>
+          </div>
         </div>
 
         <!-- 1) 로비 메인: 방 목록 & 방 만들기 상단 바 -->
@@ -76,6 +80,17 @@
 
         <!-- 방 생성/입장 후: 플레이어 목록 & 준비 방 -->
         <div id="lobby-room-section" class="lobby-subview hidden">
+          <div class="lobby-room-header-bar">
+            <div class="room-code-tag-wrap">
+              <span class="room-code-lbl">방 코드:</span>
+              <span class="room-code-val" id="disp-room-code">------</span>
+            </div>
+            <div class="room-header-btns">
+              <button class="btn btn-sm btn-outline" id="btn-copy-code" title="방 코드 복사">📋 코드 복사</button>
+              <button class="btn btn-sm btn-outline" id="btn-copy-link" title="초대 링크 복사">🔗 초대 링크</button>
+            </div>
+          </div>
+
           <!-- 플레이어 슬롯 4개 -->
           <div class="players-slot-grid" id="lobby-player-slots">
             <!-- JS 동적 렌더링 -->

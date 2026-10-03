@@ -148,7 +148,9 @@ export class HybridNetworkManager {
       };
 
       this.startRoomHeartbeat();
-      this.onStatus({ type: 'HOST_READY', roomCode: code, peerId: this.myId });
+      if (this.onStatus) {
+        this.onStatus({ type: 'HOST_READY', roomCode: code, peerId: this.myId });
+      }
       resolve({ roomCode: code, peerId: this.myId });
     });
   }

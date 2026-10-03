@@ -135,21 +135,29 @@ class WorldGameApp {
       });
     }
 
-    document.getElementById('btn-game-guide').addEventListener('click', () => {
-      this.openModal(this.modalGuide);
-    });
+    const btnGameGuide = document.getElementById('btn-game-guide');
+    if (btnGameGuide) {
+      btnGameGuide.addEventListener('click', () => {
+        this.openModal(this.modalGuide);
+      });
+    }
 
-    document.getElementById('btn-close-guide').addEventListener('click', () => {
-      this.closeModal(this.modalGuide);
-    });
+    const btnCloseGuide = document.getElementById('btn-close-guide');
+    if (btnCloseGuide) {
+      btnCloseGuide.addEventListener('click', () => {
+        this.closeModal(this.modalGuide);
+      });
+    }
 
     // 2. Sound Toggle
     const btnSound = document.getElementById('btn-sound-toggle');
-    btnSound.addEventListener('click', () => {
-      const isEnabled = sound.toggleSound();
-      btnSound.textContent = isEnabled ? '🔊' : '🔇';
-      this.showToast(isEnabled ? '사운드가 켜졌습니다.' : '사운드가 음소거되었습니다.');
-    });
+    if (btnSound) {
+      btnSound.addEventListener('click', () => {
+        const isEnabled = sound.toggleSound();
+        btnSound.textContent = isEnabled ? '🔊' : '🔇';
+        this.showToast(isEnabled ? '사운드가 켜졌습니다.' : '사운드가 음소거되었습니다.');
+      });
+    }
 
     // 3. Lobby & Local Back Navigation
     const btnLobbyBack = document.getElementById('btn-lobby-back');
@@ -223,20 +231,26 @@ class WorldGameApp {
     }
 
     // 7. Victory Modal
-    document.getElementById('btn-victory-restart').addEventListener('click', () => {
-      this.closeModal(this.modalVictory);
-      if (this.mode === 'LOCAL') {
-        this.startLocalGame();
-      } else if (this.isHost()) {
-        this.network.send('RESTART_GAME', {});
-        this.resetGameState();
-      }
-    });
+    const btnVictoryRestart = document.getElementById('btn-victory-restart');
+    if (btnVictoryRestart) {
+      btnVictoryRestart.addEventListener('click', () => {
+        this.closeModal(this.modalVictory);
+        if (this.mode === 'LOCAL') {
+          this.startLocalGame();
+        } else if (this.isHost()) {
+          this.network.send('RESTART_GAME', {});
+          this.resetGameState();
+        }
+      });
+    }
 
-    document.getElementById('btn-victory-lobby').addEventListener('click', () => {
-      this.closeModal(this.modalVictory);
-      this.leaveRoom();
-    });
+    const btnVictoryLobby = document.getElementById('btn-victory-lobby');
+    if (btnVictoryLobby) {
+      btnVictoryLobby.addEventListener('click', () => {
+        this.closeModal(this.modalVictory);
+        this.leaveRoom();
+      });
+    }
   }
 
   // URL Query Parameter ?room=XXXXXX 처리

@@ -486,7 +486,7 @@ export const PLAYER_PROFILES = [
     colorHex: '#10b981',
     glowHex: 'rgba(16, 185, 129, 0.6)',
     bgGradient: 'linear-gradient(135deg, #10b981, #047857)',
-    avatar: '🦜',
+    avatar: '🦎',
     pawnIcon: '🟢'
   },
   {
