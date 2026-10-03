@@ -245,8 +245,6 @@ export class ClassModeManager {
     // 1. 헤더 정보
     const dispClassName = document.getElementById('teacher-disp-class-name');
     if (dispClassName) dispClassName.textContent = this.className;
-    const dispClassCode = document.getElementById('teacher-disp-class-code');
-    if (dispClassCode) dispClassCode.textContent = this.classCode;
     const dispClassLink = document.getElementById('teacher-disp-class-link');
     if (dispClassLink) dispClassLink.textContent = this.getClassJoinUrl();
 
@@ -617,9 +615,6 @@ export class ClassModeManager {
       if (joinView) joinView.classList.remove('hidden');
       if (waitView) waitView.classList.add('hidden');
 
-      const dispCode = document.getElementById('student-join-code-tag');
-      if (dispCode) dispCode.textContent = this.classCode || '코드 입력 필요';
-
       const inputName = document.getElementById('input-student-name');
       if (inputName) {
         inputName.focus();
@@ -634,11 +629,6 @@ export class ClassModeManager {
     }
     localStorage.setItem('worldgame_nickname', this.studentName);
 
-    const inputCode = document.getElementById('input-student-class-code');
-    if (!this.classCode && inputCode && inputCode.value) {
-      this.classCode = inputCode.value.trim().toUpperCase();
-    }
-
     if (!this.classCode) {
       const params = new URLSearchParams(window.location.search);
       const qCode = params.get('class');
@@ -646,7 +636,7 @@ export class ClassModeManager {
     }
 
     if (!this.classCode) {
-      this.app.showToast('⚠️ 학급 코드를 입력해주세요!');
+      this.app.showToast('⚠️ 초대 링크를 통해 접속해주세요!');
       return;
     }
 

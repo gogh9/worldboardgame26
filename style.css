@@ -2458,46 +2458,31 @@ html.is-class-mode #screen-class-student {
   margin-top: 4px;
 }
 
-.class-code-box {
-  background: rgba(99, 102, 241, 0.15);
-  border: 1.5px solid #6366f1;
-  border-radius: var(--radius-md);
-  padding: 8px 18px;
-  text-align: center;
-}
-
-.class-code-box .code-title {
-  font-size: 0.75rem;
-  color: #a5b4fc;
-  text-transform: uppercase;
-}
-
-.class-code-box .code-big {
-  font-size: 1.6rem;
-  font-weight: 900;
-  color: #ffffff;
-  letter-spacing: 2px;
-}
-
 .class-link-copy-wrap {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  background: rgba(0, 0, 0, 0.25);
-  padding: 8px 12px;
+  align-items: center;
+  gap: 12px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1.5px solid #6366f1;
+  padding: 10px 16px;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
 }
 
 .class-link-copy-wrap .link-label {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #a5b4fc;
+  white-space: nowrap;
 }
 
 .class-link-copy-wrap .link-url-text {
-  font-size: 0.8rem;
-  color: #38bdf8;
-  max-width: 220px;
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  max-width: 280px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

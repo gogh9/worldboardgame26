@@ -16,7 +16,7 @@
   <!-- Canvas Confetti for Victory Celebration -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=20261003_v24">
+  <link rel="stylesheet" href="style.css?v=20261003_v25">
   <script>
     (function() {
       try {
@@ -152,13 +152,8 @@
               </div>
             </div>
             
-            <div class="class-code-box">
-              <div class="code-title">학생 접속 코드</div>
-              <div class="code-big" id="teacher-disp-class-code">C-XXXX</div>
-            </div>
-
             <div class="class-link-copy-wrap">
-              <div class="link-label">학생 접속 URL</div>
+              <div class="link-label">학생 초대 링크</div>
               <div class="link-url-text" id="teacher-disp-class-link">https://...</div>
               <button class="btn btn-sm btn-secondary" id="btn-copy-class-link">📋 학생 초대 링크 복사</button>
             </div>
@@ -224,11 +219,6 @@
             <p class="setup-sub-desc">선생님이 개설한 학급 대기실에 입장하여 모둠 배정을 기다립니다.</p>
             
             <form id="form-student-join" class="class-setup-form">
-              <div class="form-group">
-                <label>학급 코드</label>
-                <div class="class-code-badge" id="student-join-code-tag">C-XXXX</div>
-                <input type="text" id="input-student-class-code" class="hidden" placeholder="학급 코드 입력">
-              </div>
               <div class="form-group">
                 <label for="input-student-name">내 이름 / 번호</label>
                 <input type="text" id="input-student-name" maxlength="10" placeholder="예: 3번 김민준" required autofocus>
@@ -460,6 +450,6 @@
   </div>
 
   <!-- 메인 스크립트 모듈 로드 -->
-  <script type="module" src="js/app.js?v=20261003_v24"></script>
+  <script type="module" src="js/app.js?v=20261003_v25"></script>
 </body>
 </html>
