@@ -3379,60 +3379,109 @@ body {
   letter-spacing: 1px;
 }
 
-/* 이름 입력창 + 두 버튼: 높이/글자 크기 통일 */
-.lobby-top-controls .nickname-box input,
-.lobby-top-controls .lobby-action-buttons .btn {
-  height: 52px;
-  padding-top: 0;
-  padding-bottom: 0;
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1;
-  box-sizing: border-box;
-}
-.lobby-top-controls .nickname-box input { letter-spacing: 0; }
-
-/* 이름 입력: 한 줄로 길게 + 가운데 정렬, 버튼은 아래 줄 */
-.lobby-top-controls { flex-wrap: wrap; }
-.lobby-top-controls .nickname-box {
-  flex: 1 1 100%;
-  max-width: 100%;
-}
-.lobby-top-controls .nickname-box label { white-space: nowrap; }
-.lobby-top-controls .nickname-box input {
-  width: 100%;
-  text-align: center;
-}
-.lobby-top-controls .nickname-box input::placeholder { text-align: center; }
-.lobby-top-controls .lobby-action-buttons { flex: 1 1 100%; }
-
-/* 이름 입력 + 방 만들기 + 교사용 모드: 한 줄 배치 */
+/* 로비 상단 컨트롤 바 (이름 입력 + 방 만들기 + 교사용 모드 한 줄 배치) */
 .lobby-top-controls {
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 10px;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  background: #181818 !important;
+  padding: 16px 20px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
 }
+
 .lobby-top-controls .nickname-box {
-  flex: 1 1 0;
-  min-width: 0;
-  max-width: none;
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  display: flex !important;
+  align-items: center !important;
+  position: relative !important;
 }
+
 .lobby-top-controls .nickname-box label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
+  display: none !important;
 }
+
+.lobby-top-controls .nickname-box input {
+  width: 100% !important;
+  height: 52px !important;
+  background: #121212 !important;
+  color: #ffffff !important;
+  border: 2px solid rgba(255, 255, 255, 0.85) !important;
+  border-radius: 9999px !important;
+  padding: 0 20px !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+  letter-spacing: 0 !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.lobby-top-controls .nickname-box input:focus {
+  border-color: #ffffff !important;
+  box-shadow: 0 0 0 1px #ffffff !important;
+}
+
+.lobby-top-controls .nickname-box input::placeholder {
+  color: #b3b3b3 !important;
+  text-align: center !important;
+  font-weight: 600 !important;
+}
+
 .lobby-top-controls .lobby-action-buttons {
-  flex: 0 0 auto;
-  flex-wrap: nowrap;
-  gap: 10px;
+  flex: 0 0 auto !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 12px !important;
 }
+
 .lobby-top-controls .lobby-action-buttons .btn {
-  flex: 0 0 auto;
-  padding: 0 22px;
-  white-space: nowrap;
+  height: 52px !important;
+  padding: 0 24px !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.8px !important;
+  border-radius: 9999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+  text-transform: none !important;
+}
+
+.lobby-top-controls .btn-create-action {
+  background: #1ed760 !important;
+  color: #000000 !important;
+  border: none !important;
+}
+
+.lobby-top-controls .btn-create-action:hover {
+  background: #3be477 !important;
+  transform: scale(1.03) !important;
+}
+
+.lobby-top-controls .btn-class-mode {
+  background: #1f1f1f !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.lobby-top-controls .btn-class-mode:hover {
+  background: #2a2a2a !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: scale(1.03) !important;
 }
 
 /* 단어 단위로 줄바꿈 (단어 중간에서 끊기지 않게) */
@@ -3455,4 +3504,3 @@ body {
   width: 100% !important;
   text-align: center !important;
 }
-
