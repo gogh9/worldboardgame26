@@ -987,7 +987,7 @@ class WorldGameApp {
         <div class="cell-owner-stamp" id="cell-owner-${cell.index}"></div>
       `;
 
-      if (cell.ownerId !== null) {
+      if (cell.ownerId !== null && cell.type === 'quiz') {
         const owner = this.state.players.find(p => p.id === cell.ownerId);
         if (owner) {
           const prof = PLAYER_PROFILES[owner.charId] || PLAYER_PROFILES[0];
@@ -1285,19 +1285,19 @@ class WorldGameApp {
       return;
     }
 
-    // 5. 이미 점령된 칸
+    // 5. 지형/기후 보너스 카드 미션 (점령되지 않고 누구나 도착할 때마다 계속 도전하여 점수 획득!)
+    if (cell.type === 'terrain_card' || cell.type === 'climate_card') {
+      this.openCardModal(cell.type, playerIdx, cellIndex);
+      return;
+    }
+
+    // 6. 이미 점령된 칸 (일반 퀴즈 칸만 점령됨)
     if (cell.ownerId !== null) {
       const owner = this.state.players.find(p => p.id === cell.ownerId);
       const ownerName = owner ? owner.name : '다른 플레이어';
       this.addLog(`이미 ${ownerName}님이 점령한 칸입니다. 다음 턴으로 넘어갑니다.`);
       this.showToast(`이미 ${ownerName}님이 점령한 칸입니다.`);
       if (this.isMyTurn()) this.advanceTurn();
-      return;
-    }
-
-    // 6. 지형/기후 카드 미션 (언제나 팝업 표시!)
-    if (cell.type === 'terrain_card' || cell.type === 'climate_card') {
-      this.openCardModal(cell.type, playerIdx, cellIndex);
       return;
     }
 
@@ -1649,8 +1649,10 @@ class WorldGameApp {
 
     if (isCorrect) {
       sound.playCorrect();
-      this.claimCell(playerIdx, cellIndex);
-      this.addLog(`🌟 ${player.name}님이 [${cardData.name}] 카드 미션을 맞혀 점령했습니다!`, 'correct');
+      player.conqueredCount = (player.conqueredCount || 0) + 1;
+      this.updateGameUI();
+      this.checkGameVictory();
+      this.addLog(`🌟 ${player.name}님이 [${cardData.name}] 카드 미션 정답('${cardData.answer}')을 맞혀 탐험 점수 1점을 획득했습니다! (총 ${player.conqueredCount}점)`, 'correct');
     } else {
       sound.playWrong();
       this.addLog(`❌ ${player.name}님이 카드 미션 오답('${userText}')을 제출했습니다. (정답: ${cardData.answer})`, 'wrong');
@@ -1662,7 +1664,7 @@ class WorldGameApp {
 
     if (feedbackTitle) {
       feedbackTitle.textContent = isCorrect
-        ? `정답입니다! ('${cardData.answer}') 카드 칸을 점령했습니다.`
+        ? `정답입니다! ('${cardData.answer}') 탐험 점수 1점을 획득했습니다! ⭐`
         : `아쉽네요! 입력: '${userText}' ➔ 정답: '${cardData.answer}'`;
     }
     if (feedbackDesc) feedbackDesc.textContent = cardData.description;
@@ -1709,18 +1711,25 @@ class WorldGameApp {
   handleRemoteSubmitAnswer(payload) {
     const player = this.state.players[payload.playerIdx];
     const cell = this.state.cells[payload.cellIndex];
+    const isCard = payload.type === 'CARD';
 
     if (payload.isCorrect) {
       sound.playCorrect();
-      this.claimCell(payload.playerIdx, payload.cellIndex);
-      this.addLog(`🎉 ${player ? player.name : '플레이어'}님이 [${cell ? cell.title : '미션'}] 정답을 맞혀 점령했습니다!`, 'correct');
+      if (isCard) {
+        if (player) player.conqueredCount = (player.conqueredCount || 0) + 1;
+        this.updateGameUI();
+        this.checkGameVictory();
+        this.addLog(`🌟 ${player ? player.name : '플레이어'}님이 [${cell ? cell.title : '카드 미션'}] 정답('${payload.correctAnswer}')을 맞혀 탐험 점수 1점을 획득했습니다!`, 'correct');
+      } else {
+        this.claimCell(payload.playerIdx, payload.cellIndex);
+        this.addLog(`🎉 ${player ? player.name : '플레이어'}님이 [${cell ? cell.title : '미션'}] 정답을 맞혀 점령했습니다!`, 'correct');
+      }
     } else {
       sound.playWrong();
       this.addLog(`❌ ${player ? player.name : '플레이어'}님이 아쉽게 문제를 틀렸습니다. (정답: ${payload.correctAnswer})`, 'wrong');
     }
 
     // 모달 결과 화면 갱신
-    const isCard = payload.type === 'CARD';
     const targetModal = isCard ? this.modalCard : this.modalQuiz;
     const feedbackBox = document.getElementById(isCard ? 'card-feedback-box' : 'quiz-feedback-box');
     const feedbackTitle = document.getElementById(isCard ? 'card-feedback-title' : 'feedback-title');
@@ -1732,7 +1741,7 @@ class WorldGameApp {
     if (feedbackBox) {
       if (feedbackTitle) {
         feedbackTitle.textContent = payload.isCorrect
-          ? `🎉 ${player ? player.name : '플레이어'}님 정답! ('${payload.correctAnswer}') 칸을 점령했습니다.`
+          ? (isCard ? `🎉 ${player ? player.name : '플레이어'}님 정답! ('${payload.correctAnswer}') 탐험 점수 1점 획득! ⭐` : `🎉 ${player ? player.name : '플레이어'}님 정답! ('${payload.correctAnswer}') 칸을 점령했습니다.`)
           : `아쉽네요! 입력: '${payload.userText}' ➔ 정답: '${payload.correctAnswer}'`;
       }
       if (feedbackDesc) {
@@ -1859,7 +1868,7 @@ class WorldGameApp {
           </div>
         </div>
         <div class="card-stats-pills">
-          <span class="stat-pill conquer" title="점령한 칸 수">🚩 <strong>${p.conqueredCount || 0}</strong></span>
+          <span class="stat-pill conquer" title="탐험 점수 (점령 및 카드 미션 성공)">⭐ <strong>${p.conqueredCount || 0}점</strong></span>
         </div>
         ${p.isIslandSkip ? '<span class="island-status-badge">🏝️ 무인도</span>' : ''}
       `;
@@ -1874,8 +1883,8 @@ class WorldGameApp {
   }
 
   checkGameVictory() {
-    const conquerableCells = this.state.cells.filter(c => c.type === 'quiz' || c.type.includes('card'));
-    const allConquered = conquerableCells.every(c => c.ownerId !== null);
+    const quizCells = this.state.cells.filter(c => c.type === 'quiz');
+    const allConquered = quizCells.length > 0 && quizCells.every(c => c.ownerId !== null);
 
     if (allConquered || this.state.round > 15) {
       this.triggerGameOver();

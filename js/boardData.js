@@ -218,7 +218,7 @@ export const BOARD_CELLS = [
     badge: '🏔️',
     category: '지형 미션',
     region: '알프스/산악',
-    description: '지형 카드를 뒤집어 사진이 어떤 지형인지 맞춰보세요!',
+    description: '도착할 때마다 카드를 뽑아 지형을 맞히면 점수를 획득합니다! (점령되지 않는 보너스 카드 칸)',
     color: '#10b981'
   },
   {
@@ -258,7 +258,7 @@ export const BOARD_CELLS = [
     badge: '☀️',
     category: '기후 미션',
     region: '아시아/초원',
-    description: '기후 카드를 뒤집어 해당 사진의 기후나 생활 모습을 맞춰보세요!',
+    description: '도착할 때마다 카드를 뽑아 기후를 맞히면 점수를 획득합니다! (점령되지 않는 보너스 카드 칸)',
     color: '#f59e0b'
   },
   {
@@ -370,7 +370,7 @@ export const BOARD_CELLS = [
     badge: '🌋',
     category: '지형 미션',
     region: '환태평양/해양',
-    description: '지형 카드를 뒤집어 사진이 어떤 지형인지 맞춰보세요!',
+    description: '도착할 때마다 카드를 뽑아 지형을 맞히면 점수를 획득합니다! (점령되지 않는 보너스 카드 칸)',
     color: '#10b981'
   },
   {
@@ -395,7 +395,7 @@ export const BOARD_CELLS = [
     badge: '🌧️',
     category: '기후 미션',
     region: '인도양/아프리카',
-    description: '기후 카드를 뒤집어 해당 사진의 기후나 가옥을 맞춰보세요!',
+    description: '도착할 때마다 카드를 뽑아 기후를 맞히면 점수를 획득합니다! (점령되지 않는 보너스 카드 칸)',
     color: '#f59e0b'
   },
   {
