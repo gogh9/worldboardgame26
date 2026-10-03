@@ -3434,3 +3434,13 @@ body {
   padding: 0 22px;
   white-space: nowrap;
 }
+
+/* 단어 단위로 줄바꿈 (단어 중간에서 끊기지 않게) */
+.btn,
+.btn span,
+.class-setup-card h2,
+.setup-sub-desc,
+.setup-form-actions .btn {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
