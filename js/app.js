@@ -1478,7 +1478,7 @@ class WorldGameApp {
     const btnCardSubmit = document.getElementById('btn-card-submit');
 
     cardInputAnswer.value = '';
-    cardInputAnswer.placeholder = `정답을 입력하세요 (${cardData.answer.length === 1 ? '○ 1글자' : '○○ 2글자'})`;
+    cardInputAnswer.placeholder = '정답을 입력하세요';
     cardInputAnswer.disabled = false;
     btnCardSubmit.disabled = false;
 
