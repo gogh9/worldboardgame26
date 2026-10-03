@@ -1071,16 +1071,18 @@ button, input {
   filter: contrast(1.04) saturate(1.08);
 }
 
-/* 상단 좌측: 탐험가 현황 플로팅 바 */
+/* 상단 좌측: 탐험가 현황 패널 (좌측 영역을 채우는 대형 카드 리스트) */
 .map-floating-players {
   position: absolute;
-  top: 8px;
+  top: 10px;
+  bottom: 10px;
   left: 10px;
+  width: 175px;
   display: flex;
-  gap: 6px;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
   z-index: 20;
-  max-width: 65%;
-  flex-wrap: wrap;
   pointer-events: auto;
 }
 
@@ -1107,60 +1109,61 @@ button, input {
 }
 
 .player-card {
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1.5px solid rgba(255, 255, 255, 0.15);
-  border-left: 3.5px solid var(--card-color, #ef4444);
-  border-radius: 6px;
-  padding: 3px 7px;
-  display: inline-flex;
+  background: rgba(15, 23, 42, 0.90);
+  backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  border-left: 4px solid var(--card-color, #ef4444);
+  border-radius: 8px;
+  padding: 7px 10px;
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 5px;
+  gap: 8px;
   position: relative;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  transition: all 0.22s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.65);
   box-sizing: border-box;
+  width: 100%;
 }
 
 .player-card:hover {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.35);
   border-left-color: var(--card-color, #ef4444);
 }
 
 .player-card.active-turn {
   border-color: var(--card-color, #ef4444);
   border-left-color: var(--card-color, #ef4444);
-  box-shadow: 0 0 12px var(--card-glow, rgba(239, 68, 68, 0.6)), 0 2px 8px rgba(0, 0, 0, 0.7);
-  background: rgba(30, 41, 59, 0.95);
-  transform: scale(1.04);
+  box-shadow: 0 0 16px var(--card-glow, rgba(239, 68, 68, 0.7)), 0 4px 14px rgba(0, 0, 0, 0.8);
+  background: rgba(30, 41, 59, 0.96);
+  transform: scale(1.03);
 }
 
 .card-left {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
   min-width: 0;
 }
 
 .card-avatar-wrap {
   position: relative;
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1.5px solid var(--card-color, #ef4444);
+  background: rgba(15, 23, 42, 0.95);
+  border: 2px solid var(--card-color, #ef4444);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.88rem;
+  font-size: 1.15rem;
   flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 }
 
 .turn-pulse-ring {
   position: absolute;
-  inset: -2px;
+  inset: -3px;
   border-radius: 50%;
   border: 2px solid var(--card-color, #ef4444);
   animation: turnRingPulse 1.6s infinite;
@@ -1176,23 +1179,23 @@ button, input {
 .card-info {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 1px;
   min-width: 0;
   text-align: left;
 }
 
 .card-player-name {
   font-weight: 800;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   color: #ffffff;
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   white-space: nowrap;
 }
 
 .me-tag {
-  font-size: 0.50rem;
+  font-size: 0.52rem;
   padding: 1px 3px;
   border-radius: 3px;
   background: #38bdf8;
@@ -1202,7 +1205,10 @@ button, input {
 }
 
 .card-player-role {
-  display: none;
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 600;
+  opacity: 0.9;
 }
 
 .card-stats-pills {
@@ -1213,16 +1219,16 @@ button, input {
 }
 
 .stat-pill {
-  font-size: 0.60rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  padding: 1px 4px;
+  padding: 2px 6px;
   border-radius: var(--radius-sm);
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: #cbd5e1;
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
 }
 
 .stat-pill strong {
@@ -1694,10 +1700,11 @@ button, input {
    ========================================================================== */
 .dice-widget {
   position: absolute;
-  bottom: 12px;
-  left: 12px;
+  bottom: 16px;
+  left: calc(50% + 45px);
+  transform: translateX(-50%);
   background: radial-gradient(circle at center, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
-  border: 2px solid rgba(255, 255, 255, 0.18);
+  border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 14px;
   padding: 8px;
   display: flex;
@@ -1706,7 +1713,7 @@ button, input {
   cursor: pointer;
   transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
   user-select: none;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.65);
   z-index: 30;
 }
 
@@ -1719,7 +1726,7 @@ button, input {
 }
 
 .dice-widget.my-turn-active:hover {
-  transform: scale(1.08);
+  transform: translateX(-50%) scale(1.08);
   box-shadow: 0 0 35px rgba(251, 191, 36, 0.9), inset 0 0 20px rgba(251, 191, 36, 0.4);
 }
 
@@ -1733,12 +1740,12 @@ button, input {
   0%, 100% {
     box-shadow: 0 0 18px rgba(251, 191, 36, 0.5), inset 0 0 10px rgba(251, 191, 36, 0.15);
     border-color: rgba(251, 191, 36, 0.6);
-    transform: scale(1);
+    transform: translateX(-50%) scale(1);
   }
   50% {
     box-shadow: 0 0 30px rgba(251, 191, 36, 0.9), inset 0 0 18px rgba(251, 191, 36, 0.35);
     border-color: #f59e0b;
-    transform: scale(1.04);
+    transform: translateX(-50%) scale(1.05);
   }
 }
 
