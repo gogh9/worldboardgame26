@@ -16,7 +16,17 @@
   <!-- Canvas Confetti for Victory Celebration -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=20261003_v23">
+  <link rel="stylesheet" href="style.css?v=20261003_v24">
+  <script>
+    (function() {
+      try {
+        const p = new URLSearchParams(window.location.search);
+        if (p.get('class')) {
+          document.documentElement.classList.add('is-class-mode');
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <div id="app" class="app-container">
@@ -241,7 +251,10 @@
                   <span class="waiting-teacher-tag" id="student-disp-teacher-name">선생님의 대기실</span>
                 </div>
               </div>
-              <button class="btn btn-sm btn-outline" id="btn-class-student-leave">나가기</button>
+              <div class="waiting-header-actions">
+                <button class="btn btn-sm btn-outline" id="btn-class-student-rename">✏️ 이름 변경</button>
+                <button class="btn btn-sm btn-outline" id="btn-class-student-leave">나가기</button>
+              </div>
             </div>
 
             <!-- 내 환영 배너 -->
@@ -447,6 +460,6 @@
   </div>
 
   <!-- 메인 스크립트 모듈 로드 -->
-  <script type="module" src="js/app.js?v=20261003_v23"></script>
+  <script type="module" src="js/app.js?v=20261003_v24"></script>
 </body>
 </html>

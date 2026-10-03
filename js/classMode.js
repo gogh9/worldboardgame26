@@ -98,6 +98,22 @@ export class ClassModeManager {
       });
     }
 
+    // 5-1. 학생: 이름 변경
+    const btnStudentRename = document.getElementById('btn-class-student-rename');
+    if (btnStudentRename) {
+      btnStudentRename.addEventListener('click', () => {
+        const newName = prompt('변경할 이름(또는 번호+이름)을 입력하세요:', this.studentName || '');
+        if (newName && newName.trim()) {
+          this.studentName = newName.trim();
+          localStorage.setItem('worldgame_nickname', this.studentName);
+          const dispMyName = document.getElementById('student-disp-my-name');
+          if (dispMyName) dispMyName.textContent = this.studentName;
+          this.sendStudentPing();
+          this.app.showToast(`✏️ 이름이 [${this.studentName}]으로 변경되었습니다.`);
+        }
+      });
+    }
+
     // 6. 교사: 학생 접속 링크 복사
     const btnCopyClassLink = document.getElementById('btn-copy-class-link');
     if (btnCopyClassLink) {
@@ -589,20 +605,44 @@ export class ClassModeManager {
     this.studentId = 'stu_' + Math.random().toString(36).substring(2, 9);
 
     this.app.switchScreen('classStudent');
-    const joinView = document.getElementById('class-student-join-view');
-    const waitView = document.getElementById('class-student-waiting-view');
-    if (joinView) joinView.classList.remove('hidden');
-    if (waitView) waitView.classList.add('hidden');
 
-    const dispCode = document.getElementById('student-join-code-tag');
-    if (dispCode) dispCode.textContent = this.classCode || '코드 입력 필요';
+    // 기기 로컬에 저장된 닉네임이 있는 경우 즉시 학급 대기실로 다이렉트 입장
+    const savedNick = localStorage.getItem('worldgame_nickname');
+    if (savedNick && savedNick.trim()) {
+      this.joinAsStudent(savedNick.trim());
+    } else {
+      // 닉네임이 없는 경우 이름 입력 폼 노출
+      const joinView = document.getElementById('class-student-join-view');
+      const waitView = document.getElementById('class-student-waiting-view');
+      if (joinView) joinView.classList.remove('hidden');
+      if (waitView) waitView.classList.add('hidden');
+
+      const dispCode = document.getElementById('student-join-code-tag');
+      if (dispCode) dispCode.textContent = this.classCode || '코드 입력 필요';
+
+      const inputName = document.getElementById('input-student-name');
+      if (inputName) {
+        inputName.focus();
+      }
+    }
   }
 
   joinAsStudent(studentName) {
-    this.studentName = studentName;
+    this.studentName = (studentName || '').trim();
+    if (!this.studentName) {
+      this.studentName = '탐험가' + Math.floor(Math.random() * 89 + 10);
+    }
+    localStorage.setItem('worldgame_nickname', this.studentName);
+
     const inputCode = document.getElementById('input-student-class-code');
-    if (!this.classCode && inputCode) {
+    if (!this.classCode && inputCode && inputCode.value) {
       this.classCode = inputCode.value.trim().toUpperCase();
+    }
+
+    if (!this.classCode) {
+      const params = new URLSearchParams(window.location.search);
+      const qCode = params.get('class');
+      if (qCode) this.classCode = qCode.trim().toUpperCase();
     }
 
     if (!this.classCode) {

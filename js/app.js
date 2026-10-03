@@ -35,10 +35,15 @@ class WorldGameApp {
     this.initEvents();
     this.initLobbyNetwork();
     
-    // 기본 시작 화면을 방 선택 로비로 바로 진입
-    this.switchScreen('lobby');
-    this.setupLobbyView(false);
-    this.checkUrlParams();
+    // URL에 ?class= 파라미터가 있으면 학급 대기실로 즉시 진입, 없으면 기본 방 선택 로비 진입
+    const params = new URLSearchParams(window.location.search);
+    const classCode = params.get('class');
+    if (classCode && this.classMode) {
+      this.classMode.openStudentEntry(classCode);
+    } else {
+      this.switchScreen('lobby');
+      this.setupLobbyView(false);
+    }
   }
 
   // 닉네임 로컬스토리지 영구 저장 및 자동 로드

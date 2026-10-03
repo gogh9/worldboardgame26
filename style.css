@@ -94,6 +94,15 @@ button, input {
   opacity: 1;
 }
 
+/* 학급 초대 링크(?class=CODE) 접속 시 로비 화면 노출 방지 및 학생 대기실 즉시 활성화 */
+html.is-class-mode #screen-lobby {
+  display: none !important;
+}
+html.is-class-mode #screen-class-student {
+  display: flex !important;
+  opacity: 1 !important;
+}
+
 /* Utility Components & Buttons */
 .btn {
   display: inline-flex;
