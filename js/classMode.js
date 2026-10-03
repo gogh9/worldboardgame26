@@ -604,12 +604,12 @@ export class ClassModeManager {
 
     this.app.switchScreen('classStudent');
 
-    // 기기 로컬에 저장된 닉네임이 있는 경우 즉시 학급 대기실로 다이렉트 입장
+    // 기기 로컬에 저장된 이름이 있는 경우 즉시 학급 대기실로 다이렉트 입장
     const savedNick = localStorage.getItem('worldgame_nickname');
     if (savedNick && savedNick.trim()) {
       this.joinAsStudent(savedNick.trim());
     } else {
-      // 닉네임이 없는 경우 이름 입력 폼 노출
+      // 이름이 없는 경우 이름 입력 폼 노출
       const joinView = document.getElementById('class-student-join-view');
       const waitView = document.getElementById('class-student-waiting-view');
       if (joinView) joinView.classList.remove('hidden');

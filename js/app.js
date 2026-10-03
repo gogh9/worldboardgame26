@@ -46,7 +46,7 @@ class WorldGameApp {
     }
   }
 
-  // 닉네임 로컬스토리지 영구 저장 및 자동 로드
+  // 이름 로컬스토리지 영구 저장 및 자동 로드
   initNickname() {
     const savedNick = localStorage.getItem('worldgame_nickname');
     if (savedNick) {
@@ -642,7 +642,7 @@ class WorldGameApp {
             return;
           }
 
-          // 1-2. 동일한 닉네임으로 참가했던 기존 플레이어인지 확인 (중간 이탈자 완벽 재접속!)
+          // 1-2. 동일한 이름으로 참가했던 기존 플레이어인지 확인 (중간 이탈자 완벽 재접속!)
           const existingByName = this.state.players.find(p => p.name.trim().toLowerCase() === reqName.toLowerCase());
           if (existingByName) {
             existingByName.peerId = senderId;
@@ -657,7 +657,7 @@ class WorldGameApp {
           if (this.state.status === 'PLAYING') {
             const playerNames = this.state.players.map(p => `[${p.name}]`).join(', ');
             this.network.send('JOIN_DENIED', { 
-              message: `현재 게임이 진행 중인 방입니다.\n처음 참가하셨던 닉네임(${playerNames})으로 입력하시면 게임을 이어서 진행할 수 있습니다.` 
+              message: `현재 게임이 진행 중인 방입니다.\n처음 참가하셨던 이름(${playerNames})으로 입력하시면 게임을 이어서 진행할 수 있습니다.` 
             });
             return;
           }
@@ -719,7 +719,7 @@ class WorldGameApp {
           if (!wasInGame) {
             this.switchScreen('game');
             this.renderBoard();
-            this.showToast(`🎮 게임에 성공적으로 재접속했습니다! (닉네임: ${me ? me.name : '탐험가'})`);
+            this.showToast(`🎮 게임에 성공적으로 재접속했습니다! (이름: ${me ? me.name : '탐험가'})`);
             sound.playCorrect();
           }
           this.renderPawns();
@@ -750,7 +750,7 @@ class WorldGameApp {
             // 게임 진행 중일 때는 플레이어 슬롯과 진행 상태(말 위치, 점령 현황 등)를 영구 보존하여 재접속 가능하게 유지
             const target = this.state.players.find(p => p.peerId === senderId);
             if (target) {
-              this.addLog(`⚠️ [${target.name}] 님의 연결이 일시 중단되었습니다. (동일 닉네임으로 언제든 재접속 가능)`, 'system');
+              this.addLog(`⚠️ [${target.name}] 님의 연결이 일시 중단되었습니다. (동일 이름으로 언제든 재접속 가능)`, 'system');
               this.showToast(`${target.name}님의 연결이 일시 중단되었습니다.`);
             }
             this.broadcastState();

@@ -3359,3 +3359,22 @@ body {
   letter-spacing: 0.8px;
   white-space: nowrap;
 }
+
+/* 이름 입력창은 작게, 옆의 버튼 영역은 크게 */
+.lobby-top-controls .nickname-box {
+  flex: 0 0 150px;
+  flex-grow: 0;
+  max-width: 150px;
+}
+.lobby-top-controls .nickname-box input { padding: 10px 14px; font-size: 0.95rem; }
+.lobby-top-controls .lobby-action-buttons {
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 12px;
+}
+.lobby-top-controls .lobby-action-buttons .btn {
+  flex: 1 1 0;
+  padding: 16px 18px;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+}
