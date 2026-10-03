@@ -2128,14 +2128,15 @@ button, input {
 
 /* Card Photo Display Modal */
 .card-dialog {
-  max-width: 580px;
+  /* 카드 사진 폭(480px) + 좌우 패딩(28px x 2)에 맞춰 나머지 요소 폭을 카드와 통일 */
+  max-width: 536px;
 }
 
 .card-display-container {
   width: 100%;
   max-width: 480px;
   height: 240px;
-  margin: 0 auto 16px auto;
+  margin: 0 auto 14px auto;
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 3px solid #38bdf8;
