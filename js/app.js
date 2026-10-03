@@ -91,11 +91,8 @@ class WorldGameApp {
     this.gameModeTag = document.getElementById('game-mode-tag');
     
     // Dice Elements
+    this.diceWidget = document.getElementById('dice-widget');
     this.diceCube = document.getElementById('dice-cube');
-    this.diceResultText = document.getElementById('dice-result-text');
-    this.btnRollDice = document.getElementById('btn-roll-dice');
-    this.diceHintText = document.getElementById('dice-hint-text');
-    this.gameLogList = document.getElementById('game-log-list');
 
     // Modals
     this.modalQuiz = document.getElementById('modal-quiz');
@@ -213,8 +210,9 @@ class WorldGameApp {
     const btnStartLocalGame = document.getElementById('btn-start-local-game');
     if (btnStartLocalGame) btnStartLocalGame.addEventListener('click', () => this.startLocalGame());
 
-    // 6. Game Actions
-    if (this.btnRollDice) this.btnRollDice.addEventListener('click', () => this.handleRollDice());
+    // 6. Game Actions: 주사위 클릭 굴리기
+    if (this.diceWidget) this.diceWidget.addEventListener('click', () => this.handleRollDice());
+    if (this.diceCube) this.diceCube.addEventListener('click', () => this.handleRollDice());
     const btnGameExit = document.getElementById('btn-game-exit');
     if (btnGameExit) {
       btnGameExit.addEventListener('click', () => {
@@ -1140,14 +1138,15 @@ class WorldGameApp {
 
   animateDiceRoll(targetNum, playerIdx, callback) {
     this.state.isRolling = true;
-    this.btnRollDice.disabled = true;
-    this.diceCube.classList.add('rolling');
+    if (this.diceWidget) this.diceWidget.classList.remove('my-turn-active');
+    if (this.diceCube) this.diceCube.classList.add('rolling');
     sound.playDiceRoll();
 
     setTimeout(() => {
-      this.diceCube.classList.remove('rolling');
-      this.diceCube.dataset.face = targetNum;
-      this.diceResultText.textContent = `주사위: ${targetNum}칸 전진!`;
+      if (this.diceCube) {
+        this.diceCube.classList.remove('rolling');
+        this.diceCube.dataset.face = targetNum;
+      }
       this.state.isRolling = false;
       if (callback) callback();
     }, 900);
@@ -1647,28 +1646,10 @@ class WorldGameApp {
     if (this.gameRoundTag) this.gameRoundTag.textContent = `${this.state.round} 라운드`;
     if (this.gameModeTag) this.gameModeTag.textContent = this.mode === 'ONLINE' ? '온라인 멀티' : '로컬 1기기';
 
-    // 주사위 버튼 활성화 제어
+    // 주사위 활성화 & 차례 강조 (Turn Glowing)
     const canRoll = this.isMyTurn() && !this.state.isRolling;
-    this.btnRollDice.disabled = !canRoll;
-    this.btnRollDice.style.opacity = canRoll ? '1' : '0.5';
-
-    if (currPlayer.isIslandSkip) {
-      this.btnRollDice.textContent = '무인도 1턴 쉬기 🏝️';
-      this.btnRollDice.classList.add('btn-warning-action');
-      this.diceHintText.textContent = canRoll 
-        ? '무인도에 조난되었습니다! 버튼을 눌러 1턴 쉬고 탈출을 준비하세요. 🏝️' 
-        : `${currPlayer.name}님이 무인도에서 휴식 중... 🏝️`;
-    } else {
-      this.btnRollDice.textContent = '주사위 굴리기 🎲';
-      this.btnRollDice.classList.remove('btn-warning-action');
-      this.diceHintText.textContent = canRoll 
-        ? '지금 주사위를 굴릴 수 있습니다! 🎲' 
-        : `${currPlayer.name}님의 차례 진행 중...`;
-    }
-
-    const diceWidget = document.querySelector('.dice-widget');
-    if (diceWidget) {
-      diceWidget.classList.toggle('my-turn-active', canRoll);
+    if (this.diceWidget) {
+      this.diceWidget.classList.toggle('my-turn-active', canRoll);
     }
 
     // 좌측 플레이어 카드 패널 (컴팩트 & 세련된 디자인)

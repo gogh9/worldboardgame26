@@ -120,27 +120,16 @@
                   <!-- JS 동적 렌더링 -->
                 </div>
 
-                <!-- 주사위 롤러 위젯 -->
-                <div class="dice-widget glass-card">
-                  <div class="dice-widget-top">
-                    <span class="widget-header">🎲 주사위</span>
-                    <span class="dice-result-text" id="dice-result-text">주사위를 굴리세요!</span>
-                  </div>
-                  
-                  <div class="dice-arena-wrap">
-                    <div class="dice-3d-scene" id="dice-scene">
-                      <div class="dice-cube" id="dice-cube">
-                        <div class="dice-face face-1"><span></span></div>
-                        <div class="dice-face face-2"><span></span><span></span></div>
-                        <div class="dice-face face-3"><span></span><span></span><span></span></div>
-                        <div class="dice-face face-4"><span></span><span></span><span></span><span></span></div>
-                        <div class="dice-face face-5"><span></span><span></span><span></span><span></span><span></span></div>
-                        <div class="dice-face face-6"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-                      </div>
-                    </div>
-                    <div class="dice-action-wrap">
-                      <button class="btn btn-primary btn-roll" id="btn-roll-dice">주사위 굴리기 🎲</button>
-                      <div class="dice-hint-text" id="dice-hint-text">내 차례에 활성화됩니다.</div>
+                <!-- 주사위 위젯 (클릭하여 직접 굴리기) -->
+                <div class="dice-widget glass-card" id="dice-widget" title="주사위를 클릭하여 굴리세요!">
+                  <div class="dice-3d-scene" id="dice-scene">
+                    <div class="dice-cube" id="dice-cube">
+                      <div class="dice-face face-1"><span></span></div>
+                      <div class="dice-face face-2"><span></span><span></span></div>
+                      <div class="dice-face face-3"><span></span><span></span><span></span></div>
+                      <div class="dice-face face-4"><span></span><span></span><span></span><span></span></div>
+                      <div class="dice-face face-5"><span></span><span></span><span></span><span></span><span></span></div>
+                      <div class="dice-face face-6"><span></span><span></span><span></span><span></span><span></span><span></span></div>
                     </div>
                   </div>
                 </div>
