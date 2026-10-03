@@ -382,8 +382,8 @@ export const BOARD_CELLS = [
     category: '주생활 문화',
     region: '동남아시아/하천',
     question: '하천 주변 지역에서 물 위에 지은 가옥을 무엇이라고 하나요? (○○ 가옥)',
-    answer: '수상 가옥',
-    acceptableAnswers: ['수상 가옥', '수상가옥', '수상 집', '수상집', '물 위 가옥', '수상 가옥 (수상집)'],
+    answer: '수상',
+    acceptableAnswers: ['수상', '수상 가옥', '수상가옥', '수상 집', '수상집', '물 위 가옥'],
     initialHint: 'ㅅㅅ ㄱㅇ',
     explanation: '홍수 피해를 막고 물 위에서 물고기를 잡거나 배를 교통수단으로 활용하기 위해 물 위에 나무 기둥을 세워 지은 가옥입니다.',
     color: '#0d9488'
