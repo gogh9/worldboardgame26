@@ -3353,19 +3353,20 @@ body {
   flex-direction: row;
   align-items: center;
   gap: 8px;
+  justify-content: center;
 }
-.quiz-input-form .quiz-input-wrap { flex: 1 1 auto; width: auto; min-width: 0; }
+.quiz-input-form .quiz-input-wrap { flex: 0 1 420px; width: auto; min-width: 0; max-width: 420px; }
 .quiz-input-form .quiz-text-input {
-  padding: 7px 12px 7px 32px;
-  font-size: 0.85rem;
+  padding: 10px 14px 10px 36px;
+  font-size: 1.1rem;
 }
-.quiz-input-form .quiz-text-input::placeholder { font-size: 0.75rem; }
-.quiz-input-form .quiz-input-icon { left: 10px; font-size: 0.85rem; }
+.quiz-input-form .quiz-text-input::placeholder { font-size: 1rem; }
+.quiz-input-form .quiz-input-icon { left: 12px; font-size: 1rem; }
 .quiz-input-form .btn-submit-quiz {
   width: auto;
   flex: 0 0 auto;
-  padding: 7px 16px;
-  font-size: 0.72rem;
+  padding: 10px 20px;
+  font-size: 0.9rem;
   letter-spacing: 1px;
   white-space: nowrap;
 }
