@@ -3249,13 +3249,26 @@ body {
 .team-slot.empty { background: transparent; border: 1px dashed #4d4d4d; }
 
 .char-chip {
-  background: #1f1f1f;
-  border: none;
-  border-radius: 9999px;
+  background: #181818;
+  border: 2px solid transparent;
+  border-radius: 20px;
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+.char-chip:hover {
+  background: #242424;
+  border-color: rgba(30, 215, 96, 0.4);
+}
+.char-chip.selected {
+  background: #121212;
+  border: 2px solid #1ed760;
+  box-shadow: 0 0 14px rgba(30, 215, 96, 0.45);
   color: #ffffff;
 }
-.char-chip:hover { background: #2a2a2a; }
-.char-chip.selected { background: #1ed760; color: #000000; box-shadow: none; }
+.char-chip.taken {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
 
 .btn-count { background: #1f1f1f; border: none; border-radius: 9999px; color: #ffffff; }
 .btn-count.active { background: #1ed760; color: #000000; }
