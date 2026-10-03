@@ -3378,3 +3378,16 @@ body {
   font-size: 0.95rem;
   letter-spacing: 1px;
 }
+
+/* 이름 입력창 + 두 버튼: 높이/글자 크기 통일 */
+.lobby-top-controls .nickname-box input,
+.lobby-top-controls .lobby-action-buttons .btn {
+  height: 52px;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  box-sizing: border-box;
+}
+.lobby-top-controls .nickname-box input { letter-spacing: 0; }
