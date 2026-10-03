@@ -16,7 +16,7 @@
   <!-- Canvas Confetti for Victory Celebration -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=20261003_v21">
+  <link rel="stylesheet" href="style.css?v=20261003_v22">
 </head>
 <body>
   <div id="app" class="app-container">
@@ -38,9 +38,14 @@
               <label for="input-nickname">내 닉네임 (재접속 시 같은 닉네임 입력)</label>
               <input type="text" id="input-nickname" maxlength="8" value="탐험가" placeholder="닉네임 입력 (최대 8자)">
             </div>
-            <button class="btn btn-primary btn-create-action" id="btn-create-room">
-              <span>➕ 새로운 방 만들기</span>
-            </button>
+            <div class="lobby-action-buttons">
+              <button class="btn btn-primary btn-create-action" id="btn-create-room">
+                <span>➕ 새로운 방 만들기</span>
+              </button>
+              <button class="btn btn-class-mode" id="btn-open-class-mode" title="교사용 학급 전체 대기실 & 모둠 편성">
+                <span>🏫 우리반 함께 게임하기</span>
+              </button>
+            </div>
           </div>
 
           <!-- 실시간 열려있는 방 목록 섹션 -->
@@ -105,6 +110,184 @@
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- 2. 우리반 함께 게임하기 (교사 모드) -->
+    <section id="screen-class-teacher" class="screen">
+      <div class="class-container glass-panel">
+        
+        <!-- 2-A. 교사 학급 대기실 생성 폼 -->
+        <div id="class-teacher-setup-view" class="class-subview">
+          <div class="class-setup-card glass-card">
+            <div class="class-badge-icon">🏫</div>
+            <h2>우리반 함께 게임하기 (선생님 모드)</h2>
+            <p class="setup-sub-desc">반 전체 학생들이 하나의 대기실에 접속한 후, 교사가 모둠(팀)을 구성하여 동시에 게임을 시작합니다.</p>
+            
+            <form id="form-teacher-setup" class="class-setup-form">
+              <div class="form-group">
+                <label for="input-class-name">학급 이름</label>
+                <input type="text" id="input-class-name" value="6학년 2반 탐험대" maxlength="15" placeholder="예: 6학년 2반 탐험대" required>
+              </div>
+              <div class="form-group">
+                <label for="input-teacher-name">선생님 이름 / 닉네임</label>
+                <input type="text" id="input-teacher-name" value="선생님" maxlength="10" placeholder="예: 김선생님" required>
+              </div>
+              <div class="setup-form-actions">
+                <button type="button" class="btn btn-outline" id="btn-class-teacher-back">← 메인 로비</button>
+                <button type="submit" class="btn btn-primary btn-large">🚀 우리반 대기실 생성하기</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- 2-B. 교사 학급 대시보드 (학생 대기 현황 & 모둠 편성) -->
+        <div id="class-teacher-dashboard-view" class="class-subview hidden">
+          <!-- 상단 헤더 배너 -->
+          <div class="class-header-bar">
+            <div class="class-title-tag">
+              <span class="class-icon">🏫</span>
+              <div>
+                <h3 id="teacher-disp-class-name">우리반 탐험대</h3>
+                <span class="class-status-live"><span class="pulse-dot"></span> 학급 대기실 실시간 운영 중</span>
+              </div>
+            </div>
+            
+            <div class="class-code-box">
+              <div class="code-title">학생 접속 코드</div>
+              <div class="code-big" id="teacher-disp-class-code">C-XXXX</div>
+            </div>
+
+            <div class="class-link-copy-wrap">
+              <div class="link-label">학생 접속 URL</div>
+              <div class="link-url-text" id="teacher-disp-class-link">https://...</div>
+              <button class="btn btn-sm btn-secondary" id="btn-copy-class-link">📋 학생 초대 링크 복사</button>
+            </div>
+          </div>
+
+          <!-- 접속 학생 명단 바 -->
+          <div class="class-students-section glass-card">
+            <div class="students-section-header">
+              <h4>🎒 접속한 학생 목록 (<span id="teacher-student-count">0명</span>)</h4>
+              <span class="students-hint">학생들이 스마트폰, 태블릿, PC로 접속하면 실시간으로 나타납니다.</span>
+            </div>
+            <div class="unassigned-students-container" id="teacher-unassigned-students">
+              <!-- 학생 칩 동적 렌더링 -->
+            </div>
+          </div>
+
+          <!-- 모둠 편성 툴바 -->
+          <div class="team-management-toolbar">
+            <div class="toolbar-title-wrap">
+              <h4>🚩 모둠(팀) 편성</h4>
+              <span class="toolbar-hint">각 모둠당 2~4명의 학생이 배정됩니다.</span>
+            </div>
+            <div class="toolbar-actions">
+              <button class="btn btn-sm btn-outline" id="btn-random-teams-3">🎲 3명씩 랜덤 배정</button>
+              <button class="btn btn-sm btn-outline" id="btn-random-teams-4">🎲 4명씩 랜덤 배정</button>
+              <button class="btn btn-sm btn-outline" id="btn-add-team">➕ 모둠 추가</button>
+              <button class="btn btn-sm btn-outline" id="btn-reset-teams">🔄 배정 초기화</button>
+            </div>
+          </div>
+
+          <!-- 모둠 그리드 -->
+          <div class="teams-manage-grid" id="teacher-teams-grid">
+            <!-- 모둠 카드 동적 렌더링 -->
+          </div>
+
+          <!-- 하단 게임 시작 / 소환 바 -->
+          <div class="class-bottom-control-bar glass-card">
+            <div class="control-status-text" id="teacher-control-status">
+              학생들이 접속하면 모둠을 배정한 후 게임을 시작하세요.
+            </div>
+            <div class="control-buttons-wrap">
+              <button class="btn btn-danger hidden" id="btn-recall-students">📢 전체 학생 대기실로 소환</button>
+              <button class="btn btn-primary btn-large btn-pulse" id="btn-start-all-games" disabled>
+                🚀 전체 모둠 게임 동시 시작
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 3. 우리반 함께 게임하기 (학생 대기실 화면) -->
+    <section id="screen-class-student" class="screen">
+      <div class="class-container glass-panel">
+        
+        <!-- 3-A. 학생 입장 폼 -->
+        <div id="class-student-join-view" class="class-subview">
+          <div class="class-setup-card glass-card">
+            <div class="class-badge-icon">🎒</div>
+            <h2>우리반 세계여행 대기실 입장</h2>
+            <p class="setup-sub-desc">선생님이 개설한 학급 대기실에 입장하여 모둠 배정을 기다립니다.</p>
+            
+            <form id="form-student-join" class="class-setup-form">
+              <div class="form-group">
+                <label>학급 코드</label>
+                <div class="class-code-badge" id="student-join-code-tag">C-XXXX</div>
+                <input type="text" id="input-student-class-code" class="hidden" placeholder="학급 코드 입력">
+              </div>
+              <div class="form-group">
+                <label for="input-student-name">내 이름 / 번호</label>
+                <input type="text" id="input-student-name" maxlength="10" placeholder="예: 3번 김민준" required autofocus>
+              </div>
+              <div class="setup-form-actions">
+                <button type="submit" class="btn btn-primary btn-large">입장하기 🚀</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- 3-B. 학생 대기 중 화면 -->
+        <div id="class-student-waiting-view" class="class-subview hidden">
+          <div class="student-waiting-card glass-card">
+            <div class="waiting-header">
+              <div class="waiting-title-wrap">
+                <span class="class-badge-emoji">🏫</span>
+                <div>
+                  <h3 id="student-disp-class-title">우리반 탐험대</h3>
+                  <span class="waiting-teacher-tag" id="student-disp-teacher-name">선생님의 대기실</span>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-outline" id="btn-class-student-leave">나가기</button>
+            </div>
+
+            <!-- 내 환영 배너 -->
+            <div class="student-welcome-banner">
+              <div class="student-avatar-big">🎒</div>
+              <div class="student-welcome-info">
+                <h4><strong id="student-disp-my-name">학생</strong>님 환영합니다!</h4>
+                <p>선생님이 모둠을 편성하고 게임을 시작할 때까지 잠시 기다려주세요.</p>
+              </div>
+            </div>
+
+            <!-- 내 모둠 상태 -->
+            <div class="student-team-status-box" id="student-my-team-status">
+              <div class="team-unassigned-box">
+                <span class="pulse-dot"></span> 선생님이 모둠을 편성하는 중입니다...
+              </div>
+            </div>
+
+            <!-- 접속 중인 친구들 목록 -->
+            <div class="student-friends-section">
+              <div class="friends-header">
+                <h5>우리반 친구들 접속 현황 (<span id="student-friends-count">0명</span>)</h5>
+              </div>
+              <div class="student-friends-grid" id="student-friends-grid">
+                <!-- 친구들 칩 동적 렌더링 -->
+              </div>
+            </div>
+
+            <div class="waiting-pulse-footer">
+              <div class="loading-spinner"></div>
+              <span>선생님이 게임을 시작하면 자동으로 모둠 게임 화면으로 이동합니다... 🚀</span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -264,6 +447,7 @@
 
         <div class="modal-footer-actions">
           <button class="btn btn-primary btn-large" id="btn-victory-restart">새로운 게임 시작 🚀</button>
+          <button class="btn btn-secondary btn-large hidden" id="btn-victory-class-return">🏫 학급 대기실로 돌아가기</button>
         </div>
       </div>
     </div>
@@ -274,6 +458,6 @@
   </div>
 
   <!-- 메인 스크립트 모듈 로드 -->
-  <script type="module" src="js/app.js?v=20261003_v21"></script>
+  <script type="module" src="js/app.js?v=20261003_v22"></script>
 </body>
 </html>

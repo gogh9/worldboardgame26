@@ -108,6 +108,15 @@ export class HybridNetworkManager {
       if (this.onMessage) {
         this.onMessage(data, data.senderId);
       }
+      return;
+    }
+
+    // 3. 학급 모드 토픽 (우리반 함께 게임하기)
+    if (topic.startsWith('worldgame/class/')) {
+      if (this.onClassMessage) {
+        this.onClassMessage(data.action, data.payload, data.senderId);
+      }
+      return;
     }
   }
 

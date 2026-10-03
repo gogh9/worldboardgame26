@@ -2,6 +2,7 @@
 import { BOARD_CELLS, CLIMATE_CARDS, TERRAIN_CARDS, PLAYER_PROFILES, MAP_CELL_COORDINATES } from './boardData.js';
 import { HybridNetworkManager } from './network.js';
 import { sound } from './sound.js';
+import { ClassModeManager } from './classMode.js';
 
 class WorldGameApp {
   constructor() {
@@ -30,6 +31,7 @@ class WorldGameApp {
 
     this.initDOM();
     this.initNickname();
+    this.classMode = new ClassModeManager(this);
     this.initEvents();
     this.initLobbyNetwork();
     
@@ -58,10 +60,21 @@ class WorldGameApp {
     });
   }
 
+  // URL 파라미터 확인 (?class=CODE 형태 접속 시 학생 대기실로 자동 이동)
+  checkUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    const classCode = params.get('class');
+    if (classCode && this.classMode) {
+      this.classMode.openStudentEntry(classCode);
+    }
+  }
+
   // DOM 캐싱
   initDOM() {
     this.screens = {
       lobby: document.getElementById('screen-lobby'),
+      classTeacher: document.getElementById('screen-class-teacher'),
+      classStudent: document.getElementById('screen-class-student'),
       game: document.getElementById('screen-game')
     };
 
@@ -258,6 +271,14 @@ class WorldGameApp {
         (status) => this.handleNetworkStatus(status),
         (rooms) => this.renderRoomsList(rooms)
       );
+    }
+    if (this.classMode) {
+      this.network.onClassMessage = (action, payload, senderId) => {
+        this.classMode.handleClassMessage(action, payload, senderId);
+      };
+      if (this.network.mqttClient) {
+        this.classMode.setMqttClient(this.network.mqttClient);
+      }
     }
   }
 
@@ -1862,6 +1883,26 @@ class WorldGameApp {
     });
 
     this.openModal(this.modalVictory);
+
+    // 학급 모드인 경우 '대기실로 돌아가기' 버튼 활성화 및 결과 교사에게 보고
+    const btnClassReturn = document.getElementById('btn-victory-class-return');
+    if (btnClassReturn) {
+      if (this.classMode && this.classMode.role === 'STUDENT') {
+        btnClassReturn.classList.remove('hidden');
+        btnClassReturn.onclick = () => {
+          this.closeModal(this.modalVictory);
+          this.classMode.returnToWaitingRoom();
+        };
+        const myTeam = (this.classMode.teams || []).find(t => t.players.some(p => p.id === this.classMode.studentId));
+        this.classMode.sendClassMsg('TEAM_GAME_RESULT', {
+          teamId: myTeam ? myTeam.id : 1,
+          winner: sorted[0] ? sorted[0].name : '탐험가',
+          scores: sorted.map(p => ({ name: p.name, score: p.conqueredCount || 0 }))
+        });
+      } else {
+        btnClassReturn.classList.add('hidden');
+      }
+    }
   }
 
   resetGameState() {
