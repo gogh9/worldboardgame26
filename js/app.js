@@ -87,8 +87,6 @@ class WorldGameApp {
     this.lobbyJoinSec = document.getElementById('lobby-join-section');
     this.lobbyRoomSec = document.getElementById('lobby-room-section');
     this.inputNickname = document.getElementById('input-nickname');
-    this.inputRoomCode = document.getElementById('input-room-code');
-    this.dispRoomCode = document.getElementById('disp-room-code');
     this.lobbySlots = document.getElementById('lobby-player-slots');
     this.charChipsContainer = document.getElementById('character-chips-container');
     this.btnToggleReady = document.getElementById('btn-toggle-ready');
@@ -332,7 +330,6 @@ class WorldGameApp {
         <div class="room-card-info">
           <div class="room-card-title">
             <span>🧭 ${room.title || '세계여행 탐험 방'}</span>
-            <span class="room-code-tag">${room.roomCode}</span>
           </div>
           <div class="room-card-meta">
             <span>방장: <strong>${room.hostName}</strong></span>
@@ -487,7 +484,7 @@ class WorldGameApp {
       }];
 
       this.setupLobbyView(true);
-      this.showToast(`방이 생성되었습니다! (방 코드: ${res.roomCode})`);
+      this.showToast('새로운 탐험 방이 생성되었습니다!');
       sound.playItemGet();
     } catch (err) {
       console.error('방 생성 오류:', err);
@@ -504,7 +501,6 @@ class WorldGameApp {
 
     try {
       const res = await this.network.joinRoom(code, nick);
-      if (this.dispRoomCode) this.dispRoomCode.textContent = res.roomCode;
       this.setupLobbyView(true);
 
       const sendJoin = () => {
