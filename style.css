@@ -3313,3 +3313,15 @@ body {
 }
 
 .loading-spinner { border-color: #4d4d4d; border-top-color: #1ed760; }
+
+/* 탐험 대기실(방 안) 요소 간 간격 확대 */
+#lobby-room-section {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+#lobby-room-section .lobby-room-header-bar { margin-bottom: 0; padding: 16px 22px; }
+#lobby-room-section .players-slot-grid { gap: 20px; }
+#lobby-room-section .player-slot { padding: 20px 22px; }
+#lobby-room-section .character-select-box { padding: 20px 22px; }
+#lobby-room-section .lobby-actions { margin-top: 4px; gap: 16px; }
