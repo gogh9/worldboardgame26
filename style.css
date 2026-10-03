@@ -3405,3 +3405,32 @@ body {
 }
 .lobby-top-controls .nickname-box input::placeholder { text-align: center; }
 .lobby-top-controls .lobby-action-buttons { flex: 1 1 100%; }
+
+/* 이름 입력 + 방 만들기 + 교사용 모드: 한 줄 배치 */
+.lobby-top-controls {
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+}
+.lobby-top-controls .nickname-box {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: none;
+}
+.lobby-top-controls .nickname-box label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+.lobby-top-controls .lobby-action-buttons {
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+.lobby-top-controls .lobby-action-buttons .btn {
+  flex: 0 0 auto;
+  padding: 0 22px;
+  white-space: nowrap;
+}
