@@ -304,8 +304,23 @@
                 </div>
 
 
+                <!-- 세계여행 플로팅 가이드 배너 -->
+                <div class="travel-banner-guide" id="travel-banner-guide" style="display: none;">
+                  <span class="banner-plane-icon">✈️</span>
+                  <div class="banner-text-group">
+                    <span class="banner-main-text">세계여행 찬스 발동!</span>
+                    <span class="banner-sub-text">보드판의 원하는 칸을 직접 클릭하거나 목적지 목록을 열어 선택하세요!</span>
+                  </div>
+                  <button class="btn-travel-list-open" id="btn-open-travel-modal">목적지 목록 보기</button>
+                </div>
+
                 <!-- 하단 좌측: 3D 인터랙티브 발광 주사위 (직접 클릭 굴리기) -->
                 <div class="dice-widget" id="dice-widget" title="주사위를 클릭하여 굴리세요!">
+                  <div class="travel-dice-overlay" id="travel-dice-overlay" style="display: none;">
+                    <div class="travel-dice-plane">✈️</div>
+                    <div class="travel-dice-label">세계여행</div>
+                    <div class="travel-dice-hint">목적지 선택</div>
+                  </div>
                   <div class="dice-3d-scene" id="dice-scene">
                     <div class="dice-cube" id="dice-cube">
                       <div class="dice-face face-1"><span></span></div>
@@ -425,6 +440,28 @@
         <h2 id="special-title">세계여행 찬스!</h2>
         <p id="special-desc">다음 차례에 원하는 칸으로 갈 수 있어요.</p>
         <button class="btn btn-primary mt-4" id="btn-special-confirm">확인</button>
+      </div>
+    </div>
+
+    <!-- E. 세계여행 목적지 선택 모달 -->
+    <div id="modal-world-travel" class="modal-backdrop">
+      <div class="modal-dialog glass-dialog travel-dialog">
+        <div class="modal-header travel-dialog-header">
+          <div class="travel-header-info">
+            <span class="travel-badge">✈️ 세계여행 찬스 발동</span>
+            <h2>어디로 날아갈까요?</h2>
+            <p>이동하고 싶은 칸을 선택하면 즉시 날아가서 퀴즈나 미션에 도전합니다!</p>
+          </div>
+          <button class="modal-close-btn" id="btn-travel-modal-close" title="닫기 (보드판에서 직접 클릭)">✕</button>
+        </div>
+        <div class="modal-body travel-modal-body">
+          <div class="travel-cells-grid" id="travel-cells-list">
+            <!-- 20개 칸이 JS로 동적 렌더링됨 -->
+          </div>
+        </div>
+        <div class="modal-footer travel-dialog-footer">
+          <button class="btn btn-secondary" id="btn-travel-direct-board">🗺️ 보드판에서 직접 클릭하기</button>
+        </div>
       </div>
     </div>
 

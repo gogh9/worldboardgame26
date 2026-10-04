@@ -25,6 +25,7 @@ class WorldGameApp {
       lastDice: 1,
       isRolling: false,
       worldTravelPending: false,
+      travelModalShownTurn: -1,
       activeQuiz: null,
       activeCard: null
     };
@@ -114,12 +115,20 @@ class WorldGameApp {
     // Dice Elements
     this.diceWidget = document.getElementById('dice-widget');
     this.diceCube = document.getElementById('dice-cube');
+    this.travelDiceOverlay = document.getElementById('travel-dice-overlay');
+    this.travelBannerGuide = document.getElementById('travel-banner-guide');
+    this.boardContainer = document.getElementById('board-container');
 
     // Modals
     this.modalQuiz = document.getElementById('modal-quiz');
     this.modalCard = document.getElementById('modal-card');
     this.modalSpecial = document.getElementById('modal-special');
     this.modalVictory = document.getElementById('modal-victory');
+    this.modalWorldTravel = document.getElementById('modal-world-travel');
+    this.travelCellsList = document.getElementById('travel-cells-list');
+    this.btnOpenTravelModal = document.getElementById('btn-open-travel-modal');
+    this.btnTravelModalClose = document.getElementById('btn-travel-modal-close');
+    this.btnTravelDirectBoard = document.getElementById('btn-travel-direct-board');
   }
 
   // 이벤트 바인딩
@@ -226,6 +235,22 @@ class WorldGameApp {
     const btnCardClose = document.getElementById('btn-card-modal-close');
     if (btnCardClose) btnCardClose.addEventListener('click', () => this.closeModal(this.modalCard));
 
+    if (this.btnOpenTravelModal) {
+      this.btnOpenTravelModal.addEventListener('click', () => this.openWorldTravelModal());
+    }
+    if (this.btnTravelModalClose) {
+      this.btnTravelModalClose.addEventListener('click', () => {
+        this.closeModal(this.modalWorldTravel);
+        this.showToast('🗺️ 보드판에서 가고 싶은 칸을 직접 클릭하세요!');
+      });
+    }
+    if (this.btnTravelDirectBoard) {
+      this.btnTravelDirectBoard.addEventListener('click', () => {
+        this.closeModal(this.modalWorldTravel);
+        this.showToast('🗺️ 보드판에서 가고 싶은 칸을 직접 클릭하세요!');
+      });
+    }
+
     if (this.modalQuiz) {
       this.modalQuiz.addEventListener('click', (e) => {
         if (e.target === this.modalQuiz) this.closeModal(this.modalQuiz);
@@ -234,6 +259,11 @@ class WorldGameApp {
     if (this.modalCard) {
       this.modalCard.addEventListener('click', (e) => {
         if (e.target === this.modalCard) this.closeModal(this.modalCard);
+      });
+    }
+    if (this.modalWorldTravel) {
+      this.modalWorldTravel.addEventListener('click', (e) => {
+        if (e.target === this.modalWorldTravel) this.closeModal(this.modalWorldTravel);
       });
     }
   }
@@ -787,6 +817,7 @@ class WorldGameApp {
 
       // 7. 세계여행 워프 이동 동기화
       case 'WORLD_TRAVEL_MOVE':
+        if (this.modalWorldTravel) this.closeModal(this.modalWorldTravel);
         this.teleportPawn(payload.playerIndex, payload.targetCellIndex);
         break;
 
@@ -800,6 +831,8 @@ class WorldGameApp {
         this.closeModal(this.modalQuiz);
         this.closeModal(this.modalCard);
         this.closeModal(this.modalSpecial);
+        if (this.modalWorldTravel) this.closeModal(this.modalWorldTravel);
+        this.state.travelModalShownTurn = -1;
         this.state.worldTravelPending = false;
         this.state.isRolling = false;
         this.state.turnIndex = payload.turnIndex;
@@ -994,13 +1027,15 @@ class WorldGameApp {
       }
 
       cellElem.addEventListener('click', () => {
-        if (this.state.worldTravelPending && this.isMyTurn()) {
+        const currPlayer = this.state.players[this.state.turnIndex];
+        const isWorldTravelTurn = (this.state.worldTravelPending || (currPlayer && currPlayer.isWorldTravel)) && this.isMyTurn();
+
+        if (isWorldTravelTurn) {
           this.handleWorldTravelSelect(cell.index);
           return;
         }
 
         // 보드판의 칸을 클릭했을 때 문제/카드 내용 즉시 팝업 표시
-        const currPlayer = this.state.players[this.state.turnIndex];
         const isCurrentCell = currPlayer && currPlayer.position === cell.index;
 
         if (cell.type === 'quiz') {
@@ -1059,7 +1094,7 @@ class WorldGameApp {
       mapPawn.style.backgroundColor = prof.colorHex;
       mapPawn.style.setProperty('--pawn-color', prof.colorHex);
       mapPawn.style.setProperty('--pawn-glow', prof.glowHex);
-      mapPawn.style.boxShadow = `0 0 10px ${prof.glowHex}, 0 2px 6px rgba(0,0,0,0.8)`;
+      mapPawn.style.boxShadow = `0 0 12px ${prof.glowHex}, 0 4px 12px rgba(0, 0, 0, 0.65)`;
       mapPawn.innerHTML = `
         <span class="map-pawn-icon">${prof.avatar}</span>
         <span class="map-pawn-tooltip">${player.name}</span>
@@ -1114,7 +1149,7 @@ class WorldGameApp {
     let offsetY = 0;
     if (totalInCell > 1) {
       const angles = [0, Math.PI, Math.PI / 2, (3 * Math.PI) / 2];
-      const radius = 1.8;
+      const radius = 2.2;
       offsetX = Math.cos(angles[orderIndex % 4]) * radius;
       offsetY = Math.sin(angles[orderIndex % 4]) * (radius * 1.5);
     }
@@ -1160,7 +1195,7 @@ class WorldGameApp {
 
     if (currPlayer.isWorldTravel) {
       this.state.worldTravelPending = true;
-      this.showToast('✈️ 세계여행 찬스입니다! 보드판에서 가고 싶은 칸을 직접 클릭하세요!');
+      this.openWorldTravelModal();
       return;
     }
 
@@ -1224,13 +1259,28 @@ class WorldGameApp {
   teleportPawn(playerIdx, targetCellIndex) {
     const player = this.state.players[playerIdx];
     if (!player) return;
+    const targetCell = this.state.cells[targetCellIndex];
     player.position = targetCellIndex;
     player.isWorldTravel = false;
     this.state.worldTravelPending = false;
+    this.applyWorldTravelUI(false);
+
     sound.playVictory();
+
+    const pawn = document.getElementById(`pawn-player-${player.id}`);
+    if (pawn) {
+      pawn.classList.add('flying-plane');
+    }
+
     this.updatePawnPosition(player.id, player.position);
-    this.addLog(`✈️ ${player.name}님이 세계여행 찬스로 [${this.state.cells[targetCellIndex].title}] 칸으로 즉시 이동했습니다!`, 'correct');
-    this.handleCellArrival(playerIdx, targetCellIndex);
+    this.highlightActiveCell(targetCellIndex, true);
+    this.addLog(`✈️ ${player.name}님이 세계여행 찬스로 [${targetCell ? targetCell.title : targetCellIndex}] 칸으로 날아갔습니다!`, 'correct');
+    this.showToast(`✈️ ${player.name}님이 [${targetCell ? targetCell.title : targetCellIndex}] 칸으로 날아갔습니다! 🌍`);
+
+    setTimeout(() => {
+      if (pawn) pawn.classList.remove('flying-plane');
+      this.handleCellArrival(playerIdx, targetCellIndex);
+    }, 420);
   }
 
   /* ========================================================================
@@ -1309,10 +1359,162 @@ class WorldGameApp {
     const currPlayer = this.state.players[this.state.turnIndex];
     if (currPlayer) currPlayer.isWorldTravel = false;
     this.state.worldTravelPending = false;
+    if (this.modalWorldTravel) this.closeModal(this.modalWorldTravel);
+    this.applyWorldTravelUI(false);
+
     if (this.mode === 'ONLINE') {
       this.network.send('WORLD_TRAVEL_MOVE', { playerIndex: this.state.turnIndex, targetCellIndex: targetIndex });
     }
     this.teleportPawn(this.state.turnIndex, targetIndex);
+  }
+
+  // 세계여행 인터랙티브 UI 상태 적용 (보드판 칸 발광, 배너, 주사위 변경)
+  applyWorldTravelUI(isActive) {
+    if (!this.boardContainer) this.boardContainer = document.getElementById('board-container');
+    if (!this.travelBannerGuide) this.travelBannerGuide = document.getElementById('travel-banner-guide');
+    if (!this.travelDiceOverlay) this.travelDiceOverlay = document.getElementById('travel-dice-overlay');
+    if (!this.diceWidget) this.diceWidget = document.getElementById('dice-widget');
+
+    const currPlayer = this.state.players[this.state.turnIndex];
+    const isMe = this.isMyTurn();
+
+    if (isActive) {
+      if (isMe) {
+        if (this.boardContainer) this.boardContainer.classList.add('travel-selection-active');
+        document.querySelectorAll('.board-cell').forEach(c => {
+          c.classList.add('cell-travel-target');
+          c.title = '✈️ 세계여행 목적지로 선택하기 (클릭)';
+        });
+
+        if (this.travelBannerGuide) {
+          this.travelBannerGuide.style.display = 'flex';
+          this.travelBannerGuide.innerHTML = `
+            <span class="banner-plane-icon">✈️</span>
+            <div class="banner-text-group">
+              <span class="banner-main-text">세계여행 찬스 발동!</span>
+              <span class="banner-sub-text">보드판의 원하는 칸을 직접 클릭하거나 목적지 목록을 열어 선택하세요!</span>
+            </div>
+            <button class="btn-travel-list-open" id="btn-open-travel-modal">목적지 목록 보기</button>
+          `;
+          const btn = document.getElementById('btn-open-travel-modal');
+          if (btn) btn.onclick = () => this.openWorldTravelModal();
+        }
+
+        if (this.diceWidget) {
+          this.diceWidget.classList.add('is-world-travel');
+          this.diceWidget.title = '세계여행 찬스! 클릭하여 목적지를 선택하세요.';
+        }
+        if (this.travelDiceOverlay) {
+          this.travelDiceOverlay.style.display = 'flex';
+        }
+
+        // 이번 턴에 모달을 아직 띄우지 않았다면 자동으로 목적지 선택 모달 오픈!
+        if (this.state.travelModalShownTurn !== this.state.turnIndex) {
+          this.state.travelModalShownTurn = this.state.turnIndex;
+          this.openWorldTravelModal();
+        }
+      } else {
+        // 다른 플레이어가 세계여행 선택 중일 때
+        if (this.travelBannerGuide) {
+          this.travelBannerGuide.style.display = 'flex';
+          this.travelBannerGuide.innerHTML = `
+            <span class="banner-plane-icon">✈️</span>
+            <div class="banner-text-group">
+              <span class="banner-main-text">세계여행 찬스 진행 중</span>
+              <span class="banner-sub-text">${currPlayer ? currPlayer.name : '플레이어'}님이 이동할 목적지 칸을 선택하고 있습니다...</span>
+            </div>
+          `;
+        }
+      }
+    } else {
+      if (this.boardContainer) this.boardContainer.classList.remove('travel-selection-active');
+      document.querySelectorAll('.board-cell').forEach(c => {
+        c.classList.remove('cell-travel-target');
+        c.removeAttribute('title');
+      });
+
+      if (this.travelBannerGuide) {
+        this.travelBannerGuide.style.display = 'none';
+      }
+      if (this.diceWidget) {
+        this.diceWidget.classList.remove('is-world-travel');
+      }
+      if (this.travelDiceOverlay) {
+        this.travelDiceOverlay.style.display = 'none';
+      }
+      if (this.modalWorldTravel) {
+        this.closeModal(this.modalWorldTravel);
+      }
+    }
+  }
+
+  // 세계여행 목적지 선택 모달 열기
+  openWorldTravelModal() {
+    if (!this.modalWorldTravel) this.modalWorldTravel = document.getElementById('modal-world-travel');
+    this.renderTravelCellsList();
+    this.openModal(this.modalWorldTravel);
+  }
+
+  // 세계여행 20개 칸 목록 렌더링
+  renderTravelCellsList() {
+    if (!this.travelCellsList) this.travelCellsList = document.getElementById('travel-cells-list');
+    if (!this.travelCellsList) return;
+
+    this.travelCellsList.innerHTML = '';
+    const currPlayer = this.state.players[this.state.turnIndex];
+
+    this.state.cells.forEach(cell => {
+      const card = document.createElement('div');
+      const isCurrentPos = currPlayer && currPlayer.position === cell.index;
+      card.className = `travel-cell-card ${isCurrentPos ? 'is-current-pos' : ''}`;
+
+      let typeBadge = '';
+      if (cell.type === 'start') {
+        typeBadge = '<span class="travel-cell-type-badge badge-special">🏁 출발선</span>';
+      } else if (cell.type === 'quiz') {
+        typeBadge = '<span class="travel-cell-type-badge badge-quiz">❓ 퀴즈 칸</span>';
+      } else if (cell.type === 'terrain_card') {
+        typeBadge = '<span class="travel-cell-type-badge badge-card">⛰️ 지형 카드</span>';
+      } else if (cell.type === 'climate_card') {
+        typeBadge = '<span class="travel-cell-type-badge badge-card">🌦️ 기후 카드</span>';
+      } else if (cell.type === 'desert_island') {
+        typeBadge = '<span class="travel-cell-type-badge badge-special">🏝️ 무인도</span>';
+      } else if (cell.type === 'hint_key') {
+        typeBadge = '<span class="travel-cell-type-badge badge-special">📖 교과서 찬스</span>';
+      } else if (cell.type === 'world_travel') {
+        typeBadge = '<span class="travel-cell-type-badge badge-special">✈️ 세계여행</span>';
+      }
+
+      let ownerText = '';
+      if (cell.ownerId !== null) {
+        const owner = this.state.players.find(p => p.id === cell.ownerId);
+        const ownerProf = owner ? (PLAYER_PROFILES[owner.charId] || PLAYER_PROFILES[0]) : null;
+        ownerText = `<div class="travel-cell-status" style="color: ${ownerProf ? ownerProf.colorHex : '#38bdf8'}">🚩 ${owner ? owner.name : '다른 플레이어'} 점령</div>`;
+      } else if (cell.type === 'quiz') {
+        ownerText = `<div class="travel-cell-status" style="color: #4ade80;">⭐ 점령 가능 (퀴즈 정답 시 획득)</div>`;
+      } else if (cell.type.includes('card')) {
+        ownerText = `<div class="travel-cell-status" style="color: #fcd34d;">🎁 보너스 미션 (점수 획득)</div>`;
+      } else {
+        ownerText = `<div class="travel-cell-status" style="color: #94a3b8;">${cell.description || ''}</div>`;
+      }
+
+      card.innerHTML = `
+        <div class="travel-cell-top">
+          <span class="travel-cell-num">${cell.index}번 칸</span>
+          ${typeBadge}
+        </div>
+        <div class="travel-cell-title">${cell.badge ? cell.badge + ' ' : ''}${cell.title}</div>
+        ${ownerText}
+        <button class="travel-cell-btn">✈️ 여기로 날아가기</button>
+      `;
+
+      card.addEventListener('click', () => {
+        this.closeModal(this.modalWorldTravel);
+        this.handleWorldTravelSelect(cell.index);
+      });
+
+      this.travelCellsList.appendChild(card);
+    });
   }
 
   openSpecialModal(title, desc, onConfirm, icon = null) {
@@ -1365,7 +1567,14 @@ class WorldGameApp {
     const regionElem = document.getElementById('quiz-cell-region');
     if (regionElem) regionElem.textContent = cell.region || '';
     const qTextElem = document.getElementById('quiz-question-text');
-    if (qTextElem) qTextElem.textContent = cell.question || '';
+    if (qTextElem) {
+      let qText = cell.question || '';
+      if (!qText.includes('○') && cell.answer) {
+        const circles = cell.answer.split(' ').map(w => '○'.repeat(w.length)).join(' ');
+        qText += ` (${circles})`;
+      }
+      qTextElem.textContent = qText;
+    }
 
     // 단답형 입력 폼 및 버튼 초기화
     const inputForm = document.getElementById('quiz-input-form');
@@ -1788,6 +1997,7 @@ class WorldGameApp {
 
     this.state.turnIndex = nextTurn;
     this.state.round = nextRound;
+    this.state.travelModalShownTurn = -1;
 
     this.updateGameUI();
 
@@ -1801,12 +2011,6 @@ class WorldGameApp {
       if (this.isHost()) {
         this.broadcastState();
       }
-    } else {
-      const nextPlayer = this.state.players[this.state.turnIndex];
-      if (nextPlayer && nextPlayer.isWorldTravel) {
-        this.state.worldTravelPending = true;
-        this.showToast(`✈️ ${nextPlayer.name}님의 세계여행 찬스! 보드판에서 가고 싶은 칸을 클릭하세요!`);
-      }
     }
   }
 
@@ -1815,6 +2019,16 @@ class WorldGameApp {
     if (!currPlayer) return;
 
     const prof = PLAYER_PROFILES[currPlayer.charId] || PLAYER_PROFILES[0];
+
+    // 세계여행 찬스 UI 동기화
+    const isWorldTravelTurn = currPlayer && currPlayer.isWorldTravel;
+    if (isWorldTravelTurn) {
+      this.state.worldTravelPending = true;
+      this.applyWorldTravelUI(true);
+    } else {
+      this.state.worldTravelPending = false;
+      this.applyWorldTravelUI(false);
+    }
 
     // 현재 턴인 플레이어가 서 있는 카드를 육상 트랙 포커스로 확대 강조
     document.querySelectorAll('.board-cell').forEach(c => {
@@ -1842,7 +2056,7 @@ class WorldGameApp {
     if (this.diceWidget) {
       this.diceWidget.classList.toggle('my-turn-active', canRoll);
       if (currPlayer.isWorldTravel) {
-        this.diceWidget.title = '세계여행 찬스! 보드판에서 원하는 칸을 클릭하세요!';
+        this.diceWidget.title = '세계여행 찬스! 클릭하여 목적지를 선택하세요.';
       } else {
         this.diceWidget.title = '주사위를 클릭하여 굴리세요!';
       }
@@ -1966,6 +2180,9 @@ class WorldGameApp {
     this.state.status = 'PLAYING';
     this.state.round = 1;
     this.state.turnIndex = 0;
+    this.state.travelModalShownTurn = -1;
+    this.state.worldTravelPending = false;
+    this.applyWorldTravelUI(false);
     this.state.cells.forEach(c => c.ownerId = null);
     this.state.players.forEach(p => {
       p.position = 0;

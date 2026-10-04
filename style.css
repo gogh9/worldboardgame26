@@ -1271,18 +1271,26 @@ html.is-class-mode #screen-class-student {
 .map-pawn-piece {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full, 50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.98rem;
-  border: 2px solid #ffffff;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.8), 0 0 10px var(--pawn-glow, rgba(56, 189, 248, 0.6));
+  font-size: 1.55rem;
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.65), 0 0 12px var(--pawn-glow, rgba(56, 189, 248, 0.6));
   transition: left 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   cursor: default;
   z-index: 15;
+  user-select: none;
+}
+
+.map-pawn-piece .map-pawn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .map-pawn-tooltip {
@@ -1296,17 +1304,17 @@ html.is-class-mode #screen-class-student {
 .map-pawn-piece.active-turn::before {
   content: '';
   position: absolute;
-  inset: -5px;
+  inset: -6px;
   border-radius: 50%;
-  border: 2px solid var(--pawn-color, #38bdf8);
+  border: 2.5px solid var(--pawn-color, #38bdf8);
   animation: mapPawnTurnPulse 1.4s infinite;
 }
 
 .map-pawn-piece.active-turn::after {
   content: '🚩';
   position: absolute;
-  top: -14px;
-  font-size: 0.76rem;
+  top: -20px;
+  font-size: 1.1rem;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.9));
   animation: mapFlagBob 1.2s infinite ease-in-out alternate;
 }
@@ -1328,7 +1336,7 @@ html.is-class-mode #screen-class-student {
 
 @keyframes mapPawnBounce {
   from { transform: translate(-50%, -50%) scale(1); }
-  to { transform: translate(-50%, -90%) scale(1.22); }
+  to { transform: translate(-50%, -85%) scale(1.18); }
 }
 
 /* Individual Board Cells (육상 트랙 카드 스타일) */
@@ -1702,11 +1710,17 @@ html.is-class-mode #screen-class-student {
 }
 
 @media (max-width: 640px) {
-  .pawn-piece {
+  .pawn-piece,
+  .map-pawn-piece {
     width: 30px;
     height: 30px;
     font-size: 1.15rem;
     border-width: 2px;
+  }
+
+  .map-pawn-piece.active-turn::after {
+    top: -16px;
+    font-size: 0.85rem;
   }
 }
 
@@ -3319,6 +3333,15 @@ body {
 .btn-submit-quiz { background: #1ed760; color: #000000; border-radius: 9999px; }
 .quiz-feedback-box { border-radius: 8px; }
 
+/* 문제 출제 모달 상단 뱃지 및 지역 정보 영역 제거 */
+#modal-quiz .quiz-badge-wrap {
+  display: none !important;
+}
+#modal-quiz .modal-header {
+  justify-content: flex-end;
+  margin-bottom: -6px;
+}
+
 /* 특수 칸 알림 모달 (세계여행, 무인도 등) */
 #modal-special .special-icon {
   display: none !important;
@@ -3590,4 +3613,360 @@ body {
   justify-content: center !important;
   width: 100% !important;
   text-align: center !important;
+}
+
+/* ==========================================================================
+   세계여행 (World Travel) 인터랙티브 비주얼 & 모달 시스템
+   ========================================================================== */
+
+/* 1. 상단 플로팅 가이드 배너 */
+.travel-banner-guide {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 20px;
+  background: rgba(7, 30, 54, 0.94);
+  border: 2px solid #38bdf8;
+  border-radius: 9999px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.65), 0 0 25px rgba(56, 189, 248, 0.5);
+  backdrop-filter: blur(12px);
+  animation: bannerSlideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1), bannerGlowPulse 2s infinite alternate;
+}
+
+.travel-banner-guide .banner-plane-icon {
+  font-size: 24px;
+  animation: planeFloat 1.2s ease-in-out infinite alternate;
+  display: inline-block;
+}
+
+.travel-banner-guide .banner-text-group {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.travel-banner-guide .banner-main-text {
+  font-size: 15px;
+  font-weight: 800;
+  color: #38bdf8;
+  letter-spacing: -0.2px;
+}
+
+.travel-banner-guide .banner-sub-text {
+  font-size: 12px;
+  color: #e0f2fe;
+  font-weight: 500;
+}
+
+.travel-banner-guide .btn-travel-list-open {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #ffffff;
+  border: 1px solid #7dd3fc;
+  border-radius: 9999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+}
+
+.travel-banner-guide .btn-travel-list-open:hover {
+  background: linear-gradient(135deg, #0369a1, #075985);
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 6px 16px rgba(2, 132, 199, 0.6);
+}
+
+/* 2. 주사위 위젯 세계여행 오버레이 모드 */
+.dice-widget.is-world-travel {
+  background: radial-gradient(circle, #0284c7 0%, #075985 80%) !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 30px rgba(56, 189, 248, 0.9), 0 8px 24px rgba(0, 0, 0, 0.7) !important;
+  animation: travelWidgetPulse 1.5s ease-in-out infinite alternate !important;
+  cursor: pointer !important;
+}
+
+.dice-widget.is-world-travel #dice-scene {
+  display: none !important;
+}
+
+.travel-dice-overlay {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.travel-dice-plane {
+  font-size: 32px;
+  animation: planeFloat 1.2s ease-in-out infinite alternate;
+  line-height: 1;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+}
+
+.travel-dice-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  margin-top: 3px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.travel-dice-hint {
+  font-size: 10px;
+  font-weight: 600;
+  color: #bae6fd;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 1px 6px;
+  border-radius: 9999px;
+  margin-top: 2px;
+}
+
+/* 3. 보드판 칸의 세계여행 타겟 하이라이트 */
+.board-container.travel-selection-active .board-cell {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.cell-travel-target {
+  cursor: pointer !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.85), inset 0 0 12px rgba(56, 189, 248, 0.35) !important;
+  animation: travelCellPulse 1.4s ease-in-out infinite alternate !important;
+  position: relative !important;
+  z-index: 10;
+}
+
+.cell-travel-target::after {
+  content: '✈️ 이동';
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  background: linear-gradient(135deg, #0284c7, #075985);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6);
+  border: 1px solid #7dd3fc;
+  pointer-events: none;
+  z-index: 25;
+  animation: travelBadgeBounce 0.9s ease-in-out infinite alternate;
+}
+
+.cell-travel-target:hover {
+  transform: scale(1.08) translateY(-6px) !important;
+  box-shadow: 0 0 28px rgba(56, 189, 248, 1), 0 10px 24px rgba(0, 0, 0, 0.6) !important;
+  border-color: #ffffff !important;
+  z-index: 50 !important;
+}
+
+/* 4. 세계여행 목적지 선택 전용 모달 */
+.travel-dialog {
+  max-width: 860px !important;
+  width: 94% !important;
+  max-height: 88vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: rgba(11, 24, 43, 0.97) !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.5) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 40px rgba(56, 189, 248, 0.25) !important;
+  padding: 24px !important;
+  border-radius: 20px !important;
+}
+
+.travel-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+}
+
+.travel-header-info h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 4px 0 2px 0;
+}
+
+.travel-header-info p {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.travel-badge {
+  display: inline-block;
+  background: rgba(2, 132, 199, 0.35);
+  border: 1px solid #38bdf8;
+  color: #7dd3fc;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+}
+
+.travel-modal-body {
+  overflow-y: auto !important;
+  max-height: 54vh;
+  padding-right: 6px;
+  margin-bottom: 14px;
+}
+
+.travel-cells-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+  gap: 10px;
+}
+
+.travel-cell-card {
+  background: rgba(18, 38, 64, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.travel-cell-card:hover {
+  background: rgba(2, 132, 199, 0.25);
+  border-color: #38bdf8;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), 0 0 14px rgba(56, 189, 248, 0.3);
+}
+
+.travel-cell-card.is-current-pos {
+  border-color: rgba(234, 179, 8, 0.6);
+  background: rgba(234, 179, 8, 0.12);
+}
+
+.travel-cell-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.travel-cell-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.travel-cell-type-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 9999px;
+}
+
+.badge-quiz { background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
+.badge-card { background: rgba(245, 158, 11, 0.25); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+.badge-special { background: rgba(168, 85, 247, 0.25); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.4); }
+
+.travel-cell-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.travel-cell-status {
+  font-size: 11px;
+  color: #cbd5e1;
+  margin-bottom: 10px;
+}
+
+.travel-cell-btn {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.travel-cell-card:hover .travel-cell-btn {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+}
+
+.travel-dialog-footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.travel-dialog-footer .btn {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 9999px;
+}
+
+/* 5. 비행기 애니메이션 키프레임 */
+@keyframes planeFloat {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-4px) rotate(8deg); }
+}
+
+@keyframes bannerSlideDown {
+  0% { opacity: 0; transform: translate(-50%, -20px); }
+  100% { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes bannerGlowPulse {
+  0% { box-shadow: 0 10px 32px rgba(0, 0, 0, 0.65), 0 0 20px rgba(56, 189, 248, 0.4); }
+  100% { box-shadow: 0 10px 32px rgba(0, 0, 0, 0.65), 0 0 35px rgba(56, 189, 248, 0.8); }
+}
+
+@keyframes travelCellPulse {
+  0% { box-shadow: 0 0 14px rgba(56, 189, 248, 0.6), inset 0 0 8px rgba(56, 189, 248, 0.2); }
+  100% { box-shadow: 0 0 24px rgba(56, 189, 248, 1), inset 0 0 16px rgba(56, 189, 248, 0.5); }
+}
+
+@keyframes travelBadgeBounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-3px); }
+}
+
+@keyframes travelWidgetPulse {
+  0% { transform: scale(1); box-shadow: 0 0 20px rgba(56, 189, 248, 0.7); }
+  100% { transform: scale(1.06); box-shadow: 0 0 36px rgba(56, 189, 248, 1); }
+}
+
+.pawn.flying-plane {
+  transition: all 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2) !important;
+  transform: scale(1.5) translateY(-20px) rotate(15deg) !important;
+  filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.7)) !important;
+  z-index: 100 !important;
 }
