@@ -540,7 +540,8 @@ class WorldGameApp {
         position: 0,
         conqueredCount: 0,
         isIslandSkip: false,
-        isWorldTravel: false
+        isWorldTravel: false,
+        hasWorldTravelTicket: false
       }];
 
       this.setupLobbyView(true);
@@ -718,7 +719,8 @@ class WorldGameApp {
             position: 0,
             conqueredCount: 0,
             isIslandSkip: false,
-            isWorldTravel: false
+            isWorldTravel: false,
+            hasWorldTravelTicket: false
           });
 
           this.showToast(`🎉 ${reqName}님이 방에 참가했습니다!`);
@@ -908,6 +910,7 @@ class WorldGameApp {
       p.conqueredCount = 0;
       p.isIslandSkip = false;
       p.isWorldTravel = false;
+      p.hasWorldTravelTicket = false;
     });
 
     if (this.network) {
@@ -966,7 +969,8 @@ class WorldGameApp {
         position: 0,
         conqueredCount: 0,
         isIslandSkip: false,
-        isWorldTravel: false
+        isWorldTravel: false,
+        hasWorldTravelTicket: false
       });
     }
 
@@ -1294,11 +1298,15 @@ class WorldGameApp {
 
     this.addLog(`📍 ${player.name}님이 [${cell.title}] 칸에 도착했습니다.`);
 
+    // 온라인 멀티플레이 시 원격 관전자(내가 조종하는 플레이어가 아님)인 경우:
+    // 모달을 직접 띄우거나 자체 advanceTurn을 호출하지 않고 주체 플레이어의 메시지를 기다림
+    const isController = (this.mode === 'LOCAL') || (player.id === this.myPlayerId) || (!this.network);
+
     // 1. 출발선
     if (cell.type === 'start') {
       sound.playItemGet();
       this.showToast('출발선을 통과하여 한 바퀴를 완주했습니다! 🚀');
-      if (this.isMyTurn()) this.advanceTurn();
+      if (isController) this.advanceTurn();
       return;
     }
 
@@ -1306,29 +1314,36 @@ class WorldGameApp {
     if (cell.type === 'desert_island') {
       player.isIslandSkip = true;
       sound.playWrong();
-      this.openSpecialModal('🏝️ 무인도 조난!', `한 번 쉬고 다음 차례에 이동하세요.`, () => {
-        if (this.isMyTurn()) this.advanceTurn();
-      });
+      if (isController) {
+        this.openSpecialModal('🏝️ 무인도 조난!', `한 번 쉬고 다음 차례에 이동하세요.`, () => {
+          this.advanceTurn();
+        });
+      }
       return;
     }
 
     // 3. 교과서 찬스 칸
     if (cell.type === 'hint_key') {
       sound.playItemGet();
-      this.openSpecialModal('📖 교과서 찬스!', `다음 차례에 교과서를 10초 동안 볼 수 있어요.`, () => {
-        if (this.isMyTurn()) this.advanceTurn();
-      }, '📖');
+      if (isController) {
+        this.openSpecialModal('📖 교과서 찬스!', `다음 차례에 교과서를 10초 동안 볼 수 있어요.`, () => {
+          this.advanceTurn();
+        }, '📖');
+      }
       return;
     }
 
-    // 4. 세계여행 (찬스 획득 후 이번 턴 종료 -> 다음 차례에 원하는 칸으로 이동)
+    // 4. 세계여행 (찬스 티켓 획득 후 이번 턴은 다음 플레이어에게 넘김 -> 다음 내 차례가 돌아오면 원하는 칸으로 이동)
     if (cell.type === 'world_travel') {
       sound.playItemGet();
-      player.isWorldTravel = true;
-      this.addLog(`✈️ ${player.name}님이 세계여행 찬스를 획득했습니다! 다음 차례에 원하는 칸으로 갈 수 있습니다.`, 'correct');
-      this.openSpecialModal('✈️ 세계여행 찬스!', `다음 차례에 원하는 칸으로 갈 수 있어요.`, () => {
-        if (this.isMyTurn()) this.advanceTurn();
-      });
+      player.hasWorldTravelTicket = true;
+      player.isWorldTravel = false;
+      this.addLog(`✈️ ${player.name}님이 세계여행 티켓을 획득했습니다! 이번 차례를 마치고 다음 탐험가에게 넘긴 뒤, 다음 내 차례에 가고 싶은 칸을 선택합니다.`, 'correct');
+      if (isController) {
+        this.openSpecialModal('✈️ 세계여행 찬스 획득!', `세계여행 티켓을 획득했습니다!\n이번 차례를 마치고 다음 탐험가에게 주사위를 넘기며,\n다음 내 차례가 돌아오면 원하는 칸으로 즉시 날아갈 수 있어요!`, () => {
+          this.advanceTurn();
+        });
+      }
       return;
     }
 
@@ -1338,13 +1353,25 @@ class WorldGameApp {
       return;
     }
 
-    // 6. 이미 점령된 칸 (일반 퀴즈 칸만 점령됨)
+    // 6. 이미 점령된 칸 (일반 퀴즈 칸만 점령됨) - 내가 점령했든 다른 사람이 점령했든 확인 후 다음 사람에게 턴 넘김
     if (cell.ownerId !== null) {
       const owner = this.state.players.find(p => p.id === cell.ownerId);
+      const isMine = cell.ownerId === player.id;
       const ownerName = owner ? owner.name : '다른 플레이어';
-      this.addLog(`이미 ${ownerName}님이 점령한 칸입니다. 다음 턴으로 넘어갑니다.`);
-      this.showToast(`이미 ${ownerName}님이 점령한 칸입니다.`);
-      if (this.isMyTurn()) this.advanceTurn();
+      const title = isMine ? '🚩 내가 점령한 탐험지!' : `🚩 ${ownerName}님의 점령지!`;
+      const desc = isMine
+        ? '내가 이미 정답을 맞혀 점령한 땅입니다.\n차례를 다음 탐험가에게 넘깁니다!'
+        : `이미 ${ownerName}님이 점령한 땅입니다.\n통행료 없이 안전하게 통과하며, 차례를 다음 탐험가에게 넘깁니다!`;
+
+      this.addLog(`📍 [${cell.title}] ${isMine ? '내가' : ownerName + '님이'} 이미 점령한 칸입니다. 다음 턴으로 넘어갑니다.`);
+      this.showToast(isMine ? '내가 이미 점령한 칸입니다!' : `이미 ${ownerName}님이 점령한 칸입니다!`);
+
+      if (isController) {
+        sound.playItemGet();
+        this.openSpecialModal(title, desc, () => {
+          this.advanceTurn();
+        }, '🚩');
+      }
       return;
     }
 
@@ -1448,6 +1475,22 @@ class WorldGameApp {
     }
   }
 
+  // 세계여행 목적지 카드용 마스킹 제목 (정답 노출 방지: ○○ 마스킹 표기)
+  getMaskedCellTitle(cell) {
+    if (!cell) return '';
+    if (cell.travelTitle) return cell.travelTitle;
+    if (cell.type !== 'quiz') return cell.title || '';
+
+    // 만약 travelTitle이 누락되었을 경우를 대비한 자동 정답 마스킹
+    let title = cell.title || '';
+    if (cell.answer) {
+      const cleanAns = cell.answer.trim();
+      const circles = '○'.repeat(Math.max(2, cleanAns.length));
+      title = title.replace(cleanAns, circles);
+    }
+    return title;
+  }
+
   // 세계여행 목적지 선택 모달 열기
   openWorldTravelModal() {
     if (!this.modalWorldTravel) this.modalWorldTravel = document.getElementById('modal-world-travel');
@@ -1498,12 +1541,14 @@ class WorldGameApp {
         ownerText = `<div class="travel-cell-status" style="color: #94a3b8;">${cell.description || ''}</div>`;
       }
 
+      const displayTitle = this.getMaskedCellTitle(cell);
+
       card.innerHTML = `
         <div class="travel-cell-top">
           <span class="travel-cell-num">${cell.index}번 칸</span>
           ${typeBadge}
         </div>
-        <div class="travel-cell-title">${cell.badge ? cell.badge + ' ' : ''}${cell.title}</div>
+        <div class="travel-cell-title">${cell.badge ? cell.badge + ' ' : ''}${displayTitle}</div>
         ${ownerText}
         <button class="travel-cell-btn">✈️ 여기로 날아가기</button>
       `;
@@ -2002,6 +2047,13 @@ class WorldGameApp {
     this.state.round = nextRound;
     this.state.travelModalShownTurn = -1;
 
+    // 다음 차례 플레이어가 세계여행 티켓을 가지고 있었다면, 이번 차례에 세계여행 발동!
+    const nextPlayer = this.state.players[nextTurn];
+    if (nextPlayer && nextPlayer.hasWorldTravelTicket) {
+      nextPlayer.hasWorldTravelTicket = false;
+      nextPlayer.isWorldTravel = true;
+    }
+
     this.updateGameUI();
 
     if (this.mode === 'ONLINE') {
@@ -2192,6 +2244,7 @@ class WorldGameApp {
       p.conqueredCount = 0;
       p.isIslandSkip = false;
       p.isWorldTravel = false;
+      p.hasWorldTravelTicket = false;
     });
     this.renderBoard();
     this.updateGameUI();
