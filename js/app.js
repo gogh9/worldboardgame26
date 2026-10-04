@@ -1693,7 +1693,7 @@ class WorldGameApp {
     if (feedbackIcon) feedbackIcon.textContent = isCorrect ? '🎉' : '💡';
     if (feedbackTitle) {
       feedbackTitle.textContent = isCorrect
-        ? `정답입니다! ('${cell.answer}') 칸을 점령했습니다.`
+        ? `정답입니다! ${cell.answer} 칸을 점령했습니다.`
         : `아쉽네요! 입력: '${userText}' ➔ 정답: '${cell.answer}'`;
     }
     if (feedbackDesc) feedbackDesc.textContent = cell.explanation;
@@ -1867,7 +1867,7 @@ class WorldGameApp {
 
     if (feedbackTitle) {
       feedbackTitle.textContent = isCorrect
-        ? `정답입니다! ('${cardData.answer}') 탐험 점수 1점을 획득했습니다! ⭐`
+        ? `정답입니다! ${cardData.answer} 탐험 점수 1점을 획득했습니다! ⭐`
         : `아쉽네요! 입력: '${userText}' ➔ 정답: '${cardData.answer}'`;
     }
     if (feedbackDesc) feedbackDesc.textContent = cardData.description;
@@ -1944,7 +1944,7 @@ class WorldGameApp {
     if (feedbackBox) {
       if (feedbackTitle) {
         feedbackTitle.textContent = payload.isCorrect
-          ? (isCard ? `🎉 ${player ? player.name : '플레이어'}님 정답! ('${payload.correctAnswer}') 탐험 점수 1점 획득! ⭐` : `🎉 ${player ? player.name : '플레이어'}님 정답! ('${payload.correctAnswer}') 칸을 점령했습니다.`)
+          ? (isCard ? `🎉 ${player ? player.name : '플레이어'}님 정답! ${payload.correctAnswer} 탐험 점수 1점 획득! ⭐` : `🎉 ${player ? player.name : '플레이어'}님 정답! ${payload.correctAnswer} 칸을 점령했습니다.`)
           : `아쉽네요! 입력: '${payload.userText}' ➔ 정답: '${payload.correctAnswer}'`;
       }
       if (feedbackDesc) {
