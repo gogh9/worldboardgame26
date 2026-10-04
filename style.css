@@ -5,7 +5,7 @@
 :root {
   --font-display: 'Noto Sans KR', sans-serif;
   --font-body: 'Noto Sans KR', sans-serif;
-  --font-quiz: 'Press Start 2P', 'Noto Sans KR', cursive, sans-serif;
+  --font-quiz: 'Noto Sans KR', sans-serif;
 
   /* Primary Theme Palette */
   --bg-dark: #0f172a;
@@ -2048,6 +2048,8 @@ html.is-class-mode #screen-class-student {
   line-height: 1.8;
   letter-spacing: 0.2px;
   color: #f8fafc;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .hint-key-bar {
@@ -2233,6 +2235,8 @@ html.is-class-mode #screen-class-student {
   color: #f8fafc;
   text-align: center;
   margin-bottom: 4px;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 /* Victory Screen Modal */
@@ -3048,7 +3052,7 @@ html.is-class-mode #screen-class-student {
 :root {
   --font-display: 'Noto Sans KR', sans-serif;
   --font-body: 'Noto Sans KR', sans-serif;
-  --font-quiz: 'Press Start 2P', 'Noto Sans KR', cursive, sans-serif;
+  --font-quiz: 'Noto Sans KR', sans-serif;
 
   --bg-dark: #121212;
   --bg-gradient: linear-gradient(180deg, #1f1f1f 0%, #121212 38%, #121212 100%);
@@ -3082,7 +3086,7 @@ html.is-class-mode #screen-class-student {
 .board-wrapper {
   --font-display: 'Noto Sans KR', sans-serif;
   --font-body: 'Noto Sans KR', sans-serif;
-  --font-quiz: 'Press Start 2P', 'Noto Sans KR', cursive, sans-serif;
+  --font-quiz: 'Noto Sans KR', sans-serif;
   --bg-dark: #0f172a;
   --surface-glass: rgba(30, 41, 59, 0.75);
   --surface-glass-border: rgba(255, 255, 255, 0.12);
@@ -3320,7 +3324,7 @@ body {
 }
 .assign-menu-item:hover:not(.disabled) { background: #2a2a2a; }
 
-/* ---- Modals & Quiz (팝업 문제 폰트: Press Start 2P) ---- */
+/* ---- Modals & Quiz (전체 Noto Sans KR 통일) ---- */
 .modal-backdrop {
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(6px);
@@ -3331,10 +3335,10 @@ body {
 .modal-close-btn:hover { background: #2a2a2a; }
 .modal-badge { background: #1ed760; color: #000000; border-radius: 9999px; }
 
-/* 팝업 문제(퀴즈 및 카드 모달) 전용 폰트 스타일 */
+/* 팝업 문제(퀴즈 및 카드 모달) Noto Sans KR 적용 */
 #modal-quiz,
 #modal-card {
-  --font-quiz: 'Press Start 2P', 'Noto Sans KR', cursive, sans-serif;
+  --font-quiz: 'Noto Sans KR', sans-serif;
 }
 
 #modal-quiz .quiz-question-box,
@@ -3347,6 +3351,8 @@ body {
   font-family: var(--font-quiz);
   line-height: 1.8;
   letter-spacing: 0.2px;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 #modal-quiz .modal-badge,
