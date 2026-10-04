@@ -755,6 +755,7 @@ export class ClassModeManager {
       position: 0,
       conqueredCount: 0,
       isIslandSkip: false,
+      isWorldTravel: false,
       isOnline: true
     }));
 

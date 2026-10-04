@@ -509,7 +509,8 @@ class WorldGameApp {
         isReady: true,
         position: 0,
         conqueredCount: 0,
-        isIslandSkip: false
+        isIslandSkip: false,
+        isWorldTravel: false
       }];
 
       this.setupLobbyView(true);
@@ -686,7 +687,8 @@ class WorldGameApp {
             isReady: false,
             position: 0,
             conqueredCount: 0,
-            isIslandSkip: false
+            isIslandSkip: false,
+            isWorldTravel: false
           });
 
           this.showToast(`🎉 ${reqName}님이 방에 참가했습니다!`);
@@ -819,11 +821,18 @@ class WorldGameApp {
           sound.playItemGet();
           if (nextPlayer && nextPlayer.isIslandSkip) {
             this.showToast(`🏝️ 무인도에 조난 중입니다! [무인도 1턴 쉬기] 버튼을 눌러 차례를 넘기세요.`);
+          } else if (nextPlayer && nextPlayer.isWorldTravel) {
+            this.state.worldTravelPending = true;
+            this.showToast(`✈️ 세계여행 찬스 발동! 보드판에서 가고 싶은 칸을 클릭하세요!`);
           } else {
             this.showToast(`🔔 나의 차례입니다! [주사위 굴리기] 버튼을 눌러 이동하세요! 🎲`);
           }
         } else {
-          this.addLog(`👉 다음 차례: ${nextPlayer ? nextPlayer.name : '플레이어'}님`, 'normal');
+          if (nextPlayer && nextPlayer.isWorldTravel) {
+            this.addLog(`✈️ 다음 차례: ${nextPlayer.name}님이 세계여행 찬스로 이동할 칸을 선택 중입니다.`, 'normal');
+          } else {
+            this.addLog(`👉 다음 차례: ${nextPlayer ? nextPlayer.name : '플레이어'}님`, 'normal');
+          }
         }
 
         if (this.isHost()) {
@@ -865,6 +874,7 @@ class WorldGameApp {
       p.position = 0;
       p.conqueredCount = 0;
       p.isIslandSkip = false;
+      p.isWorldTravel = false;
     });
 
     if (this.network) {
@@ -922,7 +932,8 @@ class WorldGameApp {
         charId: i,
         position: 0,
         conqueredCount: 0,
-        isIslandSkip: false
+        isIslandSkip: false,
+        isWorldTravel: false
       });
     }
 
@@ -1147,6 +1158,12 @@ class WorldGameApp {
       return;
     }
 
+    if (currPlayer.isWorldTravel) {
+      this.state.worldTravelPending = true;
+      this.showToast('✈️ 세계여행 찬스입니다! 보드판에서 가고 싶은 칸을 직접 클릭하세요!');
+      return;
+    }
+
     const diceNum = Math.floor(Math.random() * 6) + 1;
     this.state.lastDice = diceNum;
 
@@ -1208,10 +1225,11 @@ class WorldGameApp {
     const player = this.state.players[playerIdx];
     if (!player) return;
     player.position = targetCellIndex;
+    player.isWorldTravel = false;
+    this.state.worldTravelPending = false;
     sound.playVictory();
     this.updatePawnPosition(player.id, player.position);
     this.addLog(`✈️ ${player.name}님이 세계여행 찬스로 [${this.state.cells[targetCellIndex].title}] 칸으로 즉시 이동했습니다!`, 'correct');
-    this.state.worldTravelPending = false;
     this.handleCellArrival(playerIdx, targetCellIndex);
   }
 
@@ -1238,7 +1256,7 @@ class WorldGameApp {
     if (cell.type === 'desert_island') {
       player.isIslandSkip = true;
       sound.playWrong();
-      this.openSpecialModal('🏝️ 무인도 조난!', `${player.name}님이 무인도에 표류되었습니다. 다음 차례 1회 휴식합니다!`, () => {
+      this.openSpecialModal('🏝️ 무인도 조난!', `한 번 쉬고 다음 차례에 이동하세요.`, () => {
         if (this.isMyTurn()) this.advanceTurn();
       });
       return;
@@ -1253,14 +1271,13 @@ class WorldGameApp {
       return;
     }
 
-    // 4. 세계여행
+    // 4. 세계여행 (찬스 획득 후 이번 턴 종료 -> 다음 차례에 원하는 칸으로 이동)
     if (cell.type === 'world_travel') {
       sound.playItemGet();
-      this.openSpecialModal('✈️ 세계여행 찬스!', `축하합니다! 지금 보드판에서 원하는 칸을 직접 클릭하여 즉시 날아갈 수 있습니다!`, () => {
-        if (this.isMyTurn()) {
-          this.state.worldTravelPending = true;
-          this.showToast('보드판에서 가고 싶은 칸을 클릭하세요! ✈️');
-        }
+      player.isWorldTravel = true;
+      this.addLog(`✈️ ${player.name}님이 세계여행 찬스를 획득했습니다! 다음 차례에 원하는 칸으로 갈 수 있습니다.`, 'correct');
+      this.openSpecialModal('✈️ 세계여행 찬스!', `다음 차례에 원하는 칸으로 갈 수 있어요.`, () => {
+        if (this.isMyTurn()) this.advanceTurn();
       });
       return;
     }
@@ -1289,6 +1306,9 @@ class WorldGameApp {
   }
 
   handleWorldTravelSelect(targetIndex) {
+    const currPlayer = this.state.players[this.state.turnIndex];
+    if (currPlayer) currPlayer.isWorldTravel = false;
+    this.state.worldTravelPending = false;
     if (this.mode === 'ONLINE') {
       this.network.send('WORLD_TRAVEL_MOVE', { playerIndex: this.state.turnIndex, targetCellIndex: targetIndex });
     }
@@ -1781,6 +1801,12 @@ class WorldGameApp {
       if (this.isHost()) {
         this.broadcastState();
       }
+    } else {
+      const nextPlayer = this.state.players[this.state.turnIndex];
+      if (nextPlayer && nextPlayer.isWorldTravel) {
+        this.state.worldTravelPending = true;
+        this.showToast(`✈️ ${nextPlayer.name}님의 세계여행 찬스! 보드판에서 가고 싶은 칸을 클릭하세요!`);
+      }
     }
   }
 
@@ -1815,6 +1841,11 @@ class WorldGameApp {
     const canRoll = this.isMyTurn() && !this.state.isRolling;
     if (this.diceWidget) {
       this.diceWidget.classList.toggle('my-turn-active', canRoll);
+      if (currPlayer.isWorldTravel) {
+        this.diceWidget.title = '세계여행 찬스! 보드판에서 원하는 칸을 클릭하세요!';
+      } else {
+        this.diceWidget.title = '주사위를 클릭하여 굴리세요!';
+      }
     }
 
     // 좌측 플레이어 카드 패널 (컴팩트 & 세련된 디자인)
@@ -1844,7 +1875,7 @@ class WorldGameApp {
         <div class="card-stats-pills">
           <span class="stat-pill conquer" title="탐험 점수 (점령 및 카드 미션 성공)">⭐ <strong>${p.conqueredCount || 0}점</strong></span>
         </div>
-        ${p.isIslandSkip ? '<span class="island-status-badge">🏝️ 무인도</span>' : ''}
+        ${p.isIslandSkip ? '<span class="island-status-badge">🏝️ 무인도</span>' : (p.isWorldTravel ? '<span class="island-status-badge" style="background: rgba(2, 132, 199, 0.4); border-color: #38bdf8; color: #bae6fd;">✈️ 세계여행</span>' : '')}
       `;
 
       this.playersPanel.appendChild(card);
@@ -1940,6 +1971,7 @@ class WorldGameApp {
       p.position = 0;
       p.conqueredCount = 0;
       p.isIslandSkip = false;
+      p.isWorldTravel = false;
     });
     this.renderBoard();
     this.updateGameUI();
