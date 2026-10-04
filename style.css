@@ -3,8 +3,9 @@
    ========================================================================== */
 
 :root {
-  --font-display: 'Jua', sans-serif;
+  --font-display: 'Noto Sans KR', sans-serif;
   --font-body: 'Noto Sans KR', sans-serif;
+  --font-quiz: 'Press Start 2P', 'Noto Sans KR', cursive, sans-serif;
 
   /* Primary Theme Palette */
   --bg-dark: #0f172a;
@@ -2042,8 +2043,10 @@ html.is-class-mode #screen-class-student {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-md);
   padding: 16px;
+  font-family: var(--font-quiz);
   font-size: 1.05rem;
-  line-height: 1.5;
+  line-height: 1.8;
+  letter-spacing: 0.2px;
   color: #f8fafc;
 }
 
@@ -2123,7 +2126,7 @@ html.is-class-mode #screen-class-student {
   border: 2px solid rgba(56, 189, 248, 0.4);
   border-radius: var(--radius-md);
   color: #ffffff;
-  font-family: var(--font-main);
+  font-family: var(--font-quiz);
   font-size: 1.15rem;
   font-weight: 700;
   text-align: center;
@@ -2163,7 +2166,7 @@ html.is-class-mode #screen-class-student {
 }
 
 .feedback-icon {
-  font-size: 2.2rem;
+  display: none !important;
 }
 
 .feedback-title {
@@ -2223,8 +2226,10 @@ html.is-class-mode #screen-class-student {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-md);
   padding: 14px 16px;
+  font-family: var(--font-quiz);
   font-size: 1.05rem;
-  line-height: 1.5;
+  line-height: 1.8;
+  letter-spacing: 0.2px;
   color: #f8fafc;
   text-align: center;
   margin-bottom: 4px;
@@ -3041,8 +3046,9 @@ html.is-class-mode #screen-class-student {
    - 알약(pill)/원형 버튼, 대문자 + 넓은 자간, 묵직한 그림자
    ========================================================================== */
 :root {
-  --font-display: 'SpotifyMixUITitle', 'Circular Std', 'Helvetica Neue', Helvetica, Arial, 'Noto Sans KR', sans-serif;
-  --font-body: 'SpotifyMixUI', 'Circular Std', 'Helvetica Neue', Helvetica, Arial, 'Noto Sans KR', sans-serif;
+  --font-display: 'Noto Sans KR', sans-serif;
+  --font-body: 'Noto Sans KR', sans-serif;
+  --font-quiz: 'Press Start 2P', 'Noto Sans KR', cursive, sans-serif;
 
   --bg-dark: #121212;
   --bg-gradient: linear-gradient(180deg, #1f1f1f 0%, #121212 38%, #121212 100%);
@@ -3072,10 +3078,11 @@ html.is-class-mode #screen-class-student {
   --radius-xl: 8px;
 }
 
-/* 게임판 영역은 기존 디자인(변수) 그대로 유지 */
+/* 게임판 영역도 기본 UI Noto Sans KR 통일 */
 .board-wrapper {
-  --font-display: 'Jua', sans-serif;
+  --font-display: 'Noto Sans KR', sans-serif;
   --font-body: 'Noto Sans KR', sans-serif;
+  --font-quiz: 'Press Start 2P', 'Noto Sans KR', cursive, sans-serif;
   --bg-dark: #0f172a;
   --surface-glass: rgba(30, 41, 59, 0.75);
   --surface-glass-border: rgba(255, 255, 255, 0.12);
@@ -3313,7 +3320,7 @@ body {
 }
 .assign-menu-item:hover:not(.disabled) { background: #2a2a2a; }
 
-/* ---- Modals & Quiz ---- */
+/* ---- Modals & Quiz (팝업 문제 폰트: Press Start 2P) ---- */
 .modal-backdrop {
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(6px);
@@ -3323,9 +3330,40 @@ body {
 .modal-close-btn { background: #1f1f1f; border: none; border-radius: 50%; color: #ffffff; }
 .modal-close-btn:hover { background: #2a2a2a; }
 .modal-badge { background: #1ed760; color: #000000; border-radius: 9999px; }
-.quiz-question-box { background: #1f1f1f; border: none; border-radius: 8px; }
+
+/* 팝업 문제(퀴즈 및 카드 모달) 전용 폰트 스타일 */
+#modal-quiz,
+#modal-card {
+  --font-quiz: 'Press Start 2P', 'Noto Sans KR', cursive, sans-serif;
+}
+
+#modal-quiz .quiz-question-box,
+#modal-quiz #quiz-question-text,
+#modal-card .card-question-box,
+#modal-card #card-question-text {
+  background: #1f1f1f;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-quiz);
+  line-height: 1.8;
+  letter-spacing: 0.2px;
+}
+
+#modal-quiz .modal-badge,
+#modal-card .modal-badge,
+#modal-quiz .quiz-text-input,
+#modal-card .quiz-text-input,
+#modal-quiz .btn-submit-quiz,
+#modal-card .btn-submit-quiz,
+#modal-quiz .feedback-title,
+#modal-card .feedback-title {
+  font-family: var(--font-quiz);
+}
+
 .hint-key-bar,
 .hint-display-box { background: #1f1f1f; border: none; border-radius: 8px; }
+.hint-label,
+.hint-val { font-family: var(--font-quiz); }
 .hint-val { color: #1ed760; }
 .btn-submit-quiz { background: #1ed760; color: #000000; border-radius: 9999px; }
 .quiz-feedback-box { border-radius: 8px; }

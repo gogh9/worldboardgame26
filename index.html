@@ -8,7 +8,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
   <!-- MQTT for Real-time Room Lobby Broadcasting (No API Key needed) -->
   <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
   <!-- PeerJS for WebRTC P2P Multiplayer -->
@@ -16,7 +16,7 @@
   <!-- Canvas Confetti for Victory Celebration -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=20261003_v40">
+  <link rel="stylesheet" href="style.css?v=20261004_v41">
   <script>
     (function() {
       try {
@@ -102,11 +102,11 @@
 
           <!-- 하단 액션 버튼 -->
           <div class="lobby-actions">
-            <button class="btn btn-danger lobby-action-btn" id="btn-leave-room">방 나가기</button>
             <div class="ready-start-group">
               <button class="btn btn-secondary lobby-action-btn" id="btn-toggle-ready">준비 완료 (READY)</button>
               <button class="btn btn-primary btn-pulse hidden lobby-action-btn" id="btn-start-game">게임 시작! (START)</button>
             </div>
+            <button class="btn btn-danger lobby-action-btn" id="btn-leave-room">방 나가기</button>
           </div>
         </div>
       </div>
@@ -380,7 +380,6 @@
 
           <!-- 정답/오답 결과 해설창 (답안 제출 후 표시) -->
           <div class="quiz-feedback-box hidden" id="quiz-feedback-box">
-            <div class="feedback-icon" id="feedback-icon">🎉</div>
             <div class="feedback-title" id="feedback-title">정답입니다!</div>
             <p class="feedback-desc" id="feedback-desc">상세 해설 내용...</p>
             <button class="btn btn-primary mt-3" id="btn-quiz-confirm">다음으로 진행 ➔</button>
@@ -492,6 +491,6 @@
   </div>
 
   <!-- 메인 스크립트 모듈 로드 -->
-  <script type="module" src="js/app.js?v=20261003_v37"></script>
+  <script type="module" src="js/app.js?v=20261004_v38"></script>
 </body>
 </html>

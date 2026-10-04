@@ -1690,7 +1690,10 @@ class WorldGameApp {
     const feedbackTitle = document.getElementById('feedback-title');
     const feedbackDesc = document.getElementById('feedback-desc');
 
-    if (feedbackIcon) feedbackIcon.textContent = isCorrect ? '🎉' : '💡';
+    if (feedbackIcon) {
+      feedbackIcon.textContent = '';
+      feedbackIcon.style.display = 'none';
+    }
     if (feedbackTitle) {
       feedbackTitle.textContent = isCorrect
         ? `정답입니다! ${cell.answer} 칸을 점령했습니다.`
