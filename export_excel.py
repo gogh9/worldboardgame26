@@ -131,13 +131,13 @@ TERRAIN_CARDS = [
   },
   {
     "id": "t4",
-    "name": "4. 강 (하천 곡류/평야)",
+    "name": "4. 하천 (강 곡류/평야)",
     "image": "assets/cards/terrain_4.jpg",
-    "question": "위 사진이 나타내는 지형은 무엇일까요? (○)",
+    "question": "위 사진이 나타내는 지형은 무엇일까요? (○○)",
     "description": "물이 굽이쳐 흐르며 퇴적물이 쌓여 비옥한 평야와 농경지를 만드는 강(하천) 지형입니다.",
-    "answer": "강",
-    "acceptableAnswers": "강, 하천, 강물, 곡류",
-    "initialHint": "ㄱ",
+    "answer": "하천",
+    "acceptableAnswers": "하천, 강, 강물, 곡류",
+    "initialHint": "ㅎㅊ",
     "hint": "육지 위를 흘러 바다나 호수로 들어가는 물줄기입니다."
   },
   {
